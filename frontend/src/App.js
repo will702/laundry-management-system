@@ -2856,47 +2856,48 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-20 sm:pb-8">
-        {activeTab === 'create' && (
-          <div className="space-y-4 sm:space-y-8">
-            {!selectedClient ? (
-              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Pilih atau Tambah Pelanggan</h2>
-                  {selectedClient && (
+      <main className="px-2 sm:px-6 lg:px-8 py-3 sm:py-8 pb-24 sm:pb-8">
+        <div className="max-w-7xl mx-auto">
+          {activeTab === 'create' && (
+            <div className="space-y-3 sm:space-y-8">
+              {!selectedClient ? (
+                <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-6">
+                    <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Pilih atau Tambah Pelanggan</h2>
+                    {selectedClient && (
+                      <button
+                        onClick={() => setSelectedClient(null)}
+                        className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                      >
+                        ← Pilih Ulang
+                      </button>
+                    )}
+                  </div>
+                  <ClientSelector onClientSelect={handleClientSelect} selectedClient={selectedClient} />
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3 sm:mb-4">
                     <button
                       onClick={() => setSelectedClient(null)}
-                      className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 self-start"
                     >
-                      ← Pilih Ulang
+                      <span>←</span>
+                      <span>Kembali ke Pilih Pelanggan</span>
                     </button>
-                  )}
-                </div>
-                <ClientSelector onClientSelect={handleClientSelect} selectedClient={selectedClient} />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center space-x-4 mb-4">
-                  <button
-                    onClick={() => setSelectedClient(null)}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
-                  >
-                    <span>←</span>
-                    <span>Kembali ke Pilih Pelanggan</span>
-                  </button>
-                  <div className="text-lg text-gray-800">
-                    Membuat bon untuk: <span className="font-bold text-indigo-600">{selectedClient.name}</span>
+                    <div className="text-sm sm:text-lg text-gray-800">
+                      Membuat bon untuk: <span className="font-bold text-indigo-600">{selectedClient.name}</span>
+                    </div>
                   </div>
-                </div>
-                <ReceiptForm 
-                  employee={currentEmployee} 
-                  client={selectedClient} 
-                  onReceiptCreated={handleReceiptCreated}
-                />
-              </>
-            )}
-          </div>
-        )}
+                  <ReceiptForm 
+                    employee={currentEmployee} 
+                    client={selectedClient} 
+                    onReceiptCreated={handleReceiptCreated}
+                  />
+                </>
+              )}
+            </div>
+          )}
 
         {activeTab === 'receipts' && (
           <RecentReceipts employee={currentEmployee} />
