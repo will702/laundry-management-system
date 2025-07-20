@@ -87,6 +87,50 @@ class ReceiptDelete(BaseModel):
     employee_id: str
     deletion_reason: str
 
+class LaundrySettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    business_name: str = "LaundryPro"
+    business_address: str = "Jl. Bersih No. 123, Kota Laundry"
+    business_phone: str = "(021) LAUNDRY"
+    business_email: str = "info@laundrypro.com"
+    logo_url: Optional[str] = None
+    footer_notes: str = "Terima kasih atas kepercayaan Anda • Jam operasional: 07:00-21:00 • Komplain maks 1x24 jam"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class LaundrySettingsUpdate(BaseModel):
+    business_name: Optional[str] = None
+    business_address: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_email: Optional[str] = None
+    logo_url: Optional[str] = None
+    footer_notes: Optional[str] = None
+
+class ServiceItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    category: str  # wash, dry_clean, iron, special
+    price: float
+    unit: str = "pcs"  # pcs, kg, set
+    description: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ServiceItemCreate(BaseModel):
+    name: str
+    category: str
+    price: float
+    unit: str = "pcs"
+    description: Optional[str] = None
+
+class SalesReport(BaseModel):
+    date: str
+    total_receipts: int
+    total_amount: float
+    total_items: int
+    employees: List[dict]
+    services: List[dict]
+
 # Employee endpoints
 @api_router.post("/employees", response_model=Employee)
 async def create_employee(employee_data: EmployeeCreate):
