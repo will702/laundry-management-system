@@ -2702,9 +2702,6 @@ function App() {
         </div>
       </header>
 
-      {/* Navigation Bar with Back/Forward and Undo/Redo */}
-      <NavigationBar />
-
       {/* Mobile Bottom Navigation */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-10">
         <div className={`flex ${isAdmin ? 'justify-between' : 'justify-around'} px-2`}>
