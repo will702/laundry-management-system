@@ -2713,104 +2713,145 @@ function App() {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-10">
-        <div className={`flex ${isAdmin ? 'justify-between' : 'justify-around'} px-2`}>
-          <button
-            onClick={() => handleTabChange('create')}
-            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-              activeTab === 'create' 
-                ? 'text-indigo-600' 
-                : 'text-gray-600'
-            }`}
-          >
-            <span className="text-lg mb-1">📝</span>
-            <span>Bon Baru</span>
-          </button>
-          <button
-            onClick={() => handleTabChange('receipts')}
-            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-              activeTab === 'receipts' 
-                ? 'text-indigo-600' 
-                : 'text-gray-600'
-            }`}
-          >
-            <span className="text-lg mb-1">📋</span>
-            <span>Semua Bon</span>
-          </button>
-          {!isAdmin && (
-            <>
+      {/* Mobile Bottom Navigation - Optimized */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
+        <div className="px-1 py-2">
+          {/* Show different navigation based on admin/employee role */}
+          {!isAdmin ? (
+            /* Employee Navigation */
+            <div className="flex justify-around">
+              <button
+                onClick={() => handleTabChange('create')}
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                  activeTab === 'create' 
+                    ? 'text-indigo-600' 
+                    : 'text-gray-600'
+                }`}
+              >
+                <span className="text-xl mb-1">📝</span>
+                <span className="text-xs font-medium">Bon Baru</span>
+              </button>
+              <button
+                onClick={() => handleTabChange('receipts')}
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                  activeTab === 'receipts' 
+                    ? 'text-indigo-600' 
+                    : 'text-gray-600'
+                }`}
+              >
+                <span className="text-xl mb-1">📋</span>
+                <span className="text-xs font-medium">Semua Bon</span>
+              </button>
               <button
                 onClick={() => handleTabChange('audit')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'audit' 
                     ? 'text-indigo-600' 
                     : 'text-gray-600'
                 }`}
               >
-                <span className="text-lg mb-1">🔍</span>
-                <span>Audit</span>
+                <span className="text-xl mb-1">🔍</span>
+                <span className="text-xs font-medium">Audit</span>
               </button>
               <button
                 onClick={() => handleTabChange('services')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'services' 
                     ? 'text-indigo-600' 
                     : 'text-gray-600'
                 }`}
               >
-                <span className="text-lg mb-1">🧽</span>
-                <span>Layanan</span>
+                <span className="text-xl mb-1">🧽</span>
+                <span className="text-xs font-medium">Layanan</span>
               </button>
               <button
                 onClick={() => handleTabChange('reports')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'reports' 
                     ? 'text-indigo-600' 
                     : 'text-gray-600'
                 }`}
               >
-                <span className="text-lg mb-1">📊</span>
-                <span>Laporan</span>
+                <span className="text-xl mb-1">📊</span>
+                <span className="text-xs font-medium">Laporan</span>
               </button>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              <button
-                onClick={() => handleTabChange('clients')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-                  activeTab === 'clients' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-lg mb-1">👥</span>
-                <span>Pelanggan</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('audit')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-                  activeTab === 'audit' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-lg mb-1">🔍</span>
-                <span>Audit</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('reports')}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-                  activeTab === 'reports' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-lg mb-1">📊</span>
-                <span>Laporan</span>
-              </button>
-            </>
+            </div>
+          ) : (
+            /* Admin Navigation - 2 rows for more space */
+            <div>
+              {/* First Row */}
+              <div className="flex justify-around mb-1">
+                <button
+                  onClick={() => handleTabChange('create')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'create' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📝</span>
+                  <span className="text-xs font-medium">Bon Baru</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('receipts')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'receipts' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📋</span>
+                  <span className="text-xs font-medium">Semua Bon</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('clients')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'clients' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">👥</span>
+                  <span className="text-xs font-medium">Pelanggan</span>
+                </button>
+              </div>
+              {/* Second Row */}
+              <div className="flex justify-around">
+                <button
+                  onClick={() => handleTabChange('audit')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'audit' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🔍</span>
+                  <span className="text-xs font-medium">Audit</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('services')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'services' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🧽</span>
+                  <span className="text-xs font-medium">Layanan</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('reports')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'reports' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📊</span>
+                  <span className="text-xs font-medium">Laporan</span>
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </nav>
