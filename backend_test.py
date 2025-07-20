@@ -533,6 +533,9 @@ class LaundryProTester:
         print("\n🔍 Testing Enhanced Audit Endpoints with Deletion Tracking...")
         self.test_enhanced_audit_endpoints()
 
+        print("\n🖨️ Testing Print Receipt Functionality...")
+        self.test_print_receipt_functionality()
+
         # Print summary
         print("\n" + "=" * 60)
         print("TEST SUMMARY")
