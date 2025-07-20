@@ -2076,6 +2076,10 @@ function App() {
         {activeTab === 'settings' && (
           <LaundrySettings employee={currentEmployee} />
         )}
+
+        {activeTab === 'reports' && (
+          <ExcelReportExport employee={currentEmployee} />
+        )}
       </main>
     </div>
   );
