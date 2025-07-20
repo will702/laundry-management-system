@@ -1160,7 +1160,7 @@ function App() {
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-indigo-600">🧺 LaundryPro</h1>
               <span className="text-gray-500">|</span>
-              <span className="text-gray-700">Welcome, {currentEmployee.name}</span>
+              <span className="text-gray-700">Selamat datang, {currentEmployee.name}</span>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -1173,7 +1173,7 @@ function App() {
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  New Receipt
+                  Bon Baru
                 </button>
                 <button
                   onClick={() => setActiveTab('receipts')}
@@ -1183,7 +1183,7 @@ function App() {
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  All Receipts
+                  Semua Bon
                 </button>
                 <button
                   onClick={() => setActiveTab('audit')}
@@ -1193,7 +1193,7 @@ function App() {
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  🔍 Audit Trail
+                  🔍 Jejak Audit
                 </button>
               </div>
               
@@ -1201,7 +1201,7 @@ function App() {
                 onClick={handleLogout}
                 className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
               >
-                Logout
+                Keluar
               </button>
             </div>
           </div>
