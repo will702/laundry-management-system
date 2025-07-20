@@ -718,6 +718,8 @@ const RecentReceipts = ({ employee }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [receiptToDelete, setReceiptToDelete] = useState(null);
   const [deleteReason, setDeleteReason] = useState('');
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [printReceiptData, setPrintReceiptData] = useState(null);
 
   useEffect(() => {
     loadReceipts();
@@ -777,6 +779,22 @@ const RecentReceipts = ({ employee }) => {
       console.error('Error deleting receipt:', err);
       alert('Error deleting receipt. Please try again.');
     }
+  };
+
+  const openPrintModal = async (receipt) => {
+    try {
+      const response = await axios.get(`${API}/receipts/${receipt.id}/print`);
+      setPrintReceiptData(response.data);
+      setPrintModalOpen(true);
+    } catch (err) {
+      console.error('Error loading print data:', err);
+      alert('Error preparing receipt for print. Please try again.');
+    }
+  };
+
+  const closePrintModal = () => {
+    setPrintModalOpen(false);
+    setPrintReceiptData(null);
   };
 
   const getStatusColor = (status) => {
@@ -865,34 +883,45 @@ const RecentReceipts = ({ employee }) => {
                 </div>
               )}
 
-              {!receipt.is_deleted && (
-                <div className="flex gap-2 flex-wrap">
-                  {receipt.status === 'pending' && (
-                    <button
-                      onClick={() => updateStatus(receipt.id, 'ready')}
-                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                    >
-                      Mark Ready
-                    </button>
-                  )}
-                  {receipt.status === 'ready' && (
-                    <button
-                      onClick={() => updateStatus(receipt.id, 'completed')}
-                      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                    >
-                      Complete
-                    </button>
-                  )}
-                  {receipt.status !== 'completed' && (
-                    <button
-                      onClick={() => openDeleteModal(receipt)}
-                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              )}
+              <div className="flex gap-2 flex-wrap">
+                {/* Print button - always available */}
+                <button
+                  onClick={() => openPrintModal(receipt)}
+                  className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                >
+                  🖨️ Print
+                </button>
+
+                {/* Status management buttons - only for non-deleted receipts */}
+                {!receipt.is_deleted && (
+                  <>
+                    {receipt.status === 'pending' && (
+                      <button
+                        onClick={() => updateStatus(receipt.id, 'ready')}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                      >
+                        Mark Ready
+                      </button>
+                    )}
+                    {receipt.status === 'ready' && (
+                      <button
+                        onClick={() => updateStatus(receipt.id, 'completed')}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                      >
+                        Complete
+                      </button>
+                    )}
+                    {receipt.status !== 'completed' && (
+                      <button
+                        onClick={() => openDeleteModal(receipt)}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           ))
         )}
@@ -950,6 +979,14 @@ const RecentReceipts = ({ employee }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Print Modal */}
+      {printModalOpen && printReceiptData && (
+        <PrintReceipt
+          receiptData={printReceiptData}
+          onClose={closePrintModal}
+        />
       )}
     </div>
   );
