@@ -938,7 +938,7 @@ const RecentReceipts = ({ employee }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Receipt Management</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Manajemen Bon</h2>
         
         <div className="flex items-center space-x-4">
           <label className="flex items-center space-x-2">
@@ -948,7 +948,7 @@ const RecentReceipts = ({ employee }) => {
               onChange={(e) => setShowDeleted(e.target.checked)}
               className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
             />
-            <span className="text-sm text-gray-700">Show Deleted</span>
+            <span className="text-sm text-gray-700">Tampilkan yang Dihapus</span>
           </label>
         </div>
       </div>
