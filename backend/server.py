@@ -381,7 +381,7 @@ async def get_employee_activity(employee_id: str, start_date: Optional[str] = No
     }
 
 @api_router.get("/audit/daily-summary")
-async def get_daily_summary():
+async def get_daily_summary(include_deleted: bool = False):
     # Get last 7 days summary
     pipeline = [
         {
@@ -391,7 +391,13 @@ async def get_daily_summary():
                            timedelta(days=7)
                 }
             }
-        },
+        }
+    ]
+    
+    if not include_deleted:
+        pipeline[0]["$match"]["is_deleted"] = {"$ne": True}
+    
+    pipeline.extend([
         {
             "$group": {
                 "_id": {
@@ -403,11 +409,16 @@ async def get_daily_summary():
                     }
                 },
                 "total_receipts": {"$sum": 1},
-                "total_amount": {"$sum": "$total_amount"}
+                "total_amount": {"$sum": "$total_amount"},
+                "deleted_count": {
+                    "$sum": {
+                        "$cond": [{"$eq": ["$is_deleted", True]}, 1, 0]
+                    }
+                }
             }
         },
         {"$sort": {"_id.date": -1}}
-    ]
+    ])
     
     result = await db.receipts.aggregate(pipeline).to_list(100)
     return result
