@@ -165,6 +165,21 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Fraud prevention audit system working perfectly. Receipts-by-employee endpoint provides complete audit trail with employee names, receipt counts, and total amounts. Daily summary endpoint working (fixed minor timedelta import issue). All employee actions properly tracked for fraud prevention."
 
+  - task: "Print receipt functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented print receipt endpoint GET /api/receipts/{receipt_id}/print with business information, receipt details, and print timestamps"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Print receipt functionality working excellently. Print endpoint returns comprehensive receipt data formatted for printing including business information (LaundryPro Professional Services, address, phone), complete receipt details (client info, employee info, itemized list with pricing), total amount, status, creation and print timestamps. Successfully handles both active and deleted receipts for audit trail maintenance. All 8 print-related test scenarios passed."
+
 frontend:
   - task: "PIN-based employee authentication"
     implemented: true
