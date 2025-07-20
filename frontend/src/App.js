@@ -2922,6 +2922,7 @@ function App() {
         {activeTab === 'reports' && (
           <ExcelReportExport employee={currentEmployee} />
         )}
+        </div>
       </main>
     </div>
   );
