@@ -404,7 +404,125 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   );
 };
 
-// Audit Dashboard Component
+// Print Receipt Component
+const PrintReceipt = ({ receiptData, onClose }) => {
+  const formatDateTime = (dateString) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 print:bg-white print:relative print:inset-auto print:overflow-visible">
+      <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white print:shadow-none print:border-none print:top-0 print:max-w-none">
+        
+        {/* Print Header - Only show on screen */}
+        <div className="flex justify-between items-center mb-6 no-print">
+          <h2 className="text-xl font-bold">Print Receipt</h2>
+          <div className="space-x-2">
+            <button
+              onClick={handlePrint}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              🖨️ Print
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        {/* Receipt Content */}
+        <div className="receipt-content bg-white p-8 print:p-0">
+          {/* Business Header */}
+          <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">🧺 LaundryPro</h1>
+            <h2 className="text-lg font-semibold text-gray-600">Professional Laundry Services</h2>
+            <p className="text-sm text-gray-500">123 Clean Street, Laundry City, LC 12345</p>
+            <p className="text-sm text-gray-500">Phone: (555) LAUNDRY</p>
+          </div>
+
+          {/* Receipt Info */}
+          <div className="grid grid-cols-2 gap-6 mb-6 text-sm">
+            <div>
+              <p><strong>Receipt ID:</strong> #{receiptData.receipt_id.slice(-8).toUpperCase()}</p>
+              <p><strong>Date:</strong> {formatDateTime(receiptData.created_at)}</p>
+              <p><strong>Status:</strong> <span className="capitalize">{receiptData.status}</span></p>
+            </div>
+            <div>
+              <p><strong>Customer:</strong> {receiptData.client_name}</p>
+              <p><strong>Phone:</strong> {receiptData.client_phone}</p>
+              <p><strong>Served by:</strong> {receiptData.employee_name}</p>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div className="mb-6">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="text-left py-2 font-semibold">Service</th>
+                  <th className="text-left py-2 font-semibold">Item</th>
+                  <th className="text-center py-2 font-semibold">Qty</th>
+                  <th className="text-right py-2 font-semibold">Price</th>
+                  <th className="text-right py-2 font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receiptData.items.map((item, index) => (
+                  <tr key={index} className="border-b border-gray-200">
+                    <td className="py-2 capitalize">{item.service.replace('_', ' ')}</td>
+                    <td className="py-2 capitalize">{item.item_type}</td>
+                    <td className="py-2 text-center">{item.quantity}</td>
+                    <td className="py-2 text-right">${item.price_per_item.toFixed(2)}</td>
+                    <td className="py-2 text-right font-semibold">${item.total_price.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Total */}
+          <div className="border-t-2 border-gray-300 pt-4 mb-6">
+            <div className="flex justify-between items-center">
+              <span className="text-xl font-bold">TOTAL AMOUNT:</span>
+              <span className="text-2xl font-bold text-green-600">${receiptData.total_amount.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Notes */}
+          {receiptData.notes && (
+            <div className="mb-6 p-3 bg-gray-50 rounded print:bg-white print:border">
+              <p className="text-sm"><strong>Special Instructions:</strong></p>
+              <p className="text-sm">{receiptData.notes}</p>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-4">
+            <p className="mb-2">Thank you for choosing LaundryPro!</p>
+            <p className="mb-1">Please keep this receipt for pickup</p>
+            <p className="mb-1">Questions? Call us at (555) LAUNDRY</p>
+            <p className="text-xs">Printed on: {formatDateTime(receiptData.print_timestamp)}</p>
+          </div>
+
+          {/* Deleted Receipt Warning */}
+          {receiptData.is_deleted && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 rounded text-center">
+              <p className="text-red-700 font-bold">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</p>
+              <p className="text-red-600 text-sm">This is a copy for record purposes only</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 const AuditDashboard = ({ employee }) => {
   const [auditData, setAuditData] = useState(null);
   const [deletedReceipts, setDeletedReceipts] = useState([]);
