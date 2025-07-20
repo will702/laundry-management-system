@@ -83,6 +83,10 @@ class ReceiptCreate(BaseModel):
     items: List[ReceiptItem]
     notes: Optional[str] = None
 
+class ReceiptDelete(BaseModel):
+    employee_id: str
+    deletion_reason: str
+
 # Employee endpoints
 @api_router.post("/employees", response_model=Employee)
 async def create_employee(employee_data: EmployeeCreate):
