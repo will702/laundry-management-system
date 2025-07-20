@@ -274,11 +274,14 @@ async def get_clients_with_stats(admin_id: str):
         # Get receipt statistics for this client
         receipts = await db.receipts.find({"client_id": client_dict["id"]}).to_list(1000)
         
-        active_receipts = [r for r in receipts if not r.get('is_deleted', False)]
+        all_receipts = [r for r in receipts if not r.get('is_deleted', False)]
+        # Only pending and ready receipts are considered "active"
+        active_receipts = [r for r in all_receipts if r.get('status') in ['pending', 'ready']]
         
         client_dict['total_receipts'] = len(receipts)
-        client_dict['active_receipts'] = len(active_receipts)
-        client_dict['total_spent'] = sum(r.get('total_amount', 0) for r in active_receipts)
+        client_dict['active_receipts'] = len(active_receipts)  # Only pending/ready
+        client_dict['completed_receipts'] = len([r for r in all_receipts if r.get('status') == 'completed'])
+        client_dict['total_spent'] = sum(r.get('total_amount', 0) for r in all_receipts)
         client_dict['last_visit'] = max([r.get('created_at') for r in receipts], default=None)
         
         clients_with_stats.append(client_dict)
