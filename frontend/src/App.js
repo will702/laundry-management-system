@@ -219,17 +219,12 @@ const ClientSelector = ({ onClientSelect, selectedClient }) => {
 // Receipt Creation Component
 const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   const [items, setItems] = useState([
-    { service: 'wash', item_type: 'shirt', quantity: 1, price_per_item: 10, total_price: 10 }
+    { service_item_id: '', service_name: '', item_type: 'shirt', quantity: 1, price_per_item: 10, total_price: 10 }
   ]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const serviceOptions = [
-    { value: 'wash', label: 'Cuci Saja' },
-    { value: 'dry_clean', label: 'Dry Clean' },
-    { value: 'wash_iron', label: 'Cuci & Setrika' },
-    { value: 'iron_only', label: 'Setrika Saja' }
-  ];
+  const [serviceItems, setServiceItems] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   const itemTypes = [
     { value: 'shirt', label: 'Kemeja' },
@@ -244,9 +239,47 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     { value: 'other', label: 'Lainnya' }
   ];
 
+  useEffect(() => {
+    loadServiceItems();
+  }, []);
+
+  const loadServiceItems = async () => {
+    try {
+      const response = await axios.get(`${API}/service-items?active_only=true`);
+      setServiceItems(response.data);
+      
+      // Update first item with first service if available
+      if (response.data.length > 0) {
+        const firstService = response.data[0];
+        setItems([{
+          service_item_id: firstService.id,
+          service_name: firstService.name,
+          item_type: 'shirt',
+          quantity: 1,
+          price_per_item: firstService.price,
+          total_price: firstService.price
+        }]);
+      }
+    } catch (err) {
+      console.error('Error loading service items:', err);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
+
   const updateItem = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
+    
+    // If service changed, update price and service name
+    if (field === 'service_item_id') {
+      const selectedService = serviceItems.find(s => s.id === value);
+      if (selectedService) {
+        newItems[index].service_name = selectedService.name;
+        newItems[index].price_per_item = selectedService.price;
+        newItems[index].total_price = newItems[index].quantity * selectedService.price;
+      }
+    }
     
     if (field === 'quantity' || field === 'price_per_item') {
       newItems[index].total_price = newItems[index].quantity * newItems[index].price_per_item;
@@ -256,12 +289,14 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   };
 
   const addItem = () => {
+    const firstService = serviceItems[0] || { id: '', name: '', price: 10 };
     setItems([...items, {
-      service: 'wash',
+      service_item_id: firstService.id,
+      service_name: firstService.name,
       item_type: 'shirt',
       quantity: 1,
-      price_per_item: 10,
-      total_price: 10
+      price_per_item: firstService.price,
+      total_price: firstService.price
     }]);
   };
 
@@ -278,10 +313,19 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   const createReceipt = async () => {
     setLoading(true);
     try {
+      // Convert items to the format expected by backend
+      const backendItems = items.map(item => ({
+        service: item.service_name,
+        item_type: item.item_type,
+        quantity: item.quantity,
+        price_per_item: item.price_per_item,
+        total_price: item.total_price
+      }));
+
       const receiptData = {
         client_id: client.id,
         employee_id: employee.id,
-        items,
+        items: backendItems,
         notes: notes || null
       };
 
@@ -353,7 +397,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                   <tbody>
                     ${printResponse.data.items.map(item => `
                       <tr>
-                        <td>${item.service.replace('_', ' ')}</td>
+                        <td>${item.service}</td>
                         <td>${item.item_type}</td>
                         <td style="text-align: center;">${item.quantity}</td>
                         <td style="text-align: right;">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
@@ -406,6 +450,29 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     }
   };
 
+  if (loadingServices) {
+    return <div className="text-center py-8">Memuat layanan...</div>;
+  }
+
+  if (serviceItems.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center py-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Belum Ada Layanan</h3>
+          <p className="text-gray-600 mb-6">
+            Anda perlu menambahkan layanan laundry terlebih dahulu sebelum membuat bon.
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            Pergi ke menu "🧽 Kelola Layanan" untuk menambahkan layanan seperti:
+            <br />• Cuci Kemeja - Rp 8.000
+            <br />• Setrika Celana - Rp 5.000
+            <br />• Dry Clean Jas - Rp 25.000
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
@@ -419,15 +486,17 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
       <div className="space-y-4">
         {items.map((item, index) => (
           <div key={index} className="grid grid-cols-12 gap-3 p-4 bg-gray-50 rounded-lg">
-            <div className="col-span-3">
+            <div className="col-span-4">
               <label className="block text-xs font-medium text-gray-700 mb-1">Layanan</label>
               <select
-                value={item.service}
-                onChange={(e) => updateItem(index, 'service', e.target.value)}
+                value={item.service_item_id}
+                onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
               >
-                {serviceOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                {serviceItems.map(service => (
+                  <option key={service.id} value={service.id}>
+                    {service.name} - Rp{service.price.toLocaleString('id-ID')}/{service.unit}
+                  </option>
                 ))}
               </select>
             </div>
@@ -445,7 +514,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
               </select>
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-1">
               <label className="block text-xs font-medium text-gray-700 mb-1">Qty</label>
               <input
                 type="number"
