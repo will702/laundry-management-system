@@ -795,8 +795,9 @@ async def export_receipts_to_excel(start_date: str, end_date: str, include_delet
         workbook = writer.book
         worksheet = writer.sheets['Laporan Transaksi']
         
-        # Format headers
-        header_font = workbook.create_font(bold=True)
+        # Format headers - fix: use Font from openpyxl.styles
+        from openpyxl.styles import Font
+        header_font = Font(bold=True)
         for cell in worksheet[1]:
             cell.font = header_font
         
