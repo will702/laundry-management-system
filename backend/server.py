@@ -197,14 +197,18 @@ async def create_receipt(receipt_data: ReceiptCreate):
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
     
-    # Calculate total amount
-    total_amount = sum(item.total_price for item in receipt_data.items)
+    # Calculate amounts
+    subtotal = sum(item.total_price for item in receipt_data.items)
+    discount_amount = subtotal * (receipt_data.discount_percent / 100)
+    total_amount = subtotal - discount_amount
     
     receipt_dict = receipt_data.dict()
     receipt_dict.update({
         "client_name": client["name"],
         "client_phone": client["phone"],
         "employee_name": employee["name"],
+        "subtotal": subtotal,
+        "discount_amount": discount_amount,
         "total_amount": total_amount
     })
     
