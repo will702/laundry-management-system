@@ -408,14 +408,18 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
 const RecentReceipts = ({ employee }) => {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState(null);
+  const [deleteReason, setDeleteReason] = useState('');
 
   useEffect(() => {
     loadReceipts();
-  }, []);
+  }, [showDeleted]);
 
   const loadReceipts = async () => {
     try {
-      const response = await axios.get(`${API}/receipts?limit=20`);
+      const response = await axios.get(`${API}/receipts?limit=50&include_deleted=${showDeleted}`);
       setReceipts(response.data);
     } catch (err) {
       console.error('Error loading receipts:', err);
@@ -430,6 +434,42 @@ const RecentReceipts = ({ employee }) => {
       loadReceipts(); // Refresh
     } catch (err) {
       console.error('Error updating status:', err);
+      alert('Error updating status. Please try again.');
+    }
+  };
+
+  const openDeleteModal = (receipt) => {
+    setReceiptToDelete(receipt);
+    setDeleteModalOpen(true);
+    setDeleteReason('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setReceiptToDelete(null);
+    setDeleteReason('');
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteReason.trim()) {
+      alert('Please provide a reason for deletion');
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/receipts/${receiptToDelete.id}`, {
+        data: {
+          employee_id: employee.id,
+          deletion_reason: deleteReason
+        }
+      });
+      
+      closeDeleteModal();
+      loadReceipts(); // Refresh
+      alert('Receipt deleted successfully');
+    } catch (err) {
+      console.error('Error deleting receipt:', err);
+      alert('Error deleting receipt. Please try again.');
     }
   };
 
@@ -438,8 +478,13 @@ const RecentReceipts = ({ employee }) => {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'ready': return 'bg-blue-100 text-blue-800';
       case 'completed': return 'bg-green-100 text-green-800';
+      case 'deleted': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const formatDateTime = (dateString) => {
+    return new Date(dateString).toLocaleString();
   };
 
   if (loading) {
@@ -448,23 +493,45 @@ const RecentReceipts = ({ employee }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Receipts</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Receipt Management</h2>
+        
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={showDeleted}
+              onChange={(e) => setShowDeleted(e.target.checked)}
+              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <span className="text-sm text-gray-700">Show Deleted</span>
+          </label>
+        </div>
+      </div>
       
       <div className="space-y-4">
         {receipts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No receipts found. Create your first receipt!
+            {showDeleted ? 'No deleted receipts found.' : 'No receipts found. Create your first receipt!'}
           </div>
         ) : (
           receipts.map((receipt) => (
-            <div key={receipt.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={receipt.id} className={`border rounded-lg p-4 transition-shadow ${
+              receipt.is_deleted ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:shadow-md'
+            }`}>
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-lg">{receipt.client_name}</h3>
                   <p className="text-sm text-gray-600">{receipt.client_phone}</p>
                   <p className="text-xs text-gray-500">
-                    Created by: {receipt.employee_name} • {new Date(receipt.created_at).toLocaleDateString()}
+                    Created by: {receipt.employee_name} • {formatDateTime(receipt.created_at)}
                   </p>
+                  {receipt.is_deleted && receipt.deleted_at && (
+                    <p className="text-xs text-red-600 font-medium">
+                      🗑️ Deleted by: {receipt.deleted_by_employee_name} • {formatDateTime(receipt.deleted_at)}
+                      {receipt.deletion_reason && ` • Reason: ${receipt.deletion_reason}`}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="text-xl font-bold text-green-600">${receipt.total_amount.toFixed(2)}</div>
@@ -492,28 +559,92 @@ const RecentReceipts = ({ employee }) => {
                 </div>
               )}
 
-              <div className="flex gap-2">
-                {receipt.status === 'pending' && (
-                  <button
-                    onClick={() => updateStatus(receipt.id, 'ready')}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                  >
-                    Mark Ready
-                  </button>
-                )}
-                {receipt.status === 'ready' && (
-                  <button
-                    onClick={() => updateStatus(receipt.id, 'completed')}
-                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                  >
-                    Complete
-                  </button>
-                )}
-              </div>
+              {!receipt.is_deleted && (
+                <div className="flex gap-2 flex-wrap">
+                  {receipt.status === 'pending' && (
+                    <button
+                      onClick={() => updateStatus(receipt.id, 'ready')}
+                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      Mark Ready
+                    </button>
+                  )}
+                  {receipt.status === 'ready' && (
+                    <button
+                      onClick={() => updateStatus(receipt.id, 'completed')}
+                      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                    >
+                      Complete
+                    </button>
+                  )}
+                  {receipt.status !== 'completed' && (
+                    <button
+                      onClick={() => openDeleteModal(receipt)}
+                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Receipt</h3>
+              
+              <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>⚠️ Important:</strong> This action will be tracked for audit purposes. 
+                  The receipt will be marked as deleted but kept in the system for fraud prevention.
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Receipt:</strong> {receiptToDelete?.client_name} - ${receiptToDelete?.total_amount.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for deletion: <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  placeholder="e.g., Wrong client, incorrect amount, duplicate entry..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  rows="3"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={confirmDelete}
+                  disabled={!deleteReason.trim()}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Delete Receipt
+                </button>
+                <button
+                  onClick={closeDeleteModal}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
