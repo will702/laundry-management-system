@@ -2642,14 +2642,10 @@ function App() {
     );
   }
 
-  const isAdmin = currentEmployee.role === 'admin';
-
-  // Navigation Bar Component
+  // Navigation Bar Component (Remove undo/redo, keep back/forward)
   const NavigationBar = () => {
     const canGoBack = historyIndex > 0;
     const canGoForward = historyIndex < navigationHistory.length - 1;
-    const canUndo = actionIndex >= 0;
-    const canRedo = actionIndex < actionHistory.length - 1;
 
     return (
       <div className="bg-gray-100 border-b px-4 py-2 flex items-center justify-between">
@@ -2702,38 +2698,8 @@ function App() {
           </span>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={undoAction}
-            disabled={!canUndo}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
-              canUndo 
-                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-            title={canUndo ? `Batal: ${actionHistory[actionIndex]?.description}` : 'Tidak ada aksi untuk dibatalkan'}
-          >
-            ↶ Undo
-          </button>
-          
-          <button
-            onClick={redoAction}
-            disabled={!canRedo}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
-              canRedo 
-                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-            title={canRedo ? `Ulangi: ${actionHistory[actionIndex + 1]?.description}` : 'Tidak ada aksi untuk diulangi'}
-          >
-            ↷ Redo
-          </button>
-          
-          <div className="text-xs text-gray-500 ml-2">
-            {actionHistory.length > 0 && `${actionIndex + 1}/${actionHistory.length}`}
-          </div>
-        </div>
+        {/* Empty space where undo/redo used to be */}
+        <div className="w-32"></div>
       </div>
     );
   };
