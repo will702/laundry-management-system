@@ -846,8 +846,6 @@ const LaundrySettings = ({ employee }) => {
   );
 };
 
-};
-
 // Service Items Management Component
 const ServiceItemsManagement = ({ employee }) => {
   const [serviceItems, setServiceItems] = useState([]);
