@@ -2205,7 +2205,7 @@ const AuditDashboard = ({ employee }) => {
                         {receipt.items.map((item, index) => (
                           <div key={index} className="text-sm text-gray-600 flex justify-between">
                             <span>{item.quantity}x {item.item_type} ({item.service})</span>
-                            <span>${item.total_price.toFixed(2)}</span>
+                            <span>Rp{item.total_price.toLocaleString('id-ID')}</span>
                           </div>
                         ))}
                       </div>
