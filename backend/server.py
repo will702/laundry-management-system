@@ -67,10 +67,15 @@ class Receipt(BaseModel):
     employee_name: str  # denormalized for audit trail
     items: List[ReceiptItem]
     total_amount: float
-    status: str = "pending"  # pending, ready, completed
+    status: str = "pending"  # pending, ready, completed, deleted
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
+    deleted_by_employee_id: Optional[str] = None
+    deleted_by_employee_name: Optional[str] = None
+    deletion_reason: Optional[str] = None
 
 class ReceiptCreate(BaseModel):
     client_id: str
