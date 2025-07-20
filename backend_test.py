@@ -1,0 +1,354 @@
+#!/usr/bin/env python3
+"""
+LaundryPro Backend API Testing Suite
+Tests all core functionality including employee management, client management, 
+receipt creation, and fraud prevention audit system.
+"""
+
+import requests
+import json
+from datetime import datetime, timezone
+import sys
+
+# Backend URL from frontend/.env
+BASE_URL = "https://a39059ba-d48c-49cb-8649-91345dfd94e9.preview.emergentagent.com/api"
+
+class LaundryProTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.employees = []
+        self.clients = []
+        self.receipts = []
+        self.test_results = {
+            "passed": 0,
+            "failed": 0,
+            "errors": []
+        }
+
+    def log_test(self, test_name, success, message=""):
+        """Log test results"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name}")
+        if message:
+            print(f"   {message}")
+        
+        if success:
+            self.test_results["passed"] += 1
+        else:
+            self.test_results["failed"] += 1
+            self.test_results["errors"].append(f"{test_name}: {message}")
+
+    def test_health_check(self):
+        """Test basic connectivity"""
+        try:
+            response = self.session.get(f"{BASE_URL}/health")
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test("Health Check", True, f"Status: {data.get('status')}")
+                return True
+            else:
+                self.log_test("Health Check", False, f"Status code: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Connection error: {str(e)}")
+            return False
+
+    def test_employee_creation(self):
+        """Test creating employees with different PINs"""
+        employees_data = [
+            {"name": "Sarah Johnson", "pin": "1234", "role": "manager"},
+            {"name": "Mike Chen", "pin": "5678", "role": "employee"},
+            {"name": "Lisa Rodriguez", "pin": "9999", "role": "employee"}
+        ]
+        
+        for emp_data in employees_data:
+            try:
+                response = self.session.post(f"{BASE_URL}/employees", json=emp_data)
+                if response.status_code == 200:
+                    employee = response.json()
+                    self.employees.append(employee)
+                    self.log_test(f"Create Employee: {emp_data['name']}", True, 
+                                f"ID: {employee['id']}, PIN: {emp_data['pin']}")
+                else:
+                    self.log_test(f"Create Employee: {emp_data['name']}", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Employee: {emp_data['name']}", False, f"Error: {str(e)}")
+
+    def test_employee_login(self):
+        """Test PIN-based authentication"""
+        # Test correct PINs
+        test_pins = ["1234", "5678", "9999"]
+        for pin in test_pins:
+            try:
+                response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": pin})
+                if response.status_code == 200:
+                    employee = response.json()
+                    self.log_test(f"Employee Login PIN {pin}", True, 
+                                f"Logged in as: {employee['name']}")
+                else:
+                    self.log_test(f"Employee Login PIN {pin}", False, 
+                                f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test(f"Employee Login PIN {pin}", False, f"Error: {str(e)}")
+
+        # Test incorrect PIN
+        try:
+            response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": "0000"})
+            if response.status_code == 401:
+                self.log_test("Employee Login Invalid PIN", True, "Correctly rejected invalid PIN")
+            else:
+                self.log_test("Employee Login Invalid PIN", False, 
+                            f"Should reject invalid PIN, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Employee Login Invalid PIN", False, f"Error: {str(e)}")
+
+    def test_client_creation(self):
+        """Test creating clients"""
+        clients_data = [
+            {"name": "Emma Thompson", "phone": "(555) 123-4567"},
+            {"name": "David Wilson", "phone": "(555) 987-6543"},
+            {"name": "Maria Garcia", "phone": "(555) 456-7890"},
+            {"name": "James Brown", "phone": "(555) 321-0987"}
+        ]
+        
+        for client_data in clients_data:
+            try:
+                response = self.session.post(f"{BASE_URL}/clients", json=client_data)
+                if response.status_code == 200:
+                    client = response.json()
+                    self.clients.append(client)
+                    self.log_test(f"Create Client: {client_data['name']}", True, 
+                                f"ID: {client['id']}, Phone: {client_data['phone']}")
+                else:
+                    self.log_test(f"Create Client: {client_data['name']}", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Client: {client_data['name']}", False, f"Error: {str(e)}")
+
+    def test_client_search(self):
+        """Test client search functionality"""
+        search_terms = ["Emma", "555", "Garcia"]
+        
+        for term in search_terms:
+            try:
+                response = self.session.get(f"{BASE_URL}/clients/search", params={"q": term})
+                if response.status_code == 200:
+                    results = response.json()
+                    self.log_test(f"Client Search: '{term}'", True, 
+                                f"Found {len(results)} results")
+                else:
+                    self.log_test(f"Client Search: '{term}'", False, 
+                                f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test(f"Client Search: '{term}'", False, f"Error: {str(e)}")
+
+    def test_receipt_creation(self):
+        """Test creating detailed receipts with multiple line items"""
+        if not self.employees or not self.clients:
+            self.log_test("Receipt Creation", False, "No employees or clients available")
+            return
+
+        # Create receipts with different service combinations
+        receipt_scenarios = [
+            {
+                "client_idx": 0,
+                "employee_idx": 0,
+                "items": [
+                    {"service": "wash", "item_type": "shirt", "quantity": 3, "price_per_item": 8.50, "total_price": 25.50},
+                    {"service": "dry_clean", "item_type": "suit", "quantity": 1, "price_per_item": 15.00, "total_price": 15.00},
+                    {"service": "iron", "item_type": "pants", "quantity": 2, "price_per_item": 5.00, "total_price": 10.00}
+                ],
+                "notes": "Customer requested extra starch on shirts"
+            },
+            {
+                "client_idx": 1,
+                "employee_idx": 1,
+                "items": [
+                    {"service": "wash", "item_type": "dress", "quantity": 2, "price_per_item": 12.00, "total_price": 24.00},
+                    {"service": "dry_clean", "item_type": "coat", "quantity": 1, "price_per_item": 20.00, "total_price": 20.00}
+                ],
+                "notes": "Delicate fabric - handle with care"
+            },
+            {
+                "client_idx": 2,
+                "employee_idx": 2,
+                "items": [
+                    {"service": "wash", "item_type": "jeans", "quantity": 4, "price_per_item": 6.00, "total_price": 24.00},
+                    {"service": "iron", "item_type": "shirt", "quantity": 5, "price_per_item": 4.00, "total_price": 20.00}
+                ]
+            }
+        ]
+
+        for i, scenario in enumerate(receipt_scenarios):
+            try:
+                receipt_data = {
+                    "client_id": self.clients[scenario["client_idx"]]["id"],
+                    "employee_id": self.employees[scenario["employee_idx"]]["id"],
+                    "items": scenario["items"],
+                    "notes": scenario.get("notes")
+                }
+                
+                response = self.session.post(f"{BASE_URL}/receipts", json=receipt_data)
+                if response.status_code == 200:
+                    receipt = response.json()
+                    self.receipts.append(receipt)
+                    
+                    # Verify audit trail information
+                    expected_total = sum(item["total_price"] for item in scenario["items"])
+                    audit_check = (
+                        receipt.get("employee_id") == self.employees[scenario["employee_idx"]]["id"] and
+                        receipt.get("employee_name") == self.employees[scenario["employee_idx"]]["name"] and
+                        receipt.get("client_name") == self.clients[scenario["client_idx"]]["name"] and
+                        abs(receipt.get("total_amount", 0) - expected_total) < 0.01
+                    )
+                    
+                    self.log_test(f"Create Receipt #{i+1}", True, 
+                                f"ID: {receipt['id']}, Total: ${receipt['total_amount']:.2f}, "
+                                f"Employee: {receipt['employee_name']}, Audit Trail: {'✓' if audit_check else '✗'}")
+                else:
+                    self.log_test(f"Create Receipt #{i+1}", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Receipt #{i+1}", False, f"Error: {str(e)}")
+
+    def test_receipt_status_updates(self):
+        """Test receipt status updates with employee tracking"""
+        if not self.receipts or not self.employees:
+            self.log_test("Receipt Status Updates", False, "No receipts or employees available")
+            return
+
+        status_transitions = ["ready", "completed"]
+        
+        for i, receipt in enumerate(self.receipts[:2]):  # Test first 2 receipts
+            for status in status_transitions:
+                try:
+                    # Use different employee for status update to test audit trail
+                    employee_id = self.employees[(i + 1) % len(self.employees)]["id"]
+                    
+                    response = self.session.put(
+                        f"{BASE_URL}/receipts/{receipt['id']}/status",
+                        params={"status": status, "employee_id": employee_id}
+                    )
+                    
+                    if response.status_code == 200:
+                        self.log_test(f"Update Receipt {i+1} to {status}", True, 
+                                    f"Receipt ID: {receipt['id']}")
+                    else:
+                        self.log_test(f"Update Receipt {i+1} to {status}", False, 
+                                    f"Status: {response.status_code}, Response: {response.text}")
+                except Exception as e:
+                    self.log_test(f"Update Receipt {i+1} to {status}", False, f"Error: {str(e)}")
+
+    def test_audit_endpoints(self):
+        """Test fraud prevention audit system"""
+        
+        # Test receipts by employee endpoint
+        try:
+            response = self.session.get(f"{BASE_URL}/audit/receipts-by-employee")
+            if response.status_code == 200:
+                audit_data = response.json()
+                self.log_test("Audit: Receipts by Employee", True, 
+                            f"Found data for {len(audit_data)} employees")
+                
+                # Verify audit data contains required fields
+                for emp_data in audit_data:
+                    required_fields = ["employee_name", "total_receipts", "total_amount", "receipts"]
+                    if all(field in emp_data for field in required_fields):
+                        self.log_test(f"Audit Data Validation: {emp_data.get('employee_name')}", True,
+                                    f"Receipts: {emp_data['total_receipts']}, Amount: ${emp_data['total_amount']:.2f}")
+                    else:
+                        self.log_test(f"Audit Data Validation: {emp_data.get('employee_name', 'Unknown')}", False,
+                                    "Missing required audit fields")
+            else:
+                self.log_test("Audit: Receipts by Employee", False, 
+                            f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Audit: Receipts by Employee", False, f"Error: {str(e)}")
+
+        # Test daily summary endpoint
+        try:
+            response = self.session.get(f"{BASE_URL}/audit/daily-summary")
+            if response.status_code == 200:
+                summary_data = response.json()
+                self.log_test("Audit: Daily Summary", True, 
+                            f"Found {len(summary_data)} days of data")
+            else:
+                self.log_test("Audit: Daily Summary", False, 
+                            f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Audit: Daily Summary", False, f"Error: {str(e)}")
+
+    def test_get_receipts(self):
+        """Test retrieving receipts with employee filtering"""
+        try:
+            # Test getting all receipts
+            response = self.session.get(f"{BASE_URL}/receipts")
+            if response.status_code == 200:
+                all_receipts = response.json()
+                self.log_test("Get All Receipts", True, f"Retrieved {len(all_receipts)} receipts")
+            else:
+                self.log_test("Get All Receipts", False, f"Status: {response.status_code}")
+
+            # Test filtering by employee
+            if self.employees:
+                employee_id = self.employees[0]["id"]
+                response = self.session.get(f"{BASE_URL}/receipts", params={"employee_id": employee_id})
+                if response.status_code == 200:
+                    filtered_receipts = response.json()
+                    self.log_test("Get Receipts by Employee", True, 
+                                f"Retrieved {len(filtered_receipts)} receipts for employee")
+                else:
+                    self.log_test("Get Receipts by Employee", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Receipts", False, f"Error: {str(e)}")
+
+    def run_all_tests(self):
+        """Run complete test suite"""
+        print("=" * 60)
+        print("LaundryPro Backend API Test Suite")
+        print("=" * 60)
+        
+        # Test in logical order
+        if not self.test_health_check():
+            print("❌ Backend is not accessible. Stopping tests.")
+            return False
+
+        print("\n🔧 Testing Employee Management & PIN Authentication...")
+        self.test_employee_creation()
+        self.test_employee_login()
+
+        print("\n👥 Testing Client Management...")
+        self.test_client_creation()
+        self.test_client_search()
+
+        print("\n🧾 Testing Receipt Creation & Management...")
+        self.test_receipt_creation()
+        self.test_receipt_status_updates()
+        self.test_get_receipts()
+
+        print("\n🔍 Testing Fraud Prevention Audit System...")
+        self.test_audit_endpoints()
+
+        # Print summary
+        print("\n" + "=" * 60)
+        print("TEST SUMMARY")
+        print("=" * 60)
+        print(f"✅ Passed: {self.test_results['passed']}")
+        print(f"❌ Failed: {self.test_results['failed']}")
+        
+        if self.test_results['errors']:
+            print("\nFAILED TESTS:")
+            for error in self.test_results['errors']:
+                print(f"  • {error}")
+
+        success_rate = (self.test_results['passed'] / 
+                       (self.test_results['passed'] + self.test_results['failed'])) * 100
+        print(f"\nSuccess Rate: {success_rate:.1f}%")
+        
+        return self.test_results['failed'] == 0
+
+if __name__ == "__main__":
+    tester = LaundryProTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)
