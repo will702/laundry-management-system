@@ -2421,6 +2421,100 @@ function App() {
 
   const isAdmin = currentEmployee.role === 'admin';
 
+  // Navigation Bar Component
+  const NavigationBar = () => {
+    const canGoBack = historyIndex > 0;
+    const canGoForward = historyIndex < navigationHistory.length - 1;
+    const canUndo = actionIndex >= 0;
+    const canRedo = actionIndex < actionHistory.length - 1;
+
+    return (
+      <div className="bg-gray-100 border-b px-4 py-2 flex items-center justify-between">
+        {/* Navigation Controls */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={goBack}
+            disabled={!canGoBack}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              canGoBack 
+                ? 'bg-white text-gray-700 hover:bg-gray-50 border' 
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            title="Kembali"
+          >
+            ← Kembali
+          </button>
+          
+          <button
+            onClick={goForward}
+            disabled={!canGoForward}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              canGoForward 
+                ? 'bg-white text-gray-700 hover:bg-gray-50 border' 
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            title="Maju"
+          >
+            Maju →
+          </button>
+          
+          <div className="text-xs text-gray-500 ml-2">
+            {navigationHistory.length > 0 && `${historyIndex + 1}/${navigationHistory.length}`}
+          </div>
+        </div>
+
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <span>LaundryPro</span>
+          <span>/</span>
+          <span className="text-indigo-600 font-medium">
+            {activeTab === 'create' && selectedClient ? `Bon Baru - ${selectedClient.name}` :
+             activeTab === 'create' ? 'Bon Baru' :
+             activeTab === 'receipts' ? 'Semua Bon' :
+             activeTab === 'audit' ? 'Audit' :
+             activeTab === 'services' ? 'Kelola Layanan' :
+             activeTab === 'clients' ? 'Manajemen Pelanggan' :
+             activeTab === 'settings' ? 'Pengaturan' :
+             activeTab === 'reports' ? 'Laporan' : activeTab}
+          </span>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={undoAction}
+            disabled={!canUndo}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              canUndo 
+                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            title={canUndo ? `Batal: ${actionHistory[actionIndex]?.description}` : 'Tidak ada aksi untuk dibatalkan'}
+          >
+            ↶ Undo
+          </button>
+          
+          <button
+            onClick={redoAction}
+            disabled={!canRedo}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              canRedo 
+                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            title={canRedo ? `Ulangi: ${actionHistory[actionIndex + 1]?.description}` : 'Tidak ada aksi untuk diulangi'}
+          >
+            ↷ Redo
+          </button>
+          
+          <div className="text-xs text-gray-500 ml-2">
+            {actionHistory.length > 0 && `${actionIndex + 1}/${actionHistory.length}`}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
