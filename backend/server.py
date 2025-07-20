@@ -717,6 +717,165 @@ async def get_shareable_receipt(receipt_id: str):
         "business_info": settings
     }
 
+# Excel Export endpoint
+@api_router.get("/reports/excel-export")
+async def export_receipts_to_excel(start_date: str, end_date: str, include_deleted: bool = False):
+    """
+    Export receipts to Excel format
+    start_date and end_date should be in YYYY-MM-DD format
+    """
+    try:
+        # Parse dates
+        start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0, tzinfo=timezone.utc)
+        end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    # Build query
+    query = {
+        "created_at": {"$gte": start_dt, "$lte": end_dt}
+    }
+    
+    if not include_deleted:
+        query["is_deleted"] = {"$ne": True}
+    
+    # Get receipts from database
+    receipts = await db.receipts.find(query).sort("created_at", 1).to_list(10000)
+    
+    if not receipts:
+        raise HTTPException(status_code=404, detail="No receipts found for the specified date range")
+    
+    # Prepare data for Excel
+    excel_data = []
+    for receipt in receipts:
+        # Get status in Indonesian
+        status_map = {
+            'pending': 'Menunggu',
+            'ready': 'Siap',
+            'completed': 'Selesai',
+            'deleted': 'Dihapus'
+        }
+        
+        # Format items for display
+        items_text = "; ".join([
+            f"{item['quantity']}x {item['item_type']} ({item['service']})"
+            for item in receipt.get('items', [])
+        ])
+        
+        excel_data.append({
+            'No.': len(excel_data) + 1,
+            'ID Transaksi': receipt['id'][-8:].upper(),
+            'Tanggal': receipt['created_at'].strftime('%d/%m/%Y %H:%M'),
+            'Nama Pelanggan': receipt['client_name'],
+            'Telepon': receipt['client_phone'],
+            'Item Laundry': items_text,
+            'Karyawan': receipt['employee_name'],
+            'Subtotal (Rp)': receipt.get('subtotal', receipt.get('total_amount', 0)),
+            'Diskon (%)': receipt.get('discount_percent', 0),
+            'Jumlah Diskon (Rp)': receipt.get('discount_amount', 0),
+            'Total Bayar (Rp)': receipt['total_amount'],
+            'Status': status_map.get(receipt['status'], receipt['status']),
+            'Catatan': receipt.get('notes', ''),
+            'Dihapus': 'Ya' if receipt.get('is_deleted', False) else 'Tidak',
+            'Alasan Hapus': receipt.get('deletion_reason', '') if receipt.get('is_deleted', False) else ''
+        })
+    
+    # Create DataFrame
+    df = pd.DataFrame(excel_data)
+    
+    # Create Excel file in memory
+    excel_buffer = BytesIO()
+    
+    # Create Excel writer with formatting
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+        # Write main data
+        df.to_excel(writer, sheet_name='Laporan Transaksi', index=False)
+        
+        # Get workbook and worksheet for formatting
+        workbook = writer.book
+        worksheet = writer.sheets['Laporan Transaksi']
+        
+        # Format headers
+        header_font = workbook.create_font(bold=True)
+        for cell in worksheet[1]:
+            cell.font = header_font
+        
+        # Auto-adjust column widths
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Add summary sheet
+        summary_data = []
+        total_receipts = len([r for r in receipts if not r.get('is_deleted', False)])
+        total_deleted = len([r for r in receipts if r.get('is_deleted', False)])
+        total_amount = sum([r['total_amount'] for r in receipts if not r.get('is_deleted', False)])
+        total_discount = sum([r.get('discount_amount', 0) for r in receipts if not r.get('is_deleted', False)])
+        
+        summary_data.append(['RINGKASAN LAPORAN', ''])
+        summary_data.append(['Periode', f"{start_date} s/d {end_date}"])
+        summary_data.append(['Total Transaksi', total_receipts])
+        summary_data.append(['Transaksi Dihapus', total_deleted])
+        summary_data.append(['Total Pendapatan', f"Rp {total_amount:,.0f}"])
+        summary_data.append(['Total Diskon', f"Rp {total_discount:,.0f}"])
+        summary_data.append(['', ''])
+        
+        # Employee summary
+        employee_summary = {}
+        for receipt in receipts:
+            if receipt.get('is_deleted', False):
+                continue
+            emp_name = receipt['employee_name']
+            if emp_name not in employee_summary:
+                employee_summary[emp_name] = {'count': 0, 'total': 0}
+            employee_summary[emp_name]['count'] += 1
+            employee_summary[emp_name]['total'] += receipt['total_amount']
+        
+        summary_data.append(['RINGKASAN PER KARYAWAN', ''])
+        for emp_name, data in employee_summary.items():
+            summary_data.append([emp_name, f"{data['count']} transaksi - Rp {data['total']:,.0f}"])
+        
+        # Write summary to separate sheet
+        summary_df = pd.DataFrame(summary_data, columns=['Item', 'Nilai'])
+        summary_df.to_excel(writer, sheet_name='Ringkasan', index=False)
+        
+        # Format summary sheet
+        summary_ws = writer.sheets['Ringkasan']
+        for cell in summary_ws[1]:
+            cell.font = header_font
+        
+        # Auto-adjust summary column widths
+        for column in summary_ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            summary_ws.column_dimensions[column_letter].width = adjusted_width
+    
+    excel_buffer.seek(0)
+    
+    # Generate filename
+    filename = f"Laporan_Laundry_{start_date}_to_{end_date}.xlsx"
+    
+    return Response(
+        content=excel_buffer.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 # Health check
 @api_router.get("/health")
 async def health_check():
