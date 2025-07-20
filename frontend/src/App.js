@@ -2184,7 +2184,7 @@ const AuditDashboard = ({ employee }) => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-red-600">${receipt.total_amount.toFixed(2)}</div>
+                        <div className="text-xl font-bold text-red-600">Rp{receipt.total_amount.toLocaleString('id-ID')}</div>
                         <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                           DELETED
                         </span>
