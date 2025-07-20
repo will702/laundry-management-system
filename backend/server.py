@@ -452,7 +452,10 @@ async def get_print_receipt(receipt_id: str):
     
     return print_data
 
-# Include the router in the main app
+# Health check
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 app.include_router(api_router)
 
 app.add_middleware(
