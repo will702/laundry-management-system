@@ -241,6 +241,7 @@ test_plan:
     - "Client management (CRUD operations)"
     - "Detailed receipt creation with audit trail"
     - "Audit endpoints for fraud prevention"
+    - "Print receipt functionality"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
