@@ -2737,15 +2737,39 @@ function App() {
           <div className="space-y-4 sm:space-y-8">
             {!selectedClient ? (
               <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Pilih atau Tambah Pelanggan</h2>
-                <ClientSelector onClientSelect={setSelectedClient} selectedClient={selectedClient} />
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Pilih atau Tambah Pelanggan</h2>
+                  {selectedClient && (
+                    <button
+                      onClick={() => setSelectedClient(null)}
+                      className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                    >
+                      ← Pilih Ulang
+                    </button>
+                  )}
+                </div>
+                <ClientSelector onClientSelect={handleClientSelect} selectedClient={selectedClient} />
               </div>
             ) : (
-              <ReceiptForm 
-                employee={currentEmployee} 
-                client={selectedClient} 
-                onReceiptCreated={handleReceiptCreated}
-              />
+              <>
+                <div className="flex items-center space-x-4 mb-4">
+                  <button
+                    onClick={() => setSelectedClient(null)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
+                  >
+                    <span>←</span>
+                    <span>Kembali ke Pilih Pelanggan</span>
+                  </button>
+                  <div className="text-lg text-gray-800">
+                    Membuat bon untuk: <span className="font-bold text-indigo-600">{selectedClient.name}</span>
+                  </div>
+                </div>
+                <ReceiptForm 
+                  employee={currentEmployee} 
+                  client={selectedClient} 
+                  onReceiptCreated={handleReceiptCreated}
+                />
+              </>
             )}
           </div>
         )}
