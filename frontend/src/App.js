@@ -1241,8 +1241,6 @@ const ServiceItemsManagement = ({ employee }) => {
   );
 };
 
-};
-
 // Excel Export Report Component
 const ExcelReportExport = ({ employee }) => {
   const [startDate, setStartDate] = useState('');
