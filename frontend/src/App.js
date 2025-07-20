@@ -133,31 +133,31 @@ const ClientSelector = ({ onClientSelect, selectedClient }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search clients by name or phone..."
+          placeholder="Cari pelanggan berdasarkan nama atau telepon..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         />
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
         >
-          Add New
+          Tambah Baru
         </button>
       </div>
 
       {showAddForm && (
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-medium mb-3">Add New Client</h3>
+          <h3 className="font-medium mb-3">Tambah Pelanggan Baru</h3>
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
-              placeholder="Client Name"
+              placeholder="Nama Pelanggan"
               value={newClient.name}
               onChange={(e) => setNewClient({...newClient, name: e.target.value})}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
             />
             <input
               type="text"
-              placeholder="Phone Number"
+              placeholder="Nomor Telepon"
               value={newClient.phone}
               onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -169,13 +169,13 @@ const ClientSelector = ({ onClientSelect, selectedClient }) => {
               disabled={!newClient.name || !newClient.phone}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
             >
-              Add Client
+              Tambah Pelanggan
             </button>
             <button
               onClick={() => setShowAddForm(false)}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
             >
-              Cancel
+              Batal
             </button>
           </div>
         </div>
@@ -192,7 +192,7 @@ const ClientSelector = ({ onClientSelect, selectedClient }) => {
               onClick={() => onClientSelect(null)}
               className="text-indigo-600 hover:text-indigo-800"
             >
-              Change
+              Ubah
             </button>
           </div>
         </div>
