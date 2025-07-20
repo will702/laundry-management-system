@@ -239,7 +239,7 @@ async def get_daily_summary():
             "$match": {
                 "created_at": {
                     "$gte": datetime.now(timezone.utc).replace(hour=0, minute=0, second=0) - 
-                           datetime.timedelta(days=7)
+                           timedelta(days=7)
                 }
             }
         },
