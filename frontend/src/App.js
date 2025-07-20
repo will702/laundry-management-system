@@ -1959,20 +1959,31 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-indigo-600">🧺 LaundryPro</h1>
-              <span className="text-gray-500">|</span>
-              <span className="text-gray-700">Selamat datang, {currentEmployee.name}</span>
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <h1 className="text-lg sm:text-2xl font-bold text-indigo-600">🧺 LaundryPro</h1>
+              <span className="hidden sm:inline text-gray-500">|</span>
+              <span className="hidden sm:inline text-gray-700 text-sm">Selamat datang, {currentEmployee.name}</span>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Navigation - Hidden on desktop */}
+              <div className="sm:hidden">
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
+                >
+                  Keluar
+                </button>
+              </div>
+              
+              {/* Desktop Navigation - Hidden on mobile */}
+              <div className="hidden sm:flex space-x-1 bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setActiveTab('create')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'create' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -1982,7 +1993,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => setActiveTab('receipts')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'receipts' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -1992,37 +2003,37 @@ function App() {
                 </button>
                 <button
                   onClick={() => setActiveTab('audit')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'audit' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  🔍 Jejak Audit
+                  🔍 Audit
                 </button>
                 <button
                   onClick={() => setActiveTab('services')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'services' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  🧽 Kelola Layanan
+                  🧽 Layanan
                 </button>
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'settings' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  ⚙️ Pengaturan
+                  ⚙️ Settings
                 </button>
                 <button
                   onClick={() => setActiveTab('reports')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'reports' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -2034,7 +2045,7 @@ function App() {
               
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                className="hidden sm:block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
               >
                 Keluar
               </button>
@@ -2043,12 +2054,73 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile Bottom Navigation */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-10">
+        <div className="flex justify-around">
+          <button
+            onClick={() => setActiveTab('create')}
+            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+              activeTab === 'create' 
+                ? 'text-indigo-600' 
+                : 'text-gray-600'
+            }`}
+          >
+            <span className="text-lg mb-1">📝</span>
+            <span>Bon Baru</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('receipts')}
+            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+              activeTab === 'receipts' 
+                ? 'text-indigo-600' 
+                : 'text-gray-600'
+            }`}
+          >
+            <span className="text-lg mb-1">📋</span>
+            <span>Semua Bon</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+              activeTab === 'audit' 
+                ? 'text-indigo-600' 
+                : 'text-gray-600'
+            }`}
+          >
+            <span className="text-lg mb-1">🔍</span>
+            <span>Audit</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('services')}
+            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+              activeTab === 'services' 
+                ? 'text-indigo-600' 
+                : 'text-gray-600'
+            }`}
+          >
+            <span className="text-lg mb-1">🧽</span>
+            <span>Layanan</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
+              activeTab === 'reports' 
+                ? 'text-indigo-600' 
+                : 'text-gray-600'
+            }`}
+          >
+            <span className="text-lg mb-1">📊</span>
+            <span>Laporan</span>
+          </button>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-20 sm:pb-8">
         {activeTab === 'create' && (
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {!selectedClient ? (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Pilih atau Tambah Pelanggan</h2>
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Pilih atau Tambah Pelanggan</h2>
                 <ClientSelector onClientSelect={setSelectedClient} selectedClient={selectedClient} />
               </div>
             ) : (
