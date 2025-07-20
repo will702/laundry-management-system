@@ -631,10 +631,10 @@ const PrintReceipt = ({ receiptData, onClose }) => {
 
           {/* Footer */}
           <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-4">
-            <p className="mb-2">Thank you for choosing LaundryPro!</p>
-            <p className="mb-1">Please keep this receipt for pickup</p>
-            <p className="mb-1">Questions? Call us at (555) LAUNDRY</p>
-            <p className="text-xs">Printed on: {formatDateTime(receiptData.print_timestamp)}</p>
+            {receiptData.footer_notes.split('•').map((note, index) => (
+              <p key={index} className="mb-1">{note.trim()}</p>
+            ))}
+            <p className="text-xs mt-2">Dicetak pada: {formatDateTime(receiptData.print_timestamp)}</p>
           </div>
 
           {/* Deleted Receipt Warning */}
