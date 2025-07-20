@@ -463,7 +463,15 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         }
       }
       
-      onReceiptCreated();
+      // Call onReceiptCreated with receipt data for tracking
+      if (onReceiptCreated) {
+        onReceiptCreated({
+          id: response.data.id,
+          client_name: client.name,
+          total_amount: response.data.total_amount,
+          items: items
+        });
+      }
     } catch (err) {
       console.error('Error creating receipt:', err);
       alert('Error membuat bon. Silakan coba lagi.');
