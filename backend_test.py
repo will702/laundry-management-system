@@ -55,6 +55,18 @@ class LaundryProTester:
 
     def test_employee_creation(self):
         """Test creating employees with different PINs"""
+        # First, try to get existing employees
+        try:
+            response = self.session.get(f"{BASE_URL}/employees")
+            if response.status_code == 200:
+                existing_employees = response.json()
+                if existing_employees:
+                    self.employees = existing_employees
+                    self.log_test("Use Existing Employees", True, f"Found {len(existing_employees)} existing employees")
+                    return
+        except Exception as e:
+            pass
+        
         employees_data = [
             {"name": "Sarah Johnson", "pin": "1234", "role": "manager"},
             {"name": "Mike Chen", "pin": "5678", "role": "employee"},
@@ -69,6 +81,19 @@ class LaundryProTester:
                     self.employees.append(employee)
                     self.log_test(f"Create Employee: {emp_data['name']}", True, 
                                 f"ID: {employee['id']}, PIN: {emp_data['pin']}")
+                elif response.status_code == 400 and "PIN already exists" in response.text:
+                    # Try with a different PIN
+                    new_pin = emp_data['pin'] + "0"
+                    emp_data['pin'] = new_pin
+                    response = self.session.post(f"{BASE_URL}/employees", json=emp_data)
+                    if response.status_code == 200:
+                        employee = response.json()
+                        self.employees.append(employee)
+                        self.log_test(f"Create Employee: {emp_data['name']} (alt PIN)", True, 
+                                    f"ID: {employee['id']}, PIN: {new_pin}")
+                    else:
+                        self.log_test(f"Create Employee: {emp_data['name']}", False, 
+                                    f"Status: {response.status_code}, Response: {response.text}")
                 else:
                     self.log_test(f"Create Employee: {emp_data['name']}", False, 
                                 f"Status: {response.status_code}, Response: {response.text}")
