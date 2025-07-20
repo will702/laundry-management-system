@@ -968,12 +968,12 @@ const RecentReceipts = ({ employee }) => {
                   <h3 className="font-semibold text-lg">{receipt.client_name}</h3>
                   <p className="text-sm text-gray-600">{receipt.client_phone}</p>
                   <p className="text-xs text-gray-500">
-                    Created by: {receipt.employee_name} • {formatDateTime(receipt.created_at)}
+                    Dibuat oleh: {receipt.employee_name} • {formatDateTime(receipt.created_at)}
                   </p>
                   {receipt.is_deleted && receipt.deleted_at && (
                     <p className="text-xs text-red-600 font-medium">
-                      🗑️ Deleted by: {receipt.deleted_by_employee_name} • {formatDateTime(receipt.deleted_at)}
-                      {receipt.deletion_reason && ` • Reason: ${receipt.deletion_reason}`}
+                      🗑️ Dihapus oleh: {receipt.deleted_by_employee_name} • {formatDateTime(receipt.deleted_at)}
+                      {receipt.deletion_reason && ` • Alasan: ${receipt.deletion_reason}`}
                     </p>
                   )}
                 </div>
