@@ -954,6 +954,10 @@ function App() {
         {activeTab === 'receipts' && (
           <RecentReceipts employee={currentEmployee} />
         )}
+
+        {activeTab === 'audit' && (
+          <AuditDashboard employee={currentEmployee} />
+        )}
       </main>
     </div>
   );
