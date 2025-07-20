@@ -225,14 +225,23 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   const [loading, setLoading] = useState(false);
 
   const serviceOptions = [
-    { value: 'wash', label: 'Wash Only' },
+    { value: 'wash', label: 'Cuci Saja' },
     { value: 'dry_clean', label: 'Dry Clean' },
-    { value: 'wash_iron', label: 'Wash & Iron' },
-    { value: 'iron_only', label: 'Iron Only' }
+    { value: 'wash_iron', label: 'Cuci & Setrika' },
+    { value: 'iron_only', label: 'Setrika Saja' }
   ];
 
   const itemTypes = [
-    'shirt', 'pants', 'dress', 'suit', 'jacket', 'skirt', 'blouse', 'curtains', 'bedsheet', 'other'
+    { value: 'shirt', label: 'Kemeja' },
+    { value: 'pants', label: 'Celana' },
+    { value: 'dress', label: 'Gaun' },
+    { value: 'suit', label: 'Jas' },
+    { value: 'jacket', label: 'Jaket' },
+    { value: 'skirt', label: 'Rok' },
+    { value: 'blouse', label: 'Blus' },
+    { value: 'curtains', label: 'Gorden' },
+    { value: 'bedsheet', label: 'Seprai' },
+    { value: 'other', label: 'Lainnya' }
   ];
 
   const updateItem = (index, field, value) => {
@@ -280,7 +289,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
       
       // Show success message with option to print
       const shouldPrint = window.confirm(
-        `Receipt created successfully!\n\nWould you like to print the receipt for ${client.name}?`
+        `Bon berhasil dibuat!\n\nApakah Anda ingin mencetak bon untuk ${client.name}?`
       );
       
       if (shouldPrint) {
@@ -294,7 +303,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
             <!DOCTYPE html>
             <html>
               <head>
-                <title>Receipt - ${client.name}</title>
+                <title>Bon - ${client.name}</title>
                 <style>
                   body { font-family: Arial, sans-serif; margin: 20px; }
                   .header { text-center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
@@ -312,30 +321,30 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
               <body>
                 <div class="header">
                   <h1>🧺 LaundryPro</h1>
-                  <h2>Professional Laundry Services</h2>
-                  <p>123 Clean Street, Laundry City, LC 12345<br>Phone: (555) LAUNDRY</p>
+                  <h2>Layanan Laundry Profesional</h2>
+                  <p>Jl. Bersih No. 123, Kota Laundry, LC 12345<br>Telepon: (021) LAUNDRY</p>
                 </div>
                 
                 <div class="info">
                   <div>
-                    <strong>Receipt ID:</strong> #${printResponse.data.receipt_id.slice(-8).toUpperCase()}<br>
-                    <strong>Date:</strong> ${new Date(printResponse.data.created_at).toLocaleString()}<br>
+                    <strong>ID Bon:</strong> #${printResponse.data.receipt_id.slice(-8).toUpperCase()}<br>
+                    <strong>Tanggal:</strong> ${new Date(printResponse.data.created_at).toLocaleString('id-ID')}<br>
                     <strong>Status:</strong> ${printResponse.data.status}
                   </div>
                   <div>
-                    <strong>Customer:</strong> ${printResponse.data.client_name}<br>
-                    <strong>Phone:</strong> ${printResponse.data.client_phone}<br>
-                    <strong>Served by:</strong> ${printResponse.data.employee_name}
+                    <strong>Pelanggan:</strong> ${printResponse.data.client_name}<br>
+                    <strong>Telepon:</strong> ${printResponse.data.client_phone}<br>
+                    <strong>Dilayani:</strong> ${printResponse.data.employee_name}
                   </div>
                 </div>
                 
                 <table>
                   <thead>
                     <tr>
-                      <th>Service</th>
-                      <th>Item</th>
+                      <th>Layanan</th>
+                      <th>Barang</th>
                       <th>Qty</th>
-                      <th>Price</th>
+                      <th>Harga</th>
                       <th>Total</th>
                     </tr>
                   </thead>
@@ -345,29 +354,29 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                         <td>${item.service.replace('_', ' ')}</td>
                         <td>${item.item_type}</td>
                         <td style="text-align: center;">${item.quantity}</td>
-                        <td style="text-align: right;">$${item.price_per_item.toFixed(2)}</td>
-                        <td style="text-align: right;">$${item.total_price.toFixed(2)}</td>
+                        <td style="text-align: right;">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
+                        <td style="text-align: right;">Rp${item.total_price.toLocaleString('id-ID')}</td>
                       </tr>
                     `).join('')}
                   </tbody>
                 </table>
                 
                 <div class="total">
-                  <h3>TOTAL AMOUNT: $${printResponse.data.total_amount.toFixed(2)}</h3>
+                  <h3>TOTAL BAYAR: Rp${printResponse.data.total_amount.toLocaleString('id-ID')}</h3>
                 </div>
                 
                 ${printResponse.data.notes ? `
                   <div style="margin: 20px 0; padding: 10px; background: #f9f9f9; border-left: 4px solid #333;">
-                    <strong>Special Instructions:</strong><br>
+                    <strong>Instruksi Khusus:</strong><br>
                     ${printResponse.data.notes}
                   </div>
                 ` : ''}
                 
                 <div class="footer">
-                  <p>Thank you for choosing LaundryPro!</p>
-                  <p>Please keep this receipt for pickup</p>
-                  <p>Questions? Call us at (555) LAUNDRY</p>
-                  <p>Printed on: ${new Date().toLocaleString()}</p>
+                  <p>Terima kasih telah memilih LaundryPro!</p>
+                  <p>Simpan bon ini untuk pengambilan</p>
+                  <p>Pertanyaan? Hubungi: (021) LAUNDRY</p>
+                  <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
                 </div>
               </body>
             </html>
@@ -384,14 +393,14 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
           
         } catch (printErr) {
           console.error('Error printing receipt:', printErr);
-          alert('Receipt created but could not print. You can print it later from the receipts list.');
+          alert('Bon berhasil dibuat tapi tidak dapat dicetak. Anda bisa cetak nanti dari daftar bon.');
         }
       }
       
       onReceiptCreated();
     } catch (err) {
       console.error('Error creating receipt:', err);
-      alert('Error creating receipt. Please try again.');
+      alert('Error membuat bon. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -400,10 +409,10 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">New Receipt</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Bon Baru</h2>
         <div className="text-right">
-          <div className="text-sm text-gray-600">Employee: {employee.name}</div>
-          <div className="text-sm text-gray-600">Client: {client.name}</div>
+          <div className="text-sm text-gray-600">Karyawan: {employee.name}</div>
+          <div className="text-sm text-gray-600">Pelanggan: {client.name}</div>
         </div>
       </div>
 
@@ -411,7 +420,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         {items.map((item, index) => (
           <div key={index} className="grid grid-cols-12 gap-3 p-4 bg-gray-50 rounded-lg">
             <div className="col-span-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Service</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Layanan</label>
               <select
                 value={item.service}
                 onChange={(e) => updateItem(index, 'service', e.target.value)}
@@ -424,14 +433,14 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Item</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Barang</label>
               <select
                 value={item.item_type}
                 onChange={(e) => updateItem(index, 'item_type', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
               >
                 {itemTypes.map(type => (
-                  <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                  <option key={type.value} value={type.value}>{type.label}</option>
                 ))}
               </select>
             </div>
@@ -448,11 +457,11 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Price</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Harga</label>
               <input
                 type="number"
                 min="0"
-                step="0.5"
+                step="500"
                 value={item.price_per_item}
                 onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
@@ -462,7 +471,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-700 mb-1">Total</label>
               <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm font-medium">
-                ${item.total_price.toFixed(2)}
+                Rp{item.total_price.toLocaleString('id-ID')}
               </div>
             </div>
 
@@ -482,15 +491,15 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
           onClick={addItem}
           className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors"
         >
-          + Add Item
+          + Tambah Item
         </button>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Special instructions, pickup date, etc."
+            placeholder="Instruksi khusus, tanggal ambil, dll."
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
             rows="3"
           />
@@ -498,8 +507,8 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
 
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xl font-bold">Total Amount:</span>
-            <span className="text-2xl font-bold text-indigo-600">${calculateTotal().toFixed(2)}</span>
+            <span className="text-xl font-bold">Total Bayar:</span>
+            <span className="text-2xl font-bold text-indigo-600">Rp{calculateTotal().toLocaleString('id-ID')}</span>
           </div>
 
           <button
@@ -507,7 +516,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
             disabled={loading}
             className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Creating Receipt...' : 'Create Receipt'}
+            {loading ? 'Membuat Bon...' : 'Buat Bon'}
           </button>
         </div>
       </div>
