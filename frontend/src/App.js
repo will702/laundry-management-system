@@ -986,12 +986,12 @@ const RecentReceipts = ({ employee }) => {
               </div>
 
               <div className="mb-3">
-                <h4 className="text-sm font-medium mb-2">Items:</h4>
+                <h4 className="text-sm font-medium mb-2">Item:</h4>
                 <div className="space-y-1">
                   {receipt.items.map((item, index) => (
                     <div key={index} className="text-sm text-gray-600 flex justify-between">
                       <span>{item.quantity}x {item.item_type} ({item.service})</span>
-                      <span>${item.total_price.toFixed(2)}</span>
+                      <span>Rp{item.total_price.toLocaleString('id-ID')}</span>
                     </div>
                   ))}
                 </div>
@@ -999,7 +999,7 @@ const RecentReceipts = ({ employee }) => {
 
               {receipt.notes && (
                 <div className="mb-3 text-sm text-gray-600">
-                  <strong>Notes:</strong> {receipt.notes}
+                  <strong>Catatan:</strong> {receipt.notes}
                 </div>
               )}
 
