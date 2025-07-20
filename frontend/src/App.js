@@ -932,7 +932,7 @@ const RecentReceipts = ({ employee }) => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading receipts...</div>;
+    return <div className="text-center py-8">Memuat bon...</div>;
   }
 
   return (
@@ -956,7 +956,7 @@ const RecentReceipts = ({ employee }) => {
       <div className="space-y-4">
         {receipts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {showDeleted ? 'No deleted receipts found.' : 'No receipts found. Create your first receipt!'}
+            {showDeleted ? 'Tidak ada bon yang dihapus.' : 'Tidak ada bon ditemukan. Buat bon pertama Anda!'}
           </div>
         ) : (
           receipts.map((receipt) => (
