@@ -978,9 +978,12 @@ const RecentReceipts = ({ employee }) => {
                   )}
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-bold text-green-600">${receipt.total_amount.toFixed(2)}</div>
+                  <div className="text-xl font-bold text-green-600">Rp{receipt.total_amount.toLocaleString('id-ID')}</div>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(receipt.status)}`}>
-                    {receipt.status}
+                    {receipt.status === 'pending' ? 'menunggu' : 
+                     receipt.status === 'ready' ? 'siap' : 
+                     receipt.status === 'completed' ? 'selesai' : 
+                     receipt.status === 'deleted' ? 'dihapus' : receipt.status}
                   </span>
                 </div>
               </div>
