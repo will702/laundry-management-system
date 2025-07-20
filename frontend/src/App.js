@@ -2593,23 +2593,34 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <h1 className="text-lg sm:text-2xl font-bold text-indigo-600">🧺 LaundryPro</h1>
-              <span className="hidden sm:inline text-gray-500">|</span>
-              <div className="hidden sm:inline text-gray-700 text-sm">
-                <span>Selamat datang, {currentEmployee.name}</span>
-                {isAdmin && <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">👑 Admin</span>}
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-12 sm:h-16">
+            {/* Logo and Title - Mobile optimized */}
+            <div className="flex items-center space-x-2">
+              <h1 className="text-base sm:text-2xl font-bold text-indigo-600 flex items-center">
+                <span className="text-lg sm:text-2xl mr-1">🧺</span>
+                <span className="hidden xs:inline">LaundryPro</span>
+                <span className="xs:hidden">LP</span>
+              </h1>
+              {/* User info - Hidden on small mobile */}
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="text-gray-500">|</span>
+                <div className="text-gray-700 text-sm">
+                  <span>{currentEmployee.name}</span>
+                  {isAdmin && <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">👑 Admin</span>}
+                </div>
               </div>
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Navigation - Hidden on desktop */}
-              <div className="sm:hidden">
+              {/* Mobile User Badge */}
+              <div className="sm:hidden flex items-center">
+                {isAdmin && (
+                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">👑</span>
+                )}
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-2 text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
+                  className="px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
                 >
                   Keluar
                 </button>
