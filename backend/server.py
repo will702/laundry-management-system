@@ -247,19 +247,22 @@ async def delete_receipt(receipt_id: str, delete_data: ReceiptDelete):
 
 # Audit endpoints
 @api_router.get("/audit/receipts-by-employee")
-async def get_receipts_by_employee(start_date: Optional[str] = None, end_date: Optional[str] = None):
+async def get_receipts_by_employee(start_date: Optional[str] = None, end_date: Optional[str] = None, include_deleted: bool = False):
     pipeline = []
     
     # Add date filter if provided
+    match_conditions = {}
     if start_date and end_date:
-        pipeline.append({
-            "$match": {
-                "created_at": {
-                    "$gte": datetime.fromisoformat(start_date.replace('Z', '+00:00')),
-                    "$lte": datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-                }
-            }
-        })
+        match_conditions["created_at"] = {
+            "$gte": datetime.fromisoformat(start_date.replace('Z', '+00:00')),
+            "$lte": datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        }
+    
+    if not include_deleted:
+        match_conditions["is_deleted"] = {"$ne": True}
+    
+    if match_conditions:
+        pipeline.append({"$match": match_conditions})
     
     pipeline.extend([
         {
@@ -268,13 +271,21 @@ async def get_receipts_by_employee(start_date: Optional[str] = None, end_date: O
                 "employee_name": {"$first": "$employee_name"},
                 "total_receipts": {"$sum": 1},
                 "total_amount": {"$sum": "$total_amount"},
+                "deleted_receipts": {
+                    "$sum": {
+                        "$cond": [{"$eq": ["$is_deleted", True]}, 1, 0]
+                    }
+                },
                 "receipts": {
                     "$push": {
                         "id": "$id",
                         "client_name": "$client_name",
                         "total_amount": "$total_amount",
                         "created_at": "$created_at",
-                        "status": "$status"
+                        "status": "$status",
+                        "is_deleted": {"$ifNull": ["$is_deleted", False]},
+                        "deleted_at": "$deleted_at",
+                        "deletion_reason": "$deletion_reason"
                     }
                 }
             }
@@ -284,6 +295,90 @@ async def get_receipts_by_employee(start_date: Optional[str] = None, end_date: O
     
     result = await db.receipts.aggregate(pipeline).to_list(100)
     return result
+
+@api_router.get("/audit/deleted-receipts")
+async def get_deleted_receipts(limit: int = 50):
+    """Get all deleted receipts for audit purposes"""
+    receipts = await db.receipts.find(
+        {"is_deleted": True}
+    ).sort("deleted_at", -1).limit(limit).to_list(limit)
+    return [Receipt(**receipt) for receipt in receipts]
+
+@api_router.get("/audit/employee-activity")
+async def get_employee_activity(employee_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Get detailed activity for a specific employee including deletions"""
+    pipeline = []
+    
+    # Match employee and date range
+    match_conditions = {"employee_id": employee_id}
+    if start_date and end_date:
+        match_conditions["created_at"] = {
+            "$gte": datetime.fromisoformat(start_date.replace('Z', '+00:00')),
+            "$lte": datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        }
+    
+    pipeline.extend([
+        {"$match": match_conditions},
+        {
+            "$project": {
+                "id": 1,
+                "client_name": 1,
+                "total_amount": 1,
+                "status": 1,
+                "created_at": 1,
+                "is_deleted": {"$ifNull": ["$is_deleted", False]},
+                "deleted_at": 1,
+                "deletion_reason": 1,
+                "deleted_by_employee_name": 1,
+                "activity_type": {
+                    "$cond": [
+                        {"$eq": ["$is_deleted", True]}, 
+                        "deleted", 
+                        "created"
+                    ]
+                }
+            }
+        },
+        {"$sort": {"created_at": -1}}
+    ])
+    
+    # Also get receipts deleted by this employee
+    deleted_by_pipeline = [
+        {
+            "$match": {
+                "deleted_by_employee_id": employee_id,
+                "is_deleted": True
+            }
+        },
+        {
+            "$project": {
+                "id": 1,
+                "client_name": 1,
+                "total_amount": 1,
+                "status": 1,
+                "created_at": 1,
+                "deleted_at": 1,
+                "deletion_reason": 1,
+                "employee_name": 1,  # original creator
+                "activity_type": {"$literal": "deleted_others"}
+            }
+        },
+        {"$sort": {"deleted_at": -1}}
+    ]
+    
+    created_receipts = await db.receipts.aggregate(pipeline).to_list(100)
+    deleted_receipts = await db.receipts.aggregate(deleted_by_pipeline).to_list(100)
+    
+    return {
+        "employee_id": employee_id,
+        "receipts_created": created_receipts,
+        "receipts_deleted_by_employee": deleted_receipts,
+        "summary": {
+            "total_created": len([r for r in created_receipts if r["activity_type"] == "created"]),
+            "total_deleted": len([r for r in created_receipts if r["activity_type"] == "deleted"]),
+            "total_deleted_others": len(deleted_receipts)
+        }
+    }
 
 @api_router.get("/audit/daily-summary")
 async def get_daily_summary():
