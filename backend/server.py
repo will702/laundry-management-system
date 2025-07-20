@@ -68,7 +68,10 @@ class Receipt(BaseModel):
     employee_id: str
     employee_name: str  # denormalized for audit trail
     items: List[ReceiptItem]
-    total_amount: float
+    subtotal: float  # total before discount
+    discount_percent: float = 0  # discount percentage
+    discount_amount: float = 0  # discount amount in currency
+    total_amount: float  # final amount after discount
     status: str = "pending"  # pending, ready, completed, deleted
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -83,6 +86,7 @@ class ReceiptCreate(BaseModel):
     client_id: str
     employee_id: str
     items: List[ReceiptItem]
+    discount_percent: float = 0
     notes: Optional[str] = None
 
 class ReceiptDelete(BaseModel):
