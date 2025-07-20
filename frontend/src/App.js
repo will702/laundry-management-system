@@ -1009,7 +1009,7 @@ const RecentReceipts = ({ employee }) => {
                   onClick={() => openPrintModal(receipt)}
                   className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
                 >
-                  🖨️ Print
+                  🖨️ Cetak
                 </button>
 
                 {/* Status management buttons - only for non-deleted receipts */}
@@ -1020,7 +1020,7 @@ const RecentReceipts = ({ employee }) => {
                         onClick={() => updateStatus(receipt.id, 'ready')}
                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                       >
-                        Mark Ready
+                        Tandai Siap
                       </button>
                     )}
                     {receipt.status === 'ready' && (
@@ -1028,7 +1028,7 @@ const RecentReceipts = ({ employee }) => {
                         onClick={() => updateStatus(receipt.id, 'completed')}
                         className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
                       >
-                        Complete
+                        Selesai
                       </button>
                     )}
                     {receipt.status !== 'completed' && (
@@ -1036,7 +1036,7 @@ const RecentReceipts = ({ employee }) => {
                         onClick={() => openDeleteModal(receipt)}
                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                       >
-                        Delete
+                        Hapus
                       </button>
                     )}
                   </>
