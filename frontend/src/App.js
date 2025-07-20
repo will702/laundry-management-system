@@ -22,7 +22,7 @@ const EmployeeLogin = ({ onLogin, employees }) => {
       const response = await axios.post(`${API}/employees/login`, { pin });
       onLogin(response.data);
     } catch (err) {
-      setError('Invalid PIN. Please try again.');
+      setError('PIN tidak valid. Silakan coba lagi.');
     } finally {
       setLoading(false);
       setPin('');
@@ -34,13 +34,13 @@ const EmployeeLogin = ({ onLogin, employees }) => {
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">🧺 LaundryPro</h1>
-          <p className="text-gray-600">Employee Access</p>
+          <p className="text-gray-600">Akses Karyawan</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Enter Your PIN
+              Masukkan PIN Anda
             </label>
             <input
               type="password"
@@ -63,14 +63,14 @@ const EmployeeLogin = ({ onLogin, employees }) => {
             disabled={loading || !pin}
             className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Masuk...' : 'Masuk'}
           </button>
         </form>
 
         {employees.length === 0 && (
           <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
             <p className="text-sm text-yellow-800">
-              No employees found. Please add employees first.
+              Tidak ada karyawan ditemukan. Silakan tambah karyawan terlebih dahulu.
             </p>
           </div>
         )}
