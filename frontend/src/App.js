@@ -643,6 +643,209 @@ const PrintReceipt = ({ receiptData, onClose }) => {
     </div>
   );
 };
+
+// Settings Management Component
+const LaundrySettings = ({ employee }) => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('business');
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setSettings(response.data);
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSettings = async (updatedData) => {
+    setSaving(true);
+    try {
+      const response = await axios.put(`${API}/settings`, updatedData);
+      setSettings(response.data);
+      alert('Pengaturan berhasil disimpan!');
+    } catch (err) {
+      console.error('Error updating settings:', err);
+      alert('Error menyimpan pengaturan. Silakan coba lagi.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const saveSettings = () => {
+    const updateData = {
+      business_name: settings.business_name,
+      business_address: settings.business_address,
+      business_phone: settings.business_phone,
+      business_email: settings.business_email,
+      logo_url: settings.logo_url,
+      footer_notes: settings.footer_notes
+    };
+    updateSettings(updateData);
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Memuat pengaturan...</div>;
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">⚙️ Pengaturan Laundry</h2>
+
+      <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6">
+        <button
+          onClick={() => setActiveTab('business')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'business' 
+              ? 'bg-white text-indigo-600 shadow-sm' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Info Bisnis
+        </button>
+        <button
+          onClick={() => setActiveTab('receipt')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'receipt' 
+              ? 'bg-white text-indigo-600 shadow-sm' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Pengaturan Struk
+        </button>
+      </div>
+
+      {activeTab === 'business' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nama Bisnis <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={settings.business_name}
+                onChange={(e) => handleInputChange('business_name', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                placeholder="LaundryPro"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nomor Telepon <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={settings.business_phone}
+                onChange={(e) => handleInputChange('business_phone', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                placeholder="(021) 1234-5678"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alamat Bisnis <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={settings.business_address}
+              onChange={(e) => handleInputChange('business_address', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              rows="3"
+              placeholder="Jl. Bersih No. 123, Kota Laundry"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Bisnis
+            </label>
+            <input
+              type="email"
+              value={settings.business_email}
+              onChange={(e) => handleInputChange('business_email', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="info@laundrypro.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              URL Logo (Opsional)
+            </label>
+            <input
+              type="url"
+              value={settings.logo_url || ''}
+              onChange={(e) => handleInputChange('logo_url', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="https://example.com/logo.png"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Masukkan URL gambar logo untuk ditampilkan di struk
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'receipt' && (
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Catatan Kaki Struk
+            </label>
+            <textarea
+              value={settings.footer_notes}
+              onChange={(e) => handleInputChange('footer_notes', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              rows="4"
+              placeholder="Terima kasih atas kepercayaan Anda • Jam operasional: 07:00-21:00 • Komplain maks 1x24 jam"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Catatan ini akan muncul di bagian bawah setiap struk. Gunakan • untuk memisahkan informasi.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium mb-3">Pratinjau Catatan Kaki:</h3>
+            <div className="text-sm text-gray-600 text-center border-t border-gray-200 pt-3">
+              {settings.footer_notes.split('•').map((note, index) => (
+                <p key={index} className="mb-1">{note.trim()}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end pt-6 border-t">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        >
+          {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const AuditDashboard = ({ employee }) => {
   const [auditData, setAuditData] = useState(null);
   const [deletedReceipts, setDeletedReceipts] = useState([]);
