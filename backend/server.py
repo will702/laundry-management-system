@@ -31,7 +31,7 @@ class Employee(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     pin: str
-    role: str = "employee"
+    role: str = "employee"  # "employee" or "admin"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_active: bool = True
 
@@ -39,6 +39,11 @@ class EmployeeCreate(BaseModel):
     name: str
     pin: str
     role: str = "employee"
+
+class AdminRegister(BaseModel):
+    name: str
+    pin: str
+    admin_code: str  # Secret code to create admin
 
 class EmployeeLogin(BaseModel):
     pin: str
