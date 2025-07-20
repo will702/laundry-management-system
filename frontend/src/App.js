@@ -2181,6 +2181,7 @@ function App() {
   const [employees, setEmployees] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [activeTab, setActiveTab] = useState('create');
+  const [showAdminRegistration, setShowAdminRegistration] = useState(false);
 
   useEffect(() => {
     loadEmployees();
@@ -2208,12 +2209,37 @@ function App() {
   const handleReceiptCreated = () => {
     setSelectedClient(null);
     setActiveTab('receipts');
-    // Could add success notification here
+  };
+
+  const handleAdminRegistrationSuccess = (admin) => {
+    setShowAdminRegistration(false);
+    alert(`Admin ${admin.name} berhasil didaftarkan! Silakan login dengan PIN admin.`);
+    loadEmployees(); // Refresh employee list
+  };
+
+  const handleShowAdminRegistration = () => {
+    setShowAdminRegistration(true);
   };
 
   if (!currentEmployee) {
-    return <EmployeeLogin onLogin={handleLogin} employees={employees} />;
+    return (
+      <>
+        <EmployeeLogin 
+          onLogin={handleLogin} 
+          employees={employees} 
+          onShowAdminRegistration={handleShowAdminRegistration}
+        />
+        {showAdminRegistration && (
+          <AdminRegistration
+            onCancel={() => setShowAdminRegistration(false)}
+            onSuccess={handleAdminRegistrationSuccess}
+          />
+        )}
+      </>
+    );
   }
+
+  const isAdmin = currentEmployee.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gray-50">
