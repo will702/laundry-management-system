@@ -496,6 +496,209 @@ async def get_print_receipt(receipt_id: str):
     
     return print_data
 
+# Laundry Settings endpoints
+@api_router.get("/settings", response_model=LaundrySettings)
+async def get_laundry_settings():
+    settings = await db.settings.find_one()
+    if not settings:
+        # Create default settings
+        default_settings = LaundrySettings()
+        await db.settings.insert_one(default_settings.dict())
+        return default_settings
+    return LaundrySettings(**settings)
+
+@api_router.put("/settings", response_model=LaundrySettings)
+async def update_laundry_settings(settings_update: LaundrySettingsUpdate):
+    # Get current settings
+    current_settings = await db.settings.find_one()
+    if not current_settings:
+        # Create default settings first
+        default_settings = LaundrySettings()
+        await db.settings.insert_one(default_settings.dict())
+        current_settings = default_settings.dict()
+    
+    # Update only provided fields
+    update_data = {k: v for k, v in settings_update.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.settings.update_one(
+        {"id": current_settings["id"]},
+        {"$set": update_data}
+    )
+    
+    updated_settings = await db.settings.find_one({"id": current_settings["id"]})
+    return LaundrySettings(**updated_settings)
+
+# Service Items endpoints
+@api_router.post("/service-items", response_model=ServiceItem)
+async def create_service_item(service_data: ServiceItemCreate):
+    service_item = ServiceItem(**service_data.dict())
+    await db.service_items.insert_one(service_item.dict())
+    return service_item
+
+@api_router.get("/service-items", response_model=List[ServiceItem])
+async def get_service_items(category: Optional[str] = None, active_only: bool = True):
+    query = {}
+    if category:
+        query["category"] = category
+    if active_only:
+        query["is_active"] = True
+    
+    items = await db.service_items.find(query).sort("category", 1).to_list(1000)
+    return [ServiceItem(**item) for item in items]
+
+@api_router.put("/service-items/{item_id}")
+async def update_service_item(item_id: str, service_data: ServiceItemCreate):
+    result = await db.service_items.update_one(
+        {"id": item_id},
+        {"$set": service_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Service item not found")
+    return {"message": "Service item updated successfully"}
+
+@api_router.delete("/service-items/{item_id}")
+async def delete_service_item(item_id: str):
+    result = await db.service_items.update_one(
+        {"id": item_id},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Service item not found")
+    return {"message": "Service item deactivated successfully"}
+
+# Sales Report endpoints
+@api_router.get("/reports/daily-sales")
+async def get_daily_sales_report(date: Optional[str] = None):
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Parse date
+    try:
+        report_date = datetime.fromisoformat(date)
+        start_date = report_date.replace(hour=0, minute=0, second=0)
+        end_date = report_date.replace(hour=23, minute=59, second=59)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    # Get receipts for the date
+    receipts = await db.receipts.find({
+        "created_at": {"$gte": start_date, "$lte": end_date},
+        "is_deleted": {"$ne": True}
+    }).to_list(1000)
+    
+    if not receipts:
+        return {
+            "date": date,
+            "total_receipts": 0,
+            "total_amount": 0,
+            "total_items": 0,
+            "employees": [],
+            "services": []
+        }
+    
+    # Calculate totals
+    total_receipts = len(receipts)
+    total_amount = sum(receipt["total_amount"] for receipt in receipts)
+    total_items = sum(len(receipt["items"]) for receipt in receipts)
+    
+    # Group by employees
+    employee_stats = {}
+    service_stats = {}
+    
+    for receipt in receipts:
+        # Employee stats
+        emp_id = receipt["employee_id"]
+        emp_name = receipt["employee_name"]
+        if emp_id not in employee_stats:
+            employee_stats[emp_id] = {
+                "employee_name": emp_name,
+                "receipts": 0,
+                "total_amount": 0
+            }
+        employee_stats[emp_id]["receipts"] += 1
+        employee_stats[emp_id]["total_amount"] += receipt["total_amount"]
+        
+        # Service stats
+        for item in receipt["items"]:
+            service = item["service"]
+            if service not in service_stats:
+                service_stats[service] = {
+                    "service_name": service,
+                    "quantity": 0,
+                    "total_amount": 0
+                }
+            service_stats[service]["quantity"] += item["quantity"]
+            service_stats[service]["total_amount"] += item["total_price"]
+    
+    return {
+        "date": date,
+        "total_receipts": total_receipts,
+        "total_amount": total_amount,
+        "total_items": total_items,
+        "employees": list(employee_stats.values()),
+        "services": list(service_stats.values())
+    }
+
+@api_router.get("/reports/monthly-sales")
+async def get_monthly_sales_report(year: int, month: int):
+    # Get start and end of month
+    start_date = datetime(year, month, 1, tzinfo=timezone.utc)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
+    else:
+        end_date = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(seconds=1)
+    
+    # Aggregate daily sales
+    pipeline = [
+        {
+            "$match": {
+                "created_at": {"$gte": start_date, "$lte": end_date},
+                "is_deleted": {"$ne": True}
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "day": {"$dayOfMonth": "$created_at"}
+                },
+                "receipts": {"$sum": 1},
+                "total_amount": {"$sum": "$total_amount"}
+            }
+        },
+        {"$sort": {"_id.day": 1}}
+    ]
+    
+    daily_data = await db.receipts.aggregate(pipeline).to_list(31)
+    
+    return {
+        "year": year,
+        "month": month,
+        "daily_sales": daily_data
+    }
+
+# Digital receipt sharing
+@api_router.get("/receipts/{receipt_id}/share")
+async def get_shareable_receipt(receipt_id: str):
+    receipt = await db.receipts.find_one({"id": receipt_id})
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    
+    settings = await db.settings.find_one()
+    if not settings:
+        settings = LaundrySettings().dict()
+    
+    # Create shareable URL (this would be the app URL with receipt ID)
+    share_url = f"https://laundrypro.app/receipt/{receipt_id}"
+    
+    return {
+        "receipt_id": receipt_id,
+        "share_url": share_url,
+        "qr_code_url": f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={share_url}",
+        "receipt_data": receipt,
+        "business_info": settings
+    }
+
 # Health check
 @api_router.get("/health")
 async def health_check():
