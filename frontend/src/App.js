@@ -2308,6 +2308,18 @@ function App() {
                 >
                   🧽 Layanan
                 </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => setActiveTab('clients')}
+                    className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
+                      activeTab === 'clients' 
+                        ? 'bg-white text-indigo-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    👥 Pelanggan
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab('settings')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
