@@ -675,7 +675,13 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         
         {/* Print Header - Only show on screen */}
         <div className="flex justify-between items-center mb-6 no-print">
-          <h2 className="text-xl font-bold">Print Receipt</h2>
+          <div>
+            <h2 className="text-xl font-bold">🖨️ Print Receipt</h2>
+            <p className="text-sm text-gray-600">
+              Receipt for: <span className="font-semibold text-indigo-600">{receiptData.client_name}</span> • 
+              Total: <span className="font-semibold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span>
+            </p>
+          </div>
           <div className="space-x-2">
             <button
               onClick={handlePrint}
