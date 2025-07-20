@@ -257,63 +257,33 @@ async def get_clients_with_stats(admin_id: str):
     # Verify admin access
     await verify_admin(admin_id)
     
-    # Aggregate clients with receipt statistics
-    pipeline = [
-        {
-            "$lookup": {
-                "from": "receipts",
-                "localField": "id",
-                "foreignField": "client_id", 
-                "as": "receipts"
-            }
-        },
-        {
-            "$addFields": {
-                "total_receipts": {"$size": "$receipts"},
-                "active_receipts": {
-                    "$size": {
-                        "$filter": {
-                            "input": "$receipts",
-                            "cond": {"$ne": ["$$this.is_deleted", True]}
-                        }
-                    }
-                },
-                "total_spent": {
-                    "$sum": {
-                        "$map": {
-                            "input": {
-                                "$filter": {
-                                    "input": "$receipts", 
-                                    "cond": {"$ne": ["$$this.is_deleted", True]}
-                                }
-                            },
-                            "as": "receipt",
-                            "in": "$$receipt.total_amount"
-                        }
-                    }
-                },
-                "last_visit": {
-                    "$max": {
-                        "$map": {
-                            "input": "$receipts",
-                            "as": "receipt", 
-                            "in": "$$receipt.created_at"
-                        }
-                    }
-                }
-            }
-        },
-        {
-            "$project": {
-                "receipts": 0  # Remove full receipts array from response
-            }
-        },
-        {
-            "$sort": {"name": 1}
-        }
-    ]
+    # Get all clients first
+    clients = await db.clients.find().to_list(1000)
     
-    clients_with_stats = await db.clients.aggregate(pipeline).to_list(1000)
+    # For each client, get receipt statistics
+    clients_with_stats = []
+    for client in clients:
+        client_dict = dict(client)
+        
+        # Convert ObjectId to string if exists
+        if '_id' in client_dict:
+            del client_dict['_id']
+        
+        # Get receipt statistics for this client
+        receipts = await db.receipts.find({"client_id": client_dict["id"]}).to_list(1000)
+        
+        active_receipts = [r for r in receipts if not r.get('is_deleted', False)]
+        
+        client_dict['total_receipts'] = len(receipts)
+        client_dict['active_receipts'] = len(active_receipts)
+        client_dict['total_spent'] = sum(r.get('total_amount', 0) for r in active_receipts)
+        client_dict['last_visit'] = max([r.get('created_at') for r in receipts], default=None)
+        
+        clients_with_stats.append(client_dict)
+    
+    # Sort by name
+    clients_with_stats.sort(key=lambda x: x.get('name', ''))
+    
     return clients_with_stats
 
 # Receipt endpoints
