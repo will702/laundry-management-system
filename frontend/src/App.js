@@ -2642,6 +2642,8 @@ function App() {
     );
   }
 
+  const isAdmin = currentEmployee.role === 'admin';
+
   // Navigation Bar Component (Remove undo/redo, keep back/forward)
   const NavigationBar = () => {
     const canGoBack = historyIndex > 0;
