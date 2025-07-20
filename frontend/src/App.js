@@ -2084,7 +2084,8 @@ const RecentReceipts = ({ employee }) => {
                 {/* Print button - always available */}
                 <button
                   onClick={() => openPrintModal(receipt)}
-                  className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                  className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+                  title={`Print receipt for ${receipt.client_name} - Rp${receipt.total_amount.toLocaleString('id-ID')}`}
                 >
                   🖨️ Cetak
                 </button>
