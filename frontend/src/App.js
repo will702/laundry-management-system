@@ -1717,6 +1717,13 @@ const ClientManagement = ({ employee }) => {
                         <div className={`font-semibold ${client.active_receipts > 0 ? 'text-orange-600' : 'text-green-600'}`}>
                           {client.active_receipts || 0}
                         </div>
+                        <div className="text-xs text-gray-500">
+                          (pending/ready only)
+                        </div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Bon Selesai:</span>
+                        <div className="text-blue-600 font-semibold">{client.completed_receipts || 0}</div>
                       </div>
                       <div>
                         <span className="font-medium">Total Transaksi:</span>
