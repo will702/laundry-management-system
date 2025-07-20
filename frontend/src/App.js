@@ -740,8 +740,8 @@ const PrintReceipt = ({ receiptData, onClose }) => {
                     <td className="py-2 capitalize">{item.service.replace('_', ' ')}</td>
                     <td className="py-2 capitalize">{item.item_type}</td>
                     <td className="py-2 text-center">{item.quantity}</td>
-                    <td className="py-2 text-right">${item.price_per_item.toFixed(2)}</td>
-                    <td className="py-2 text-right font-semibold">${item.total_price.toFixed(2)}</td>
+                    <td className="py-2 text-right">Rp{item.price_per_item.toLocaleString('id-ID')}</td>
+                    <td className="py-2 text-right font-semibold">Rp{item.total_price.toLocaleString('id-ID')}</td>
                   </tr>
                 ))}
               </tbody>
