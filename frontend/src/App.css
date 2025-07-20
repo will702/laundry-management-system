@@ -83,6 +83,106 @@
   .print-receipt {
     page-break-inside: avoid;
   }
+  
+  /* Receipt specific print styles */
+  .receipt-content {
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+    color: black !important;
+    background: white !important;
+  }
+  
+  .receipt-content h1 {
+    font-size: 18pt !important;
+    font-weight: bold !important;
+  }
+  
+  .receipt-content h2 {
+    font-size: 14pt !important;
+  }
+  
+  .receipt-content table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  
+  .receipt-content th,
+  .receipt-content td {
+    border: 1px solid #000 !important;
+    padding: 4pt !important;
+    font-size: 11pt !important;
+  }
+  
+  .receipt-content th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold !important;
+  }
+  
+  /* Print button and modal container adjustments */
+  body {
+    margin: 0 !important;
+  }
+  
+  .fixed {
+    position: static !important;
+    background: white !important;
+  }
+  
+  /* Hide shadows and backgrounds in print */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Print preview styles */
+.print-preview {
+  max-width: 8.5in;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Quick print button styling */
+.quick-print-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-print-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Receipt table styling */
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.receipt-table th,
+.receipt-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.receipt-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+}
+
+.receipt-table tr:last-child td {
+  border-bottom: 2px solid #374151;
 }
 
 /* Mobile responsiveness improvements */
