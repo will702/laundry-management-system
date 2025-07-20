@@ -659,7 +659,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   );
 };
 
-// Print Receipt Component
+// Print Receipt Component - Full Screen Focus
 const PrintReceipt = ({ receiptData, onClose }) => {
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString();
@@ -670,121 +670,162 @@ const PrintReceipt = ({ receiptData, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 print:bg-white print:relative print:inset-auto print:overflow-visible">
-      <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white print:shadow-none print:border-none print:top-0 print:max-w-none">
+    <div className="fixed inset-0 bg-white z-50 overflow-y-auto print:bg-white print:relative print:inset-auto print:overflow-visible">
+      {/* Full Screen Overlay - Only show the selected receipt */}
+      <div className="min-h-screen bg-white">
         
         {/* Print Header - Only show on screen */}
-        <div className="flex justify-between items-center mb-6 no-print">
-          <div>
-            <h2 className="text-xl font-bold">🖨️ Print Receipt</h2>
-            <p className="text-sm text-gray-600">
-              Receipt for: <span className="font-semibold text-indigo-600">{receiptData.client_name}</span> • 
-              Total: <span className="font-semibold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span>
-            </p>
-          </div>
-          <div className="space-x-2">
-            <button
-              onClick={handlePrint}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-            >
-              🖨️ Print
-            </button>
-            <button
-              onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-            >
-              Close
-            </button>
+        <div className="bg-gray-50 border-b px-6 py-4 no-print sticky top-0 z-10">
+          <div className="flex justify-between items-center max-w-4xl mx-auto">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">🖨️ Print Receipt</h2>
+              <p className="text-sm text-gray-600">
+                Receipt for: <span className="font-semibold text-indigo-600">{receiptData.client_name}</span> • 
+                Total: <span className="font-semibold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span> •
+                Date: <span className="font-semibold text-gray-700">{formatDateTime(receiptData.created_at)}</span>
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handlePrint}
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 transition-colors"
+              >
+                <span>🖨️</span>
+                <span>Print Receipt</span>
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 flex items-center space-x-2 transition-colors"
+              >
+                <span>✕</span>
+                <span>Close</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Receipt Content */}
-        <div className="receipt-content bg-white p-8 print:p-0">
-          {/* Business Header */}
-          <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
-            {receiptData.logo_url && (
-              <img src={receiptData.logo_url} alt="Logo" className="h-16 mx-auto mb-3" />
-            )}
-            <h1 className="text-3xl font-bold text-gray-800">{receiptData.business_name}</h1>
-            <h2 className="text-lg font-semibold text-gray-600">Layanan Laundry Profesional</h2>
-            <p className="text-sm text-gray-500">{receiptData.business_address}</p>
-            <p className="text-sm text-gray-500">Telepon: {receiptData.business_phone}</p>
-            {receiptData.business_email && (
-              <p className="text-sm text-gray-500">Email: {receiptData.business_email}</p>
-            )}
-          </div>
-
-          {/* Receipt Info */}
-          <div className="grid grid-cols-2 gap-6 mb-6 text-sm">
-            <div>
-              <p><strong>Receipt ID:</strong> #{receiptData.receipt_id.slice(-8).toUpperCase()}</p>
-              <p><strong>Date:</strong> {formatDateTime(receiptData.created_at)}</p>
-              <p><strong>Status:</strong> <span className="capitalize">{receiptData.status}</span></p>
+        {/* Receipt Content - Centered and Focused */}
+        <div className="max-w-4xl mx-auto p-8 print:p-0 print:max-w-none">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8 print:border-none print:shadow-none print:rounded-none">
+            
+            {/* Business Header */}
+            <div className="text-center border-b-2 border-gray-300 pb-6 mb-8">
+              {receiptData.logo_url && (
+                <img src={receiptData.logo_url} alt="Logo" className="h-20 mx-auto mb-4" />
+              )}
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">{receiptData.business_name}</h1>
+              <h2 className="text-xl font-semibold text-gray-600 mb-3">Layanan Laundry Profesional</h2>
+              <p className="text-gray-500">{receiptData.business_address}</p>
+              <p className="text-gray-500">Telepon: {receiptData.business_phone}</p>
+              {receiptData.business_email && (
+                <p className="text-gray-500">Email: {receiptData.business_email}</p>
+              )}
             </div>
-            <div>
-              <p><strong>Customer:</strong> {receiptData.client_name}</p>
-              <p><strong>Phone:</strong> {receiptData.client_phone}</p>
-              <p><strong>Served by:</strong> {receiptData.employee_name}</p>
-            </div>
-          </div>
 
-          {/* Items Table */}
-          <div className="mb-6">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="text-left py-2 font-semibold">Service</th>
-                  <th className="text-left py-2 font-semibold">Item</th>
-                  <th className="text-center py-2 font-semibold">Qty</th>
-                  <th className="text-right py-2 font-semibold">Price</th>
-                  <th className="text-right py-2 font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {receiptData.items.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    <td className="py-2 capitalize">{item.service.replace('_', ' ')}</td>
-                    <td className="py-2 capitalize">{item.item_type}</td>
-                    <td className="py-2 text-center">{item.quantity}</td>
-                    <td className="py-2 text-right">Rp{item.price_per_item.toLocaleString('id-ID')}</td>
-                    <td className="py-2 text-right font-semibold">Rp{item.total_price.toLocaleString('id-ID')}</td>
-                  </tr>
+            {/* Receipt Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-sm">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-800 mb-3 uppercase tracking-wide">Receipt Information</h3>
+                <p className="mb-2"><strong>Receipt ID:</strong> #{receiptData.receipt_id.slice(-8).toUpperCase()}</p>
+                <p className="mb-2"><strong>Date:</strong> {formatDateTime(receiptData.created_at)}</p>
+                <p className="mb-2"><strong>Status:</strong> 
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                    receiptData.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    receiptData.status === 'ready' ? 'bg-blue-100 text-blue-800' :
+                    receiptData.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {receiptData.status === 'pending' ? 'Menunggu' : 
+                     receiptData.status === 'ready' ? 'Siap' : 
+                     receiptData.status === 'completed' ? 'Selesai' : receiptData.status}
+                  </span>
+                </p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-bold text-gray-800 mb-3 uppercase tracking-wide">Customer Information</h3>
+                <p className="mb-2"><strong>Customer:</strong> {receiptData.client_name}</p>
+                <p className="mb-2"><strong>Phone:</strong> {receiptData.client_phone}</p>
+                <p className="mb-2"><strong>Served by:</strong> {receiptData.employee_name}</p>
+              </div>
+            </div>
+
+            {/* Items Table */}
+            <div className="mb-8">
+              <h3 className="font-bold text-gray-800 mb-4 uppercase tracking-wide">Service Items</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse bg-white">
+                  <thead>
+                    <tr className="bg-gray-100 border-b-2 border-gray-300">
+                      <th className="text-left py-3 px-4 font-bold text-gray-800">Service</th>
+                      <th className="text-left py-3 px-4 font-bold text-gray-800">Item Type</th>
+                      <th className="text-center py-3 px-4 font-bold text-gray-800">Qty</th>
+                      <th className="text-right py-3 px-4 font-bold text-gray-800">Unit Price</th>
+                      <th className="text-right py-3 px-4 font-bold text-gray-800">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {receiptData.items.map((item, index) => (
+                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="py-3 px-4 capitalize font-medium">{item.service.replace('_', ' ')}</td>
+                        <td className="py-3 px-4 capitalize text-gray-600">{item.item_type}</td>
+                        <td className="py-3 px-4 text-center font-medium">{item.quantity}</td>
+                        <td className="py-3 px-4 text-right text-gray-700">Rp{item.price_per_item.toLocaleString('id-ID')}</td>
+                        <td className="py-3 px-4 text-right font-bold text-green-600">Rp{item.total_price.toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Total Section */}
+            <div className="border-t-2 border-gray-300 pt-6 mb-8">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-2xl font-bold text-gray-800">TOTAL AMOUNT:</span>
+                  <span className="text-4xl font-bold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {receiptData.notes && (
+              <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-bold text-blue-900 mb-2 uppercase tracking-wide">Special Instructions:</h4>
+                <p className="text-blue-800">{receiptData.notes}</p>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {receiptData.footer_notes.split('•').map((note, index) => (
+                  <p key={index} className="bg-gray-50 p-2 rounded">{note.trim()}</p>
                 ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Total */}
-          <div className="border-t-2 border-gray-300 pt-4 mb-6">
-            <div className="flex justify-between items-center">
-              <span className="text-xl font-bold">TOTAL AMOUNT:</span>
-              <span className="text-2xl font-bold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span>
+              </div>
+              <p className="text-xs font-medium text-gray-600 mt-4">
+                🖨️ Dicetak pada: {formatDateTime(receiptData.print_timestamp)}
+              </p>
             </div>
+
+            {/* Deleted Receipt Warning */}
+            {receiptData.is_deleted && (
+              <div className="mt-6 p-4 bg-red-100 border-2 border-red-400 rounded-lg text-center">
+                <p className="text-red-700 font-bold text-lg">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</p>
+                <p className="text-red-600">This is a copy for record purposes only</p>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Notes */}
-          {receiptData.notes && (
-            <div className="mb-6 p-3 bg-gray-50 rounded print:bg-white print:border">
-              <p className="text-sm"><strong>Special Instructions:</strong></p>
-              <p className="text-sm">{receiptData.notes}</p>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-4">
-            {receiptData.footer_notes.split('•').map((note, index) => (
-              <p key={index} className="mb-1">{note.trim()}</p>
-            ))}
-            <p className="text-xs mt-2">Dicetak pada: {formatDateTime(receiptData.print_timestamp)}</p>
+        {/* Print Instructions - Only show on screen */}
+        <div className="no-print bg-gray-100 border-t px-6 py-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-sm text-gray-600">
+              💡 <strong>Tip:</strong> Use Ctrl+P (Windows) or Cmd+P (Mac) to print this receipt. 
+              The page will automatically format for optimal printing.
+            </p>
           </div>
-
-          {/* Deleted Receipt Warning */}
-          {receiptData.is_deleted && (
-            <div className="mt-4 p-3 bg-red-100 border border-red-400 rounded text-center">
-              <p className="text-red-700 font-bold">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</p>
-              <p className="text-red-600 text-sm">This is a copy for record purposes only</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
