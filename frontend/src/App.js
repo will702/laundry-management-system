@@ -1673,6 +1673,26 @@ function App() {
                 >
                   🔍 Jejak Audit
                 </button>
+                <button
+                  onClick={() => setActiveTab('services')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'services' 
+                      ? 'bg-white text-indigo-600 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  🧽 Kelola Layanan
+                </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'settings' 
+                      ? 'bg-white text-indigo-600 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  ⚙️ Pengaturan
+                </button>
               </div>
               
               <button
