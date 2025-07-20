@@ -166,6 +166,37 @@ async def employee_login(login_data: EmployeeLogin):
         raise HTTPException(status_code=401, detail="Invalid PIN")
     return Employee(**employee)
 
+# Admin registration endpoint
+@api_router.post("/admin/register", response_model=Employee)
+async def register_admin(admin_data: AdminRegister):
+    # Secret admin code - in production, this should be environment variable
+    ADMIN_SECRET_CODE = "LAUNDRY_ADMIN_2025"
+    
+    if admin_data.admin_code != ADMIN_SECRET_CODE:
+        raise HTTPException(status_code=403, detail="Invalid admin code")
+    
+    # Check if PIN already exists
+    existing = await db.employees.find_one({"pin": admin_data.pin})
+    if existing:
+        raise HTTPException(status_code=400, detail="PIN already exists")
+    
+    # Create admin employee
+    admin = Employee(
+        name=admin_data.name,
+        pin=admin_data.pin,
+        role="admin"
+    )
+    
+    await db.employees.insert_one(admin.dict())
+    return admin
+
+# Helper function to check admin role
+async def verify_admin(employee_id: str):
+    employee = await db.employees.find_one({"id": employee_id, "is_active": True})
+    if not employee or employee.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return employee
+
 # Client endpoints
 @api_router.post("/clients", response_model=Client)
 async def create_client(client_data: ClientCreate):
