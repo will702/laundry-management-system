@@ -500,6 +500,154 @@ class LaundryProTester:
         except Exception as e:
             self.log_test("Audit: Daily Summary (Include Deleted)", False, f"Error: {str(e)}")
 
+    def test_print_receipt_functionality(self):
+        """Test the new print receipt functionality"""
+        if not self.receipts:
+            self.log_test("Print Receipt", False, "No receipts available for print testing")
+            return
+
+        # Test printing an active receipt
+        test_receipt = self.receipts[0] if self.receipts else None
+        if test_receipt:
+            try:
+                response = self.session.get(f"{BASE_URL}/receipts/{test_receipt['id']}/print")
+                if response.status_code == 200:
+                    print_data = response.json()
+                    self.log_test("Print Receipt - Active Receipt", True, 
+                                f"Receipt ID: {test_receipt['id'][:8]}...")
+                    
+                    # Verify business information is included
+                    business_fields = ["business_name", "business_address", "business_phone"]
+                    business_info_complete = all(field in print_data for field in business_fields)
+                    if business_info_complete:
+                        self.log_test("Print Data - Business Information", True,
+                                    f"Business: {print_data.get('business_name')}")
+                    else:
+                        self.log_test("Print Data - Business Information", False,
+                                    "Missing business information fields")
+                    
+                    # Verify receipt details are included
+                    receipt_fields = ["receipt_id", "client_name", "client_phone", "employee_name", 
+                                    "items", "total_amount", "status", "created_at"]
+                    receipt_info_complete = all(field in print_data for field in receipt_fields)
+                    if receipt_info_complete:
+                        self.log_test("Print Data - Receipt Details", True,
+                                    f"Client: {print_data.get('client_name')}, Employee: {print_data.get('employee_name')}")
+                    else:
+                        self.log_test("Print Data - Receipt Details", False,
+                                    "Missing receipt detail fields")
+                    
+                    # Verify print timestamp is generated
+                    if "print_timestamp" in print_data and print_data["print_timestamp"]:
+                        self.log_test("Print Data - Print Timestamp", True,
+                                    f"Print timestamp: {print_data['print_timestamp']}")
+                    else:
+                        self.log_test("Print Data - Print Timestamp", False,
+                                    "Missing print timestamp")
+                    
+                    # Verify itemized list with pricing
+                    items = print_data.get("items", [])
+                    if items and len(items) > 0:
+                        item_fields_complete = all(
+                            all(field in item for field in ["service", "item_type", "quantity", "price_per_item", "total_price"])
+                            for item in items
+                        )
+                        if item_fields_complete:
+                            self.log_test("Print Data - Itemized List", True,
+                                        f"Found {len(items)} items with complete pricing")
+                        else:
+                            self.log_test("Print Data - Itemized List", False,
+                                        "Items missing required pricing fields")
+                    else:
+                        self.log_test("Print Data - Itemized List", False,
+                                    "No items found in print data")
+                    
+                    # Verify total amount matches
+                    if "total_amount" in print_data:
+                        expected_total = test_receipt.get("total_amount", 0)
+                        actual_total = print_data.get("total_amount", 0)
+                        if abs(expected_total - actual_total) < 0.01:
+                            self.log_test("Print Data - Total Amount", True,
+                                        f"Total: ${actual_total:.2f}")
+                        else:
+                            self.log_test("Print Data - Total Amount", False,
+                                        f"Total mismatch: expected ${expected_total:.2f}, got ${actual_total:.2f}")
+                    
+                    # Verify deleted status is included
+                    if "is_deleted" in print_data:
+                        self.log_test("Print Data - Deleted Status", True,
+                                    f"Deleted status: {print_data['is_deleted']}")
+                    else:
+                        self.log_test("Print Data - Deleted Status", False,
+                                    "Missing deleted status field")
+                        
+                else:
+                    self.log_test("Print Receipt - Active Receipt", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Print Receipt - Active Receipt", False, f"Error: {str(e)}")
+
+        # Test printing a non-existent receipt
+        try:
+            fake_receipt_id = "non-existent-receipt-id"
+            response = self.session.get(f"{BASE_URL}/receipts/{fake_receipt_id}/print")
+            if response.status_code == 404:
+                self.log_test("Print Receipt - Non-existent Receipt", True,
+                            "Correctly returned 404 for non-existent receipt")
+            else:
+                self.log_test("Print Receipt - Non-existent Receipt", False,
+                            f"Should return 404, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Print Receipt - Non-existent Receipt", False, f"Error: {str(e)}")
+
+        # Test printing a deleted receipt (if we have one)
+        # First, create and delete a receipt for this test
+        if len(self.clients) > 0 and len(self.employees) > 0:
+            try:
+                # Create a test receipt for deletion and printing
+                test_receipt_data = {
+                    "client_id": self.clients[0]["id"],
+                    "employee_id": self.employees[0]["id"],
+                    "items": [
+                        {"service": "wash", "item_type": "shirt", "quantity": 1, "price_per_item": 15.00, "total_price": 15.00}
+                    ],
+                    "notes": "Test receipt for print after deletion"
+                }
+                
+                create_response = self.session.post(f"{BASE_URL}/receipts", json=test_receipt_data)
+                if create_response.status_code == 200:
+                    test_receipt = create_response.json()
+                    
+                    # Delete the receipt
+                    deletion_data = {
+                        "employee_id": self.employees[0]["id"],
+                        "deletion_reason": "Testing print functionality for deleted receipts"
+                    }
+                    
+                    delete_response = self.session.delete(f"{BASE_URL}/receipts/{test_receipt['id']}", json=deletion_data)
+                    if delete_response.status_code == 200:
+                        # Now test printing the deleted receipt
+                        print_response = self.session.get(f"{BASE_URL}/receipts/{test_receipt['id']}/print")
+                        if print_response.status_code == 200:
+                            deleted_print_data = print_response.json()
+                            if deleted_print_data.get("is_deleted") == True:
+                                self.log_test("Print Receipt - Deleted Receipt", True,
+                                            "Successfully printed deleted receipt with deleted status")
+                            else:
+                                self.log_test("Print Receipt - Deleted Receipt", False,
+                                            "Deleted receipt print data missing deleted status")
+                        else:
+                            self.log_test("Print Receipt - Deleted Receipt", False,
+                                        f"Could not print deleted receipt, status: {print_response.status_code}")
+                    else:
+                        self.log_test("Print Receipt - Deleted Receipt Setup", False,
+                                    "Could not delete test receipt for print testing")
+                else:
+                    self.log_test("Print Receipt - Deleted Receipt Setup", False,
+                                "Could not create test receipt for deletion/print testing")
+            except Exception as e:
+                self.log_test("Print Receipt - Deleted Receipt", False, f"Error: {str(e)}")
+
     def run_all_tests(self):
         """Run complete test suite"""
         print("=" * 60)
