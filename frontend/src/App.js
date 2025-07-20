@@ -276,7 +276,118 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         notes: notes || null
       };
 
-      await axios.post(`${API}/receipts`, receiptData);
+      const response = await axios.post(`${API}/receipts`, receiptData);
+      
+      // Show success message with option to print
+      const shouldPrint = window.confirm(
+        `Receipt created successfully!\n\nWould you like to print the receipt for ${client.name}?`
+      );
+      
+      if (shouldPrint) {
+        // Get print data and print
+        try {
+          const printResponse = await axios.get(`${API}/receipts/${response.data.id}/print`);
+          
+          // Create a temporary print window
+          const printWindow = window.open('', '_blank', 'width=800,height=600');
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Receipt - ${client.name}</title>
+                <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  .header { text-center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                  .header h1 { margin: 0; font-size: 24px; }
+                  .header h2 { margin: 5px 0; font-size: 16px; color: #666; }
+                  .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                  .info div { flex: 1; }
+                  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                  th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+                  th { background-color: #f0f0f0; font-weight: bold; }
+                  .total { border-top: 2px solid #333; margin-top: 20px; padding-top: 10px; text-align: right; }
+                  .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <h1>🧺 LaundryPro</h1>
+                  <h2>Professional Laundry Services</h2>
+                  <p>123 Clean Street, Laundry City, LC 12345<br>Phone: (555) LAUNDRY</p>
+                </div>
+                
+                <div class="info">
+                  <div>
+                    <strong>Receipt ID:</strong> #${printResponse.data.receipt_id.slice(-8).toUpperCase()}<br>
+                    <strong>Date:</strong> ${new Date(printResponse.data.created_at).toLocaleString()}<br>
+                    <strong>Status:</strong> ${printResponse.data.status}
+                  </div>
+                  <div>
+                    <strong>Customer:</strong> ${printResponse.data.client_name}<br>
+                    <strong>Phone:</strong> ${printResponse.data.client_phone}<br>
+                    <strong>Served by:</strong> ${printResponse.data.employee_name}
+                  </div>
+                </div>
+                
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Item</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${printResponse.data.items.map(item => `
+                      <tr>
+                        <td>${item.service.replace('_', ' ')}</td>
+                        <td>${item.item_type}</td>
+                        <td style="text-align: center;">${item.quantity}</td>
+                        <td style="text-align: right;">$${item.price_per_item.toFixed(2)}</td>
+                        <td style="text-align: right;">$${item.total_price.toFixed(2)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+                
+                <div class="total">
+                  <h3>TOTAL AMOUNT: $${printResponse.data.total_amount.toFixed(2)}</h3>
+                </div>
+                
+                ${printResponse.data.notes ? `
+                  <div style="margin: 20px 0; padding: 10px; background: #f9f9f9; border-left: 4px solid #333;">
+                    <strong>Special Instructions:</strong><br>
+                    ${printResponse.data.notes}
+                  </div>
+                ` : ''}
+                
+                <div class="footer">
+                  <p>Thank you for choosing LaundryPro!</p>
+                  <p>Please keep this receipt for pickup</p>
+                  <p>Questions? Call us at (555) LAUNDRY</p>
+                  <p>Printed on: ${new Date().toLocaleString()}</p>
+                </div>
+              </body>
+            </html>
+          `);
+          
+          printWindow.document.close();
+          printWindow.focus();
+          
+          // Wait a bit for content to load, then print
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+          }, 1000);
+          
+        } catch (printErr) {
+          console.error('Error printing receipt:', printErr);
+          alert('Receipt created but could not print. You can print it later from the receipts list.');
+        }
+      }
+      
       onReceiptCreated();
     } catch (err) {
       console.error('Error creating receipt:', err);
