@@ -2603,14 +2603,6 @@ function App() {
   };
 
   const handleReceiptCreated = (receiptData) => {
-    // Track action for undo/redo
-    pushAction({
-      type: 'CREATE_RECEIPT',
-      description: `Membuat bon untuk ${receiptData.client_name || 'pelanggan'}`,
-      receiptId: receiptData.id,
-      receiptData: receiptData
-    });
-    
     setSelectedClient(null);
     setActiveTab('receipts');
     
