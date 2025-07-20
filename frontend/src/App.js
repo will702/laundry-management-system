@@ -2543,7 +2543,7 @@ function App() {
               {/* Desktop Navigation - Hidden on mobile */}
               <div className="hidden sm:flex space-x-1 bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setActiveTab('create')}
+                  onClick={() => handleTabChange('create')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'create' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2553,7 +2553,7 @@ function App() {
                   Bon Baru
                 </button>
                 <button
-                  onClick={() => setActiveTab('receipts')}
+                  onClick={() => handleTabChange('receipts')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'receipts' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2563,7 +2563,7 @@ function App() {
                   Semua Bon
                 </button>
                 <button
-                  onClick={() => setActiveTab('audit')}
+                  onClick={() => handleTabChange('audit')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'audit' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2573,7 +2573,7 @@ function App() {
                   🔍 Audit
                 </button>
                 <button
-                  onClick={() => setActiveTab('services')}
+                  onClick={() => handleTabChange('services')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'services' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2584,7 +2584,7 @@ function App() {
                 </button>
                 {isAdmin && (
                   <button
-                    onClick={() => setActiveTab('clients')}
+                    onClick={() => handleTabChange('clients')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                       activeTab === 'clients' 
                         ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2595,7 +2595,7 @@ function App() {
                   </button>
                 )}
                 <button
-                  onClick={() => setActiveTab('settings')}
+                  onClick={() => handleTabChange('settings')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'settings' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2605,7 +2605,7 @@ function App() {
                   ⚙️ Settings
                 </button>
                 <button
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabChange('reports')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                     activeTab === 'reports' 
                       ? 'bg-white text-indigo-600 shadow-sm' 
@@ -2627,11 +2627,14 @@ function App() {
         </div>
       </header>
 
+      {/* Navigation Bar with Back/Forward and Undo/Redo */}
+      <NavigationBar />
+
       {/* Mobile Bottom Navigation */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-10">
         <div className={`flex ${isAdmin ? 'justify-between' : 'justify-around'} px-2`}>
           <button
-            onClick={() => setActiveTab('create')}
+            onClick={() => handleTabChange('create')}
             className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
               activeTab === 'create' 
                 ? 'text-indigo-600' 
@@ -2642,7 +2645,7 @@ function App() {
             <span>Bon Baru</span>
           </button>
           <button
-            onClick={() => setActiveTab('receipts')}
+            onClick={() => handleTabChange('receipts')}
             className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
               activeTab === 'receipts' 
                 ? 'text-indigo-600' 
@@ -2655,7 +2658,7 @@ function App() {
           {!isAdmin && (
             <>
               <button
-                onClick={() => setActiveTab('audit')}
+                onClick={() => handleTabChange('audit')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'audit' 
                     ? 'text-indigo-600' 
@@ -2666,7 +2669,7 @@ function App() {
                 <span>Audit</span>
               </button>
               <button
-                onClick={() => setActiveTab('services')}
+                onClick={() => handleTabChange('services')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'services' 
                     ? 'text-indigo-600' 
@@ -2677,7 +2680,7 @@ function App() {
                 <span>Layanan</span>
               </button>
               <button
-                onClick={() => setActiveTab('reports')}
+                onClick={() => handleTabChange('reports')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'reports' 
                     ? 'text-indigo-600' 
@@ -2692,7 +2695,7 @@ function App() {
           {isAdmin && (
             <>
               <button
-                onClick={() => setActiveTab('clients')}
+                onClick={() => handleTabChange('clients')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'clients' 
                     ? 'text-indigo-600' 
@@ -2703,7 +2706,7 @@ function App() {
                 <span>Pelanggan</span>
               </button>
               <button
-                onClick={() => setActiveTab('audit')}
+                onClick={() => handleTabChange('audit')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'audit' 
                     ? 'text-indigo-600' 
@@ -2714,7 +2717,7 @@ function App() {
                 <span>Audit</span>
               </button>
               <button
-                onClick={() => setActiveTab('reports')}
+                onClick={() => handleTabChange('reports')}
                 className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
                   activeTab === 'reports' 
                     ? 'text-indigo-600' 
