@@ -425,10 +425,32 @@ async def get_daily_summary(include_deleted: bool = False):
     result = await db.receipts.aggregate(pipeline).to_list(100)
     return result
 
-# Health check
-@api_router.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+@api_router.get("/receipts/{receipt_id}/print")
+async def get_print_receipt(receipt_id: str):
+    """Get receipt data formatted for printing"""
+    receipt = await db.receipts.find_one({"id": receipt_id})
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    
+    # Format receipt for printing with additional business info
+    print_data = {
+        "business_name": "LaundryPro Professional Services",
+        "business_address": "123 Clean Street, Laundry City, LC 12345",
+        "business_phone": "(555) LAUNDRY",
+        "receipt_id": receipt["id"],
+        "client_name": receipt["client_name"],
+        "client_phone": receipt["client_phone"],
+        "employee_name": receipt["employee_name"],
+        "items": receipt["items"],
+        "total_amount": receipt["total_amount"],
+        "status": receipt["status"],
+        "notes": receipt.get("notes", ""),
+        "created_at": receipt["created_at"],
+        "print_timestamp": datetime.now(timezone.utc),
+        "is_deleted": receipt.get("is_deleted", False)
+    }
+    
+    return print_data
 
 # Include the router in the main app
 app.include_router(api_router)
