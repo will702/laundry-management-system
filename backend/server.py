@@ -232,19 +232,21 @@ async def delete_client(client_id: str, admin_id: str):
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     
-    # Check if client has any active receipts
+    # Check if client has any ACTIVE receipts (pending or ready)
+    # Completed receipts are considered inactive
     active_receipts = await db.receipts.count_documents({
         "client_id": client_id,
-        "is_deleted": {"$ne": True}
+        "is_deleted": {"$ne": True},
+        "status": {"$in": ["pending", "ready"]}  # Only pending and ready are considered active
     })
     
     if active_receipts > 0:
         raise HTTPException(
             status_code=400, 
-            detail=f"Cannot delete client with {active_receipts} active receipts. Please complete or delete receipts first."
+            detail=f"Cannot delete client with {active_receipts} active receipts (pending/ready). Please complete or cancel them first."
         )
     
-    # Delete the client
+    # Delete the client (clients with only completed receipts can be deleted)
     result = await db.clients.delete_one({"id": client_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Client not found")
