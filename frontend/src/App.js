@@ -1731,6 +1731,14 @@ function App() {
         {activeTab === 'audit' && (
           <AuditDashboard employee={currentEmployee} />
         )}
+
+        {activeTab === 'services' && (
+          <ServiceItemsManagement employee={currentEmployee} />
+        )}
+
+        {activeTab === 'settings' && (
+          <LaundrySettings employee={currentEmployee} />
+        )}
       </main>
     </div>
   );
