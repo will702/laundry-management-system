@@ -107,16 +107,111 @@
         </div>
         
         <div id="root"></div>
-        <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+        
+        <!-- PWA Install Prompt -->
+        <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #4f46e5; color: white; padding: 16px; z-index: 1000;">
+            <div style="max-width: 600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>📱 Install LaundryPro</strong>
+                    <br>
+                    <small>Akses lebih cepat dan dapat digunakan offline</small>
+                </div>
+                <div>
+                    <button id="pwa-install-btn" style="background: white; color: #4f46e5; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 8px; cursor: pointer;">
+                        Install
+                    </button>
+                    <button id="pwa-dismiss-btn" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                        Nanti
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Hide loading screen once app loads
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    const loading = document.getElementById('app-loading');
+                    if (loading) loading.style.display = 'none';
+                }, 1000);
+            });
+            
+            // Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(function(registration) {
+                            console.log('ServiceWorker registered successfully:', registration.scope);
+                        })
+                        .catch(function(error) {
+                            console.log('ServiceWorker registration failed:', error);
+                        });
+                });
+            }
+            
+            // PWA Install Prompt
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', function(e) {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show custom install banner
+                const banner = document.getElementById('pwa-install-banner');
+                if (banner) banner.style.display = 'block';
+                
+                console.log('PWA install prompt ready');
+            });
+            
+            // Handle install button click
+            document.addEventListener('click', function(e) {
+                if (e.target.id === 'pwa-install-btn') {
+                    const banner = document.getElementById('pwa-install-banner');
+                    if (banner) banner.style.display = 'none';
+                    
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(function(choiceResult) {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('User accepted the PWA install prompt');
+                            } else {
+                                console.log('User dismissed the PWA install prompt');
+                            }
+                            deferredPrompt = null;
+                        });
+                    }
+                }
+                
+                if (e.target.id === 'pwa-dismiss-btn') {
+                    const banner = document.getElementById('pwa-install-banner');
+                    if (banner) banner.style.display = 'none';
+                }
+            });
+            
+            // Handle successful installation
+            window.addEventListener('appinstalled', function(evt) {
+                console.log('LaundryPro PWA was installed');
+                // Hide install banner if still visible
+                const banner = document.getElementById('pwa-install-banner');
+                if (banner) banner.style.display = 'none';
+                
+                // Optional: Track installation
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'pwa_install', {
+                        event_category: 'PWA',
+                        event_label: 'LaundryPro'
+                    });
+                }
+            });
+            
+            // Check if app is running in standalone mode (installed PWA)
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                console.log('Running as installed PWA');
+                document.body.classList.add('pwa-mode');
+            }
+        </script>
+        
         <a
             id="emergent-badge"
             target="_blank"
