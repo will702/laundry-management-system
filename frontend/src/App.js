@@ -74,6 +74,16 @@ const EmployeeLogin = ({ onLogin, employees }) => {
             </p>
           </div>
         )}
+        
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 mb-3">Belum punya akses admin?</p>
+          <button 
+            onClick={() => alert('Hubungi administrator sistem untuk mendapatkan kode admin')}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline transition-colors"
+          >
+            Daftar sebagai Admin
+          </button>
+        </div>
       </div>
     </div>
   );
