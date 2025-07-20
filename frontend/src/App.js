@@ -320,9 +320,11 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
               </head>
               <body>
                 <div class="header">
-                  <h1>🧺 LaundryPro</h1>
+                  ${printResponse.data.logo_url ? `<img src="${printResponse.data.logo_url}" alt="Logo" style="height: 60px; margin-bottom: 10px;">` : ''}
+                  <h1>${printResponse.data.business_name}</h1>
                   <h2>Layanan Laundry Profesional</h2>
-                  <p>Jl. Bersih No. 123, Kota Laundry, LC 12345<br>Telepon: (021) LAUNDRY</p>
+                  <p>${printResponse.data.business_address}<br>Telepon: ${printResponse.data.business_phone}</p>
+                  ${printResponse.data.business_email ? `<p>Email: ${printResponse.data.business_email}</p>` : ''}
                 </div>
                 
                 <div class="info">
@@ -373,9 +375,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                 ` : ''}
                 
                 <div class="footer">
-                  <p>Terima kasih telah memilih LaundryPro!</p>
-                  <p>Simpan bon ini untuk pengambilan</p>
-                  <p>Pertanyaan? Hubungi: (021) LAUNDRY</p>
+                  ${printResponse.data.footer_notes.split('•').map(note => `<p>${note.trim()}</p>`).join('')}
                   <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
                 </div>
               </body>
