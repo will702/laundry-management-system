@@ -2485,6 +2485,10 @@ function App() {
           <ServiceItemsManagement employee={currentEmployee} />
         )}
 
+        {activeTab === 'clients' && isAdmin && (
+          <ClientManagement employee={currentEmployee} />
+        )}
+
         {activeTab === 'settings' && (
           <LaundrySettings employee={currentEmployee} />
         )}
