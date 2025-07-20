@@ -163,10 +163,13 @@ async def create_receipt(receipt_data: ReceiptCreate):
     return receipt
 
 @api_router.get("/receipts", response_model=List[Receipt])
-async def get_receipts(limit: int = 50, employee_id: Optional[str] = None):
+async def get_receipts(limit: int = 50, employee_id: Optional[str] = None, include_deleted: bool = False):
     query = {}
     if employee_id:
         query["employee_id"] = employee_id
+    
+    if not include_deleted:
+        query["is_deleted"] = {"$ne": True}
     
     receipts = await db.receipts.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     return [Receipt(**receipt) for receipt in receipts]
