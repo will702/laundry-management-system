@@ -2349,9 +2349,46 @@ function App() {
     setActiveTab('create');
   };
 
-  const handleReceiptCreated = () => {
+  const handleTabChange = (newTab) => {
+    // Push current state to navigation history
+    pushNavigation({
+      tab: activeTab,
+      client: selectedClient,
+      timestamp: new Date()
+    });
+    
+    setActiveTab(newTab);
+  };
+
+  const handleClientSelect = (client) => {
+    // Push current state to navigation history
+    pushNavigation({
+      tab: activeTab,
+      client: selectedClient,
+      timestamp: new Date()
+    });
+    
+    setSelectedClient(client);
+  };
+
+  const handleReceiptCreated = (receiptData) => {
+    // Track action for undo/redo
+    pushAction({
+      type: 'CREATE_RECEIPT',
+      description: `Membuat bon untuk ${receiptData.client_name || 'pelanggan'}`,
+      receiptId: receiptData.id,
+      receiptData: receiptData
+    });
+    
     setSelectedClient(null);
     setActiveTab('receipts');
+    
+    // Push to navigation history
+    pushNavigation({
+      tab: 'receipts',
+      client: null,
+      timestamp: new Date()
+    });
   };
 
   const handleAdminRegistrationSuccess = (admin) => {
