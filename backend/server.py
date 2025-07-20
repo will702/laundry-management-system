@@ -353,6 +353,7 @@ async def get_employee_activity(employee_id: str, start_date: Optional[str] = No
         },
         {
             "$project": {
+                "_id": 0,  # Exclude MongoDB ObjectId
                 "id": 1,
                 "client_name": 1,
                 "total_amount": 1,
