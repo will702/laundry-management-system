@@ -1055,29 +1055,29 @@ const RecentReceipts = ({ employee }) => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Receipt</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Hapus Bon</h3>
               
               <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
                 <p className="text-sm text-yellow-800">
-                  <strong>⚠️ Important:</strong> This action will be tracked for audit purposes. 
-                  The receipt will be marked as deleted but kept in the system for fraud prevention.
+                  <strong>⚠️ Penting:</strong> Tindakan ini akan dilacak untuk tujuan audit. 
+                  Bon akan ditandai sebagai dihapus tetapi disimpan dalam sistem untuk pencegahan penipuan.
                 </p>
               </div>
 
               <div className="mb-4">
                 <p className="text-sm text-gray-700 mb-2">
-                  <strong>Receipt:</strong> {receiptToDelete?.client_name} - ${receiptToDelete?.total_amount.toFixed(2)}
+                  <strong>Bon:</strong> {receiptToDelete?.client_name} - Rp{receiptToDelete?.total_amount.toLocaleString('id-ID')}
                 </p>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for deletion: <span className="text-red-500">*</span>
+                  Alasan penghapusan: <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
-                  placeholder="e.g., Wrong client, incorrect amount, duplicate entry..."
+                  placeholder="Contoh: Pelanggan salah, jumlah salah, duplikat..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   rows="3"
                   required
@@ -1090,13 +1090,13 @@ const RecentReceipts = ({ employee }) => {
                   disabled={!deleteReason.trim()}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  Delete Receipt
+                  Hapus Bon
                 </button>
                 <button
                   onClick={closeDeleteModal}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                 >
-                  Cancel
+                  Batal
                 </button>
               </div>
             </div>
