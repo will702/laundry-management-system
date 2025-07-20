@@ -2523,46 +2523,6 @@ function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [activeTab, setActiveTab] = useState('create');
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
-  
-  // Navigation History System (Keep this)
-  const [navigationHistory, setNavigationHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-
-  // Navigation functions (Keep these)
-  const pushNavigation = (navState) => {
-    const newHistory = navigationHistory.slice(0, historyIndex + 1);
-    newHistory.push(navState);
-    setNavigationHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
-
-  const goBack = () => {
-    if (historyIndex > 0) {
-      const prevState = navigationHistory[historyIndex - 1];
-      setHistoryIndex(historyIndex - 1);
-      
-      // Restore previous state
-      if (prevState.tab) setActiveTab(prevState.tab);
-      if (prevState.client !== undefined) setSelectedClient(prevState.client);
-      
-      return true; // Successfully went back
-    }
-    return false; // No history to go back to
-  };
-
-  const goForward = () => {
-    if (historyIndex < navigationHistory.length - 1) {
-      const nextState = navigationHistory[historyIndex + 1];
-      setHistoryIndex(historyIndex + 1);
-      
-      // Restore next state
-      if (nextState.tab) setActiveTab(nextState.tab);
-      if (nextState.client !== undefined) setSelectedClient(nextState.client);
-      
-      return true;
-    }
-    return false;
-  };
 
   useEffect(() => {
     loadEmployees();
