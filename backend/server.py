@@ -251,6 +251,71 @@ async def delete_client(client_id: str, admin_id: str):
     
     return {"message": f"Client {client['name']} deleted successfully"}
 
+# Get clients with receipt count (Admin only)
+@api_router.get("/admin/clients-with-stats")
+async def get_clients_with_stats(admin_id: str):
+    # Verify admin access
+    await verify_admin(admin_id)
+    
+    # Aggregate clients with receipt statistics
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "receipts",
+                "localField": "id",
+                "foreignField": "client_id", 
+                "as": "receipts"
+            }
+        },
+        {
+            "$addFields": {
+                "total_receipts": {"$size": "$receipts"},
+                "active_receipts": {
+                    "$size": {
+                        "$filter": {
+                            "input": "$receipts",
+                            "cond": {"$ne": ["$$this.is_deleted", True]}
+                        }
+                    }
+                },
+                "total_spent": {
+                    "$sum": {
+                        "$map": {
+                            "input": {
+                                "$filter": {
+                                    "input": "$receipts", 
+                                    "cond": {"$ne": ["$$this.is_deleted", True]}
+                                }
+                            },
+                            "as": "receipt",
+                            "in": "$$receipt.total_amount"
+                        }
+                    }
+                },
+                "last_visit": {
+                    "$max": {
+                        "$map": {
+                            "input": "$receipts",
+                            "as": "receipt", 
+                            "in": "$$receipt.created_at"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "$project": {
+                "receipts": 0  # Remove full receipts array from response
+            }
+        },
+        {
+            "$sort": {"name": 1}
+        }
+    ]
+    
+    clients_with_stats = await db.clients.aggregate(pipeline).to_list(1000)
+    return clients_with_stats
+
 # Receipt endpoints
 @api_router.post("/receipts", response_model=Receipt)
 async def create_receipt(receipt_data: ReceiptCreate):
