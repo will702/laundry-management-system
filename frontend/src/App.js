@@ -2138,7 +2138,7 @@ const AuditDashboard = ({ employee }) => {
                           }`}>
                             <span>
                               {receipt.is_deleted ? '🗑️ ' : '📝 '}
-                              {receipt.client_name} - ${receipt.total_amount.toFixed(2)}
+                              {receipt.client_name} - Rp{receipt.total_amount.toLocaleString('id-ID')}
                             </span>
                             <span className="text-xs">
                               {formatDateTime(receipt.created_at)}
