@@ -221,6 +221,36 @@ async def search_clients(q: str):
     }).limit(10).to_list(10)
     return [Client(**client) for client in clients]
 
+# Delete client endpoint (Admin only)
+@api_router.delete("/clients/{client_id}")
+async def delete_client(client_id: str, admin_id: str):
+    # Verify admin access
+    await verify_admin(admin_id)
+    
+    # Check if client exists
+    client = await db.clients.find_one({"id": client_id})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    # Check if client has any active receipts
+    active_receipts = await db.receipts.count_documents({
+        "client_id": client_id,
+        "is_deleted": {"$ne": True}
+    })
+    
+    if active_receipts > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete client with {active_receipts} active receipts. Please complete or delete receipts first."
+        )
+    
+    # Delete the client
+    result = await db.clients.delete_one({"id": client_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    return {"message": f"Client {client['name']} deleted successfully"}
+
 # Receipt endpoints
 @api_router.post("/receipts", response_model=Receipt)
 async def create_receipt(receipt_data: ReceiptCreate):
