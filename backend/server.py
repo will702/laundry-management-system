@@ -188,6 +188,11 @@ async def update_receipt_status(receipt_id: str, status: str, employee_id: str):
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
     
+    # Check if receipt exists and is not deleted
+    receipt = await db.receipts.find_one({"id": receipt_id, "is_deleted": {"$ne": True}})
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found or has been deleted")
+    
     result = await db.receipts.update_one(
         {"id": receipt_id},
         {
@@ -202,6 +207,43 @@ async def update_receipt_status(receipt_id: str, status: str, employee_id: str):
         raise HTTPException(status_code=404, detail="Receipt not found")
     
     return {"message": "Status updated successfully"}
+
+@api_router.delete("/receipts/{receipt_id}")
+async def delete_receipt(receipt_id: str, delete_data: ReceiptDelete):
+    # Verify employee exists
+    employee = await db.employees.find_one({"id": delete_data.employee_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Check if receipt exists and is not already deleted
+    receipt = await db.receipts.find_one({"id": receipt_id, "is_deleted": {"$ne": True}})
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found or already deleted")
+    
+    # Soft delete - mark as deleted but keep for audit trail
+    result = await db.receipts.update_one(
+        {"id": receipt_id},
+        {
+            "$set": {
+                "is_deleted": True,
+                "deleted_at": datetime.now(timezone.utc),
+                "deleted_by_employee_id": delete_data.employee_id,
+                "deleted_by_employee_name": employee["name"],
+                "deletion_reason": delete_data.deletion_reason,
+                "status": "deleted",
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    
+    return {
+        "message": "Receipt deleted successfully", 
+        "deleted_by": employee["name"],
+        "deletion_reason": delete_data.deletion_reason
+    }
 
 # Audit endpoints
 @api_router.get("/audit/receipts-by-employee")
