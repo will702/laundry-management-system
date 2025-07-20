@@ -561,10 +561,16 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         <div className="receipt-content bg-white p-8 print:p-0">
           {/* Business Header */}
           <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">🧺 LaundryPro</h1>
-            <h2 className="text-lg font-semibold text-gray-600">Professional Laundry Services</h2>
-            <p className="text-sm text-gray-500">123 Clean Street, Laundry City, LC 12345</p>
-            <p className="text-sm text-gray-500">Phone: (555) LAUNDRY</p>
+            {receiptData.logo_url && (
+              <img src={receiptData.logo_url} alt="Logo" className="h-16 mx-auto mb-3" />
+            )}
+            <h1 className="text-3xl font-bold text-gray-800">{receiptData.business_name}</h1>
+            <h2 className="text-lg font-semibold text-gray-600">Layanan Laundry Profesional</h2>
+            <p className="text-sm text-gray-500">{receiptData.business_address}</p>
+            <p className="text-sm text-gray-500">Telepon: {receiptData.business_phone}</p>
+            {receiptData.business_email && (
+              <p className="text-sm text-gray-500">Email: {receiptData.business_email}</p>
+            )}
           </div>
 
           {/* Receipt Info */}
