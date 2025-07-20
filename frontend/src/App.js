@@ -222,6 +222,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     { service_item_id: '', service_name: '', item_type: 'shirt', quantity: 1, price_per_item: 10, total_price: 10 }
   ]);
   const [notes, setNotes] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [serviceItems, setServiceItems] = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -306,8 +307,16 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     }
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.total_price, 0);
+  };
+
+  const calculateDiscountAmount = () => {
+    return calculateSubtotal() * (discount / 100);
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() - calculateDiscountAmount();
   };
 
   const createReceipt = async () => {
@@ -326,6 +335,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         client_id: client.id,
         employee_id: employee.id,
         items: backendItems,
+        discount_percent: discount,
         notes: notes || null
       };
 
@@ -408,6 +418,8 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                 </table>
                 
                 <div class="total">
+                  <p>Subtotal: Rp${(printResponse.data.subtotal || printResponse.data.total_amount).toLocaleString('id-ID')}</p>
+                  ${printResponse.data.discount_amount ? `<p>Diskon (${printResponse.data.discount_percent}%): -Rp${printResponse.data.discount_amount.toLocaleString('id-ID')}</p>` : ''}
                   <h3>TOTAL BAYAR: Rp${printResponse.data.total_amount.toLocaleString('id-ID')}</h3>
                 </div>
                 
@@ -574,16 +586,52 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
           />
         </div>
 
-        <div className="border-t pt-4">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xl font-bold">Total Bayar:</span>
-            <span className="text-2xl font-bold text-indigo-600">Rp{calculateTotal().toLocaleString('id-ID')}</span>
+        {/* Discount Section */}
+        <div className="bg-yellow-50 p-4 rounded-lg">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Diskon (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={discount}
+                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Diskon</label>
+              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg font-medium">
+                Rp{calculateDiscountAmount().toLocaleString('id-ID')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4 bg-gray-50 p-4 rounded-lg">
+          <div className="space-y-2 text-right">
+            <div className="flex justify-between items-center">
+              <span className="text-lg">Subtotal:</span>
+              <span className="text-lg font-semibold">Rp{calculateSubtotal().toLocaleString('id-ID')}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex justify-between items-center text-red-600">
+                <span>Diskon ({discount}%):</span>
+                <span>-Rp{calculateDiscountAmount().toLocaleString('id-ID')}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center border-t pt-2">
+              <span className="text-xl font-bold">Total Bayar:</span>
+              <span className="text-2xl font-bold text-indigo-600">Rp{calculateTotal().toLocaleString('id-ID')}</span>
+            </div>
           </div>
 
           <button
             onClick={createReceipt}
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="w-full mt-4 bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Membuat Bon...' : 'Buat Bon'}
           </button>
