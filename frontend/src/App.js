@@ -2121,7 +2121,7 @@ const AuditDashboard = ({ employee }) => {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-green-600">
-                          ${empData.total_amount.toFixed(2)}
+                          Rp{empData.total_amount.toLocaleString('id-ID')}
                         </div>
                         <div className="text-sm text-gray-600">
                           {empData.total_receipts} receipts • {empData.deleted_receipts} deleted
