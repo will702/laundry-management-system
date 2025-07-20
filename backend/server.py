@@ -476,11 +476,19 @@ async def get_print_receipt(receipt_id: str):
     if not receipt:
         raise HTTPException(status_code=404, detail="Receipt not found")
     
-    # Format receipt for printing with additional business info
+    # Get business settings
+    settings = await db.settings.find_one()
+    if not settings:
+        settings = LaundrySettings().dict()
+    
+    # Format receipt for printing with business info from settings
     print_data = {
-        "business_name": "LaundryPro Professional Services",
-        "business_address": "123 Clean Street, Laundry City, LC 12345",
-        "business_phone": "(555) LAUNDRY",
+        "business_name": settings["business_name"],
+        "business_address": settings["business_address"], 
+        "business_phone": settings["business_phone"],
+        "business_email": settings["business_email"],
+        "logo_url": settings.get("logo_url"),
+        "footer_notes": settings["footer_notes"],
         "receipt_id": receipt["id"],
         "client_name": receipt["client_name"],
         "client_phone": receipt["client_phone"],
