@@ -2517,15 +2517,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('create');
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
   
-  // Navigation History System
+  // Navigation History System (Keep this)
   const [navigationHistory, setNavigationHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  
-  // Action History for Undo/Redo
-  const [actionHistory, setActionHistory] = useState([]);
-  const [actionIndex, setActionIndex] = useState(-1);
 
-  // Navigation functions
+  // Navigation functions (Keep these)
   const pushNavigation = (navState) => {
     const newHistory = navigationHistory.slice(0, historyIndex + 1);
     newHistory.push(navState);
@@ -2557,105 +2553,6 @@ function App() {
       if (nextState.client !== undefined) setSelectedClient(nextState.client);
       
       return true;
-    }
-    return false;
-  };
-
-  // Action tracking for undo/redo
-  const pushAction = (action) => {
-    const newActions = actionHistory.slice(0, actionIndex + 1);
-    newActions.push({
-      ...action,
-      timestamp: new Date(),
-      id: Date.now()
-    });
-    setActionHistory(newActions);
-    setActionIndex(newActions.length - 1);
-  };
-
-  const undoAction = async () => {
-    if (actionIndex >= 0) {
-      const actionToUndo = actionHistory[actionIndex];
-      
-      try {
-        // Execute undo operation based on action type
-        switch (actionToUndo.type) {
-          case 'CREATE_RECEIPT':
-            await axios.delete(`${API}/receipts/${actionToUndo.receiptId}?employee_id=${currentEmployee.id}`);
-            break;
-          case 'UPDATE_RECEIPT_STATUS':
-            await axios.put(`${API}/receipts/${actionToUndo.receiptId}/status`, {
-              status: actionToUndo.previousStatus,
-              employee_id: currentEmployee.id
-            });
-            break;
-          case 'DELETE_CLIENT':
-            // Re-create client (if we stored the client data)
-            if (actionToUndo.clientData) {
-              await axios.post(`${API}/clients`, actionToUndo.clientData);
-            }
-            break;
-          case 'CREATE_CLIENT':
-            await axios.delete(`${API}/clients/${actionToUndo.clientId}?admin_id=${currentEmployee.id}`);
-            break;
-          default:
-            break;
-        }
-        
-        setActionIndex(actionIndex - 1);
-        
-        // Show success message
-        const actionName = actionToUndo.description || actionToUndo.type;
-        alert(`✅ Berhasil membatalkan: ${actionName}`);
-        
-        return true;
-      } catch (err) {
-        console.error('Undo error:', err);
-        alert(`❌ Gagal membatalkan aksi: ${err.response?.data?.detail || err.message}`);
-        return false;
-      }
-    }
-    return false;
-  };
-
-  const redoAction = async () => {
-    if (actionIndex < actionHistory.length - 1) {
-      const actionToRedo = actionHistory[actionIndex + 1];
-      
-      try {
-        // Execute redo operation based on action type
-        switch (actionToRedo.type) {
-          case 'CREATE_RECEIPT':
-            await axios.post(`${API}/receipts`, actionToRedo.receiptData);
-            break;
-          case 'UPDATE_RECEIPT_STATUS':
-            await axios.put(`${API}/receipts/${actionToRedo.receiptId}/status`, {
-              status: actionToRedo.newStatus,
-              employee_id: currentEmployee.id
-            });
-            break;
-          case 'DELETE_CLIENT':
-            await axios.delete(`${API}/clients/${actionToRedo.clientId}?admin_id=${currentEmployee.id}`);
-            break;
-          case 'CREATE_CLIENT':
-            await axios.post(`${API}/clients`, actionToRedo.clientData);
-            break;
-          default:
-            break;
-        }
-        
-        setActionIndex(actionIndex + 1);
-        
-        // Show success message
-        const actionName = actionToRedo.description || actionToRedo.type;
-        alert(`✅ Berhasil mengulangi: ${actionName}`);
-        
-        return true;
-      } catch (err) {
-        console.error('Redo error:', err);
-        alert(`❌ Gagal mengulangi aksi: ${err.response?.data?.detail || err.message}`);
-        return false;
-      }
     }
     return false;
   };
