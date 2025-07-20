@@ -2249,7 +2249,10 @@ function App() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <h1 className="text-lg sm:text-2xl font-bold text-indigo-600">🧺 LaundryPro</h1>
               <span className="hidden sm:inline text-gray-500">|</span>
-              <span className="hidden sm:inline text-gray-700 text-sm">Selamat datang, {currentEmployee.name}</span>
+              <div className="hidden sm:inline text-gray-700 text-sm">
+                <span>Selamat datang, {currentEmployee.name}</span>
+                {isAdmin && <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">👑 Admin</span>}
+              </div>
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-4">
