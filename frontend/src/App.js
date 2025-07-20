@@ -752,7 +752,7 @@ const PrintReceipt = ({ receiptData, onClose }) => {
           <div className="border-t-2 border-gray-300 pt-4 mb-6">
             <div className="flex justify-between items-center">
               <span className="text-xl font-bold">TOTAL AMOUNT:</span>
-              <span className="text-2xl font-bold text-green-600">${receiptData.total_amount.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-green-600">Rp{receiptData.total_amount.toLocaleString('id-ID')}</span>
             </div>
           </div>
 
