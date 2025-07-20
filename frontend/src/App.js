@@ -862,7 +862,7 @@ const RecentReceipts = ({ employee }) => {
       loadReceipts(); // Refresh
     } catch (err) {
       console.error('Error updating status:', err);
-      alert('Error updating status. Please try again.');
+      alert('Error memperbarui status. Silakan coba lagi.');
     }
   };
 
@@ -880,7 +880,7 @@ const RecentReceipts = ({ employee }) => {
 
   const confirmDelete = async () => {
     if (!deleteReason.trim()) {
-      alert('Please provide a reason for deletion');
+      alert('Harap berikan alasan penghapusan');
       return;
     }
 
@@ -894,10 +894,10 @@ const RecentReceipts = ({ employee }) => {
       
       closeDeleteModal();
       loadReceipts(); // Refresh
-      alert('Receipt deleted successfully');
+      alert('Bon berhasil dihapus');
     } catch (err) {
       console.error('Error deleting receipt:', err);
-      alert('Error deleting receipt. Please try again.');
+      alert('Error menghapus bon. Silakan coba lagi.');
     }
   };
 
@@ -908,7 +908,7 @@ const RecentReceipts = ({ employee }) => {
       setPrintModalOpen(true);
     } catch (err) {
       console.error('Error loading print data:', err);
-      alert('Error preparing receipt for print. Please try again.');
+      alert('Error menyiapkan bon untuk cetak. Silakan coba lagi.');
     }
   };
 
