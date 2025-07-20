@@ -524,8 +524,14 @@ class LaundryProTester:
         self.test_receipt_status_updates()
         self.test_get_receipts()
 
+        print("\n🗑️ Testing Receipt Deletion Functionality...")
+        self.test_receipt_deletion_functionality()
+
         print("\n🔍 Testing Fraud Prevention Audit System...")
         self.test_audit_endpoints()
+        
+        print("\n🔍 Testing Enhanced Audit Endpoints with Deletion Tracking...")
+        self.test_enhanced_audit_endpoints()
 
         # Print summary
         print("\n" + "=" * 60)
