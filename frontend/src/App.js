@@ -659,23 +659,301 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   );
 };
 
-// Print Receipt Component - Full Screen Focus
+// Print Receipt Component - Full Screen Focus with Direct Print
 const PrintReceipt = ({ receiptData, onClose }) => {
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString();
   };
 
   const handlePrint = () => {
-    window.print();
+    // Create a new window with only the receipt content
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Receipt - ${receiptData.client_name}</title>
+      <meta charset="utf-8">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background: white;
+        }
+        .receipt-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: white;
+        }
+        .business-header {
+          text-align: center;
+          border-bottom: 2px solid #333;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .business-name {
+          font-size: 28px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .business-subtitle {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 10px;
+        }
+        .business-info {
+          font-size: 12px;
+          color: #888;
+          line-height: 1.4;
+        }
+        .receipt-info {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        .info-section {
+          width: 48%;
+          background: #f9f9f9;
+          padding: 15px;
+          border-radius: 5px;
+        }
+        .info-title {
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          font-size: 12px;
+          color: #333;
+        }
+        .info-line {
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: bold;
+          text-transform: capitalize;
+        }
+        .status-pending { background: #fef3cd; color: #856404; }
+        .status-ready { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d1e7dd; color: #0f5132; }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        .items-table th {
+          background: #f5f5f5;
+          padding: 12px 8px;
+          text-align: left;
+          font-weight: bold;
+          border-bottom: 2px solid #ddd;
+          font-size: 12px;
+          text-transform: uppercase;
+        }
+        .items-table td {
+          padding: 10px 8px;
+          border-bottom: 1px solid #eee;
+          font-size: 14px;
+        }
+        .items-table .text-center { text-align: center; }
+        .items-table .text-right { text-align: right; }
+        .total-section {
+          border-top: 2px solid #333;
+          padding-top: 20px;
+          margin-bottom: 30px;
+        }
+        .total-amount {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #e8f5e8;
+          padding: 15px;
+          border-radius: 5px;
+          border: 1px solid #28a745;
+        }
+        .total-label {
+          font-size: 18px;
+          font-weight: bold;
+        }
+        .total-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: #28a745;
+        }
+        .notes-section {
+          background: #e3f2fd;
+          border: 1px solid #2196f3;
+          padding: 15px;
+          border-radius: 5px;
+          margin-bottom: 30px;
+        }
+        .notes-title {
+          font-weight: bold;
+          color: #1976d2;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          font-size: 12px;
+        }
+        .footer {
+          text-align: center;
+          font-size: 11px;
+          color: #666;
+          border-top: 1px solid #ddd;
+          padding-top: 20px;
+          line-height: 1.6;
+        }
+        .footer-grid {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 15px;
+        }
+        .footer-item {
+          background: #f5f5f5;
+          padding: 8px;
+          border-radius: 3px;
+          width: 30%;
+          text-align: center;
+        }
+        .print-timestamp {
+          font-weight: bold;
+          margin-top: 10px;
+        }
+        .deleted-warning {
+          background: #f8d7da;
+          border: 2px solid #dc3545;
+          color: #721c24;
+          padding: 15px;
+          text-align: center;
+          border-radius: 5px;
+          margin-top: 20px;
+        }
+        @media print {
+          body { margin: 0; padding: 10px; }
+          .receipt-container { max-width: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt-container">
+        <!-- Business Header -->
+        <div class="business-header">
+          <div class="business-name">${receiptData.business_name}</div>
+          <div class="business-subtitle">Layanan Laundry Profesional</div>
+          <div class="business-info">
+            ${receiptData.business_address}<br>
+            Telepon: ${receiptData.business_phone}<br>
+            ${receiptData.business_email ? `Email: ${receiptData.business_email}` : ''}
+          </div>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+          <div class="info-section">
+            <div class="info-title">Receipt Information</div>
+            <div class="info-line"><strong>Receipt ID:</strong> #${receiptData.receipt_id.slice(-8).toUpperCase()}</div>
+            <div class="info-line"><strong>Date:</strong> ${formatDateTime(receiptData.created_at)}</div>
+            <div class="info-line"><strong>Status:</strong> 
+              <span class="status-badge status-${receiptData.status}">
+                ${receiptData.status === 'pending' ? 'Menunggu' : 
+                  receiptData.status === 'ready' ? 'Siap' : 
+                  receiptData.status === 'completed' ? 'Selesai' : receiptData.status}
+              </span>
+            </div>
+          </div>
+          <div class="info-section">
+            <div class="info-title">Customer Information</div>
+            <div class="info-line"><strong>Customer:</strong> ${receiptData.client_name}</div>
+            <div class="info-line"><strong>Phone:</strong> ${receiptData.client_phone}</div>
+            <div class="info-line"><strong>Served by:</strong> ${receiptData.employee_name}</div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Item Type</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Unit Price</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${receiptData.items.map(item => `
+              <tr>
+                <td>${item.service.replace('_', ' ')}</td>
+                <td style="text-transform: capitalize;">${item.item_type}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
+                <td class="text-right" style="font-weight: bold; color: #28a745;">Rp${item.total_price.toLocaleString('id-ID')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <!-- Total Section -->
+        <div class="total-section">
+          <div class="total-amount">
+            <span class="total-label">TOTAL AMOUNT:</span>
+            <span class="total-value">Rp${receiptData.total_amount.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+
+        ${receiptData.notes ? `
+        <!-- Notes -->
+        <div class="notes-section">
+          <div class="notes-title">Special Instructions:</div>
+          <div>${receiptData.notes}</div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div class="footer">
+          <div class="footer-grid">
+            ${receiptData.footer_notes.split('•').map(note => `
+              <div class="footer-item">${note.trim()}</div>
+            `).join('')}
+          </div>
+          <div class="print-timestamp">🖨️ Dicetak pada: ${formatDateTime(receiptData.print_timestamp)}</div>
+        </div>
+
+        ${receiptData.is_deleted ? `
+        <!-- Deleted Warning -->
+        <div class="deleted-warning">
+          <div style="font-weight: bold; font-size: 16px;">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</div>
+          <div>This is a copy for record purposes only</div>
+        </div>
+        ` : ''}
+      </div>
+    </body>
+    </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(receiptHTML);
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto print:bg-white print:relative print:inset-auto print:overflow-visible">
+    <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       {/* Full Screen Overlay - Only show the selected receipt */}
       <div className="min-h-screen bg-white">
         
         {/* Print Header - Only show on screen */}
-        <div className="bg-gray-50 border-b px-6 py-4 no-print sticky top-0 z-10">
+        <div className="bg-gray-50 border-b px-6 py-4 sticky top-0 z-10">
           <div className="flex justify-between items-center max-w-4xl mx-auto">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">🖨️ Print Receipt</h2>
@@ -688,14 +966,14 @@ const PrintReceipt = ({ receiptData, onClose }) => {
             <div className="flex items-center space-x-3">
               <button
                 onClick={handlePrint}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 transition-colors"
+                className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 transition-colors text-lg font-medium"
               >
                 <span>🖨️</span>
                 <span>Print Receipt</span>
               </button>
               <button
                 onClick={onClose}
-                className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 flex items-center space-x-2 transition-colors"
+                className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 flex items-center space-x-2 transition-colors text-lg font-medium"
               >
                 <span>✕</span>
                 <span>Close</span>
@@ -705,8 +983,8 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         </div>
 
         {/* Receipt Content - Centered and Focused */}
-        <div className="max-w-4xl mx-auto p-8 print:p-0 print:max-w-none">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8 print:border-none print:shadow-none print:rounded-none">
+        <div className="max-w-4xl mx-auto p-8">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
             
             {/* Business Header */}
             <div className="text-center border-b-2 border-gray-300 pb-6 mb-8">
@@ -819,11 +1097,11 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         </div>
 
         {/* Print Instructions - Only show on screen */}
-        <div className="no-print bg-gray-100 border-t px-6 py-4">
+        <div className="bg-gray-100 border-t px-6 py-4">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm text-gray-600">
-              💡 <strong>Tip:</strong> Use Ctrl+P (Windows) or Cmd+P (Mac) to print this receipt. 
-              The page will automatically format for optimal printing.
+              💡 <strong>Tip:</strong> Click "Print Receipt" to open a dedicated print window with only this receipt. 
+              The print will be clean and focused on this receipt only.
             </p>
           </div>
         </div>
