@@ -273,13 +273,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Employee management with PIN authentication"
-    - "Client management (CRUD operations)"
-    - "Detailed receipt creation with audit trail"
-    - "Audit endpoints for fraud prevention"
-    - "Print receipt functionality"
+    - "Mobile UI optimization for receipt creation"
+    - "Persistent user sessions and logout feature"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
