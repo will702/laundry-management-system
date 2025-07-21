@@ -2626,22 +2626,29 @@ function App() {
       if (loading) loading.style.display = 'none';
     }, 100);
     
-    // Check for stored user session with multiple attempts
-    const checkSession = () => {
+    // Session restoration with proper timing and retries
+    const restoreSession = async () => {
+      console.log('🔄 [Session] Starting session restoration process...');
+      
+      // Wait for DOM to be fully ready
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const userData = getSession();
       
       if (userData) {
-        console.log('📊 [Session Check] Found user data for:', userData.name);
+        console.log('📊 [Session] Found user data for:', userData.name);
         
         // Check if session is still valid (within 24 hours)
         const loginTime = new Date(userData.loginTime);
         const now = new Date();
         const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
         
-        console.log(`⏰ [Session Check] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
+        console.log(`⏰ [Session] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
         
         if (hoursSinceLogin < 24) {
-          console.log('✅ [Session Check] Restoring valid session for:', userData.name);
+          console.log('✅ [Session] Restoring valid session for:', userData.name);
+          
+          // Set user state directly without waiting for server validation
           setCurrentEmployee({
             id: userData.id,
             name: userData.name,
@@ -2650,40 +2657,20 @@ function App() {
             created_at: userData.created_at || new Date().toISOString(),
             is_active: true
           });
-          return true; // Session restored successfully
+          
+          return true;
         } else {
-          console.log('⏰ [Session Check] Session expired, clearing storage');
+          console.log('⏰ [Session] Session expired, clearing storage');
           clearSession();
         }
       } else {
-        console.log('ℹ️ [Session Check] No stored session found');
+        console.log('ℹ️ [Session] No stored session found');
       }
       return false;
     };
-
-    // Try to restore session with retries
-    let sessionRestored = false;
     
-    // Immediate attempt
-    sessionRestored = checkSession();
-    
-    // Retry after delay if first attempt failed
-    if (!sessionRestored) {
-      setTimeout(() => {
-        if (!sessionRestored) {
-          sessionRestored = checkSession();
-        }
-      }, 500);
-    }
-    
-    // Final retry
-    if (!sessionRestored) {
-      setTimeout(() => {
-        if (!sessionRestored) {
-          checkSession();
-        }
-      }, 1500);
-    }
+    // Start session restoration
+    restoreSession();
   }, []);
 
   const loadEmployees = async () => {
