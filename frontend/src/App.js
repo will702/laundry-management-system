@@ -2538,6 +2538,12 @@ function App() {
 
   useEffect(() => {
     loadEmployees();
+    
+    // Hide loading screen once React has rendered
+    setTimeout(() => {
+      const loading = document.getElementById('app-loading');
+      if (loading) loading.style.display = 'none';
+    }, 100);
   }, []);
 
   const loadEmployees = async () => {
