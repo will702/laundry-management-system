@@ -2644,6 +2644,7 @@ function App() {
     // Session restoration with proper timing and retries
     const restoreSession = async () => {
       console.log('🔄 [Session] Starting session restoration process...');
+      setIsRestoringSession(true);
       
       // Wait for DOM to be fully ready
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -2673,6 +2674,7 @@ function App() {
             is_active: true
           });
           
+          setIsRestoringSession(false);
           return true;
         } else {
           console.log('⏰ [Session] Session expired, clearing storage');
@@ -2681,6 +2683,8 @@ function App() {
       } else {
         console.log('ℹ️ [Session] No stored session found');
       }
+      
+      setIsRestoringSession(false);
       return false;
     };
     
