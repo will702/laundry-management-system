@@ -349,20 +349,22 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
       );
       
       if (shouldPrint) {
-        // Get print data and print
+        // Get print data and print with mobile-friendly approach
         try {
           const printResponse = await axios.get(`${API}/receipts/${response.data.id}/print`);
           
-          // Create a temporary print window
-          const printWindow = window.open('', '_blank', 'width=800,height=600');
-          printWindow.document.write(`
+          // Detect mobile device
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          const printHTML = `
             <!DOCTYPE html>
             <html>
               <head>
                 <title>Bon - ${client.name}</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
                   body { font-family: Arial, sans-serif; margin: 20px; }
-                  .header { text-center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                  .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
                   .header h1 { margin: 0; font-size: 24px; }
                   .header h2 { margin: 5px 0; font-size: 16px; color: #666; }
                   .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
@@ -372,6 +374,10 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                   th { background-color: #f0f0f0; font-weight: bold; }
                   .total { border-top: 2px solid #333; margin-top: 20px; padding-top: 10px; text-align: right; }
                   .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+                  @media print {
+                    body { margin: 0; padding: 10px; }
+                    .print-controls { display: none !important; }
+                  }
                 </style>
               </head>
               <body>
@@ -438,16 +444,44 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                 </div>
               </body>
             </html>
-          `);
+          `;
           
-          printWindow.document.close();
-          printWindow.focus();
-          
-          // Wait a bit for content to load, then print
-          setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-          }, 1000);
+          if (isMobile) {
+            // Mobile: Show print preview with print button to avoid redirect issues
+            const printElement = document.createElement('div');
+            printElement.innerHTML = `
+              <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; overflow: auto;">
+                <div class="print-controls" style="position: sticky; top: 0; background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">
+                  <button onclick="window.print()" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; font-weight: bold;">🖨️ Cetak</button>
+                  <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold;">✕ Tutup</button>
+                </div>
+                ${printHTML.replace('<body>', '<body>').replace('</body>', '</body>')}
+              </div>
+            `;
+            document.body.appendChild(printElement);
+            
+          } else {
+            // Desktop: Use popup window with better error handling
+            try {
+              const printWindow = window.open('', '_blank', 'width=800,height=600');
+              if (!printWindow) {
+                throw new Error('Popup blocked');
+              }
+              
+              printWindow.document.write(printHTML);
+              printWindow.document.close();
+              printWindow.focus();
+              
+              setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+              }, 1000);
+              
+            } catch (error) {
+              console.error('Print window error:', error);
+              alert('Pop-up diblokir! Bon berhasil dibuat. Anda bisa cetak dari daftar bon.');
+            }
+          }
           
         } catch (printErr) {
           console.error('Error printing receipt:', printErr);
