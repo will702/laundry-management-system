@@ -258,11 +258,11 @@ frontend:
 
   - task: "Persistent user sessions and logout feature"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -273,6 +273,9 @@ frontend:
       - working: false
         agent: "user"
         comment: "User reported: 'tapi saat reload langsung otomatis terkeluar' - session persistence not working on page reload, users are automatically logged out"
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: Simplified session persistence approach using direct localStorage with key 'laundry_user_session'. Added proper session restoration timing and loading state. Tested and confirmed: users remain logged in after page reload. Session data persists correctly with 24-hour expiration. Loading indicator shows during session restoration."
 
 metadata:
   created_by: "main_agent"
