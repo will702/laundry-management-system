@@ -256,7 +256,7 @@ frontend:
         agent: "main"
         comment: "✅ COMPLETE: PWA icons generated in all required sizes (16x16 to 512x512), manifest.json configured, service worker set up, PWA meta tags added to index.html"
 
-  - task: "Mobile print functionality - fix redirect errors"
+  - task: "Mobile print functionality - fix redirect errors and consistency"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
@@ -270,6 +270,12 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Implemented mobile-friendly print approach. For mobile devices: shows print preview overlay with print controls instead of popup windows. For desktop: improved popup handling with error catching and fallback. Added mobile detection, print preview with close/print buttons, and proper error handling to prevent redirects on mobile browsers."
+      - working: false
+        agent: "user" 
+        comment: "User reported: 'print function tidak work sekarang di mobile' - Print function stopped working on mobile after previous changes"
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: Removed dependency on global print function that was causing issues. Implemented direct iframe-based printing for mobile using contentDocument API. Mobile now uses hidden iframe approach with proper error handling and cleanup. Both mobile and desktop print identical receipt content - business info, customer details, items table, totals, and footer. No more redirect issues or function unavailable errors."
 
 metadata:
   created_by: "main_agent"
