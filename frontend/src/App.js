@@ -504,120 +504,179 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Bon Baru</h2>
-        <div className="text-right">
-          <div className="text-sm text-gray-600">Karyawan: {employee.name}</div>
-          <div className="text-sm text-gray-600">Pelanggan: {client.name}</div>
+    <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+      {/* Mobile-optimized header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Bon Baru</h2>
+        <div className="text-left sm:text-right text-sm text-gray-600">
+          <div>Karyawan: {employee.name}</div>
+          <div>Pelanggan: {client.name}</div>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {items.map((item, index) => (
-          <div key={index} className="grid grid-cols-12 gap-3 p-4 bg-gray-50 rounded-lg">
-            <div className="col-span-4">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Layanan</label>
-              <select
-                value={item.service_item_id}
-                onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-              >
-                {serviceItems.map(service => (
-                  <option key={service.id} value={service.id}>
-                    {service.name} - Rp{service.price.toLocaleString('id-ID')}/{service.unit}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Barang</label>
-              <select
-                value={item.item_type}
-                onChange={(e) => updateItem(index, 'item_type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-              >
-                {itemTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Qty</label>
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Harga</label>
-              <input
-                type="number"
-                min="0"
-                step="500"
-                value={item.price_per_item}
-                onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Total</label>
-              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm font-medium">
-                Rp{item.total_price.toLocaleString('id-ID')}
+          <div key={index} className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+            {/* Mobile: Stack vertically, Desktop: Grid layout */}
+            <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-3">
+              
+              {/* Service Selection - Full width on mobile */}
+              <div className="sm:col-span-5">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Layanan</label>
+                <select
+                  value={item.service_item_id}
+                  onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                >
+                  {serviceItems.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name} - Rp{service.price.toLocaleString('id-ID')}/{service.unit}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            <div className="col-span-1 flex items-end">
-              <button
-                onClick={() => removeItem(index)}
-                disabled={items.length === 1}
-                className="w-full px-2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
-              >
-                ×
-              </button>
+              {/* Item Type and Quantity - Side by side on mobile */}
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <div className="sm:col-span-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Barang</label>
+                  <select
+                    value={item.item_type}
+                    onChange={(e) => updateItem(index, 'item_type', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {itemTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Qty</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Price and Total - Side by side on mobile */}
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Harga</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="500"
+                    value={item.price_per_item}
+                    onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Total</label>
+                  <div className="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm font-bold text-green-700">
+                    Rp{item.total_price.toLocaleString('id-ID')}
+                  </div>
+                </div>
+              </div>
+
+              {/* Remove Button - Full width on mobile */}
+              <div className="sm:col-span-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1 sm:invisible">Hapus</label>
+                <button
+                  onClick={() => removeItem(index)}
+                  disabled={items.length === 1}
+                  className="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                >
+                  {items.length === 1 ? '🔒 Minimal 1' : '🗑️ Hapus'}
+                </button>
+              </div>
             </div>
           </div>
         ))}
 
+        {/* Add Item Button - More prominent on mobile */}
         <button
           onClick={addItem}
-          className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+          className="w-full py-4 sm:py-3 border-2 border-dashed border-indigo-300 text-indigo-600 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-colors font-medium text-base sm:text-sm"
         >
-          + Tambah Item
+          ➕ Tambah Item Baru
         </button>
 
+        {/* Notes - Mobile optimized */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Instruksi khusus, tanggal ambil, dll."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+            rows="2"
           />
         </div>
 
-        {/* Discount Section */}
-        <div className="bg-yellow-50 p-4 rounded-lg">
-          <div className="grid grid-cols-2 gap-4">
+        {/* Discount Section - Mobile optimized layout */}
+        <div className="bg-yellow-50 border border-yellow-200 p-3 sm:p-4 rounded-lg">
+          <h4 className="font-medium text-yellow-800 mb-3 text-sm">💰 Diskon (Opsional)</h4>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Diskon (%)</label>
+              <label className="block text-xs font-medium text-yellow-700 mb-1">Diskon (%)</label>
               <input
                 type="number"
                 min="0"
                 max="100"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                 placeholder="0"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-yellow-700 mb-1">Nilai Diskon</label>
+              <div className="w-full px-3 py-2 bg-yellow-100 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-800">
+                -Rp{discountAmount.toLocaleString('id-ID')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Section - Prominent on mobile */}
+        <div className="bg-green-50 border-2 border-green-200 p-4 rounded-xl">
+          <div className="text-center sm:text-left">
+            <div className="text-sm text-green-700 mb-1">Subtotal: Rp{subtotal.toLocaleString('id-ID')}</div>
+            {discount > 0 && (
+              <div className="text-sm text-yellow-700 mb-1">Diskon ({discount}%): -Rp{discountAmount.toLocaleString('id-ID')}</div>
+            )}
+            <div className="text-xl sm:text-2xl font-bold text-green-800 border-t border-green-200 pt-2">
+              TOTAL: Rp{totalAmount.toLocaleString('id-ID')}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons - Mobile optimized */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button
+            onClick={createReceipt}
+            disabled={loading || items.some(item => !item.service_item_id)}
+            className="w-full bg-indigo-600 text-white py-4 sm:py-3 px-6 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium text-base sm:text-sm transition-colors"
+          >
+            {loading ? '🔄 Membuat Bon...' : '✅ Buat Bon'}
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-gray-300 text-gray-700 py-4 sm:py-3 px-6 rounded-lg hover:bg-gray-400 font-medium text-base sm:text-sm transition-colors"
+          >
+            🔄 Reset Form
+          </button>
+        </div>
+      </div>
+    </div>
+  );
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Diskon</label>
