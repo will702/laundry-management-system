@@ -317,17 +317,9 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     }
   };
 
-  const calculateSubtotal = () => {
-    return items.reduce((sum, item) => sum + item.total_price, 0);
-  };
-
-  const calculateDiscountAmount = () => {
-    return calculateSubtotal() * (discount / 100);
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscountAmount();
-  };
+  const subtotal = items.reduce((total, item) => total + item.total_price, 0);
+  const discountAmount = subtotal * (discount / 100);
+  const totalAmount = subtotal - discountAmount;
 
   const createReceipt = async () => {
     setLoading(true);
