@@ -447,25 +447,65 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
           `;
           
           if (isMobile) {
-            // Mobile: Show print preview with print button to avoid redirect issues
-            const printElement = document.createElement('div');
-            printElement.innerHTML = `
-              <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; overflow: auto;">
-                <div class="print-controls" style="position: sticky; top: 0; background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">
-                  <button onclick="window.print()" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; font-weight: bold;">🖨️ Cetak</button>
-                  <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold;">✕ Tutup</button>
-                </div>
-                ${printHTML.replace('<body>', '<body>').replace('</body>', '</body>')}
-              </div>
-            `;
-            document.body.appendChild(printElement);
+            // Mobile: Use iframe method to print only receipt content (consistent with desktop)
+            const printFrame = document.createElement('iframe');
+            printFrame.style.position = 'fixed';
+            printFrame.style.top = '-1000px';
+            printFrame.style.left = '-1000px'; 
+            printFrame.style.width = '0px';
+            printFrame.style.height = '0px';
+            printFrame.style.border = 'none';
+            
+            document.body.appendChild(printFrame);
+            
+            const frameDoc = printFrame.contentWindow.document;
+            frameDoc.open();
+            frameDoc.write(printHTML);
+            frameDoc.close();
+            
+            // Print the iframe content (same as desktop)
+            setTimeout(() => {
+              try {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+                
+                // Clean up after print
+                setTimeout(() => {
+                  if (document.body.contains(printFrame)) {
+                    document.body.removeChild(printFrame);
+                  }
+                }, 1000);
+              } catch (error) {
+                console.error('Mobile print error:', error);
+                if (document.body.contains(printFrame)) {
+                  document.body.removeChild(printFrame);
+                }
+                alert('Bon berhasil dibuat tapi print error. Coba cetak dari daftar bon.');
+              }
+            }, 500);
             
           } else {
-            // Desktop: Use popup window with better error handling
+            // Desktop: Use popup window with same content
             try {
               const printWindow = window.open('', '_blank', 'width=800,height=600');
               if (!printWindow) {
-                throw new Error('Popup blocked');
+                // Fallback to iframe method if popup blocked
+                const printFrame = document.createElement('iframe');
+                printFrame.style.display = 'none';
+                document.body.appendChild(printFrame);
+                
+                const frameDoc = printFrame.contentWindow.document;
+                frameDoc.open();
+                frameDoc.write(printHTML);
+                frameDoc.close();
+                
+                setTimeout(() => {
+                  printFrame.contentWindow.print();
+                  if (document.body.contains(printFrame)) {
+                    document.body.removeChild(printFrame);
+                  }
+                }, 500);
+                return;
               }
               
               printWindow.document.write(printHTML);
