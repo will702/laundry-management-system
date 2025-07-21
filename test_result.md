@@ -285,8 +285,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile UI optimization for receipt creation"
-    - "Persistent user sessions and logout feature"
+    - "All pending mobile enhancement tasks completed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
