@@ -2569,13 +2569,15 @@ function App() {
     
     // Check for stored user session
     const storedUser = localStorage.getItem('laundry_user');
+    console.log('📦 Checking stored user session:', storedUser ? 'Found' : 'None');
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
+        console.log('📊 Parsed user data:', userData);
         // Verify user still exists in the system
         checkUserValidity(userData);
       } catch (err) {
-        console.error('Error parsing stored user data:', err);
+        console.error('❌ Error parsing stored user data:', err);
         localStorage.removeItem('laundry_user');
       }
     }
