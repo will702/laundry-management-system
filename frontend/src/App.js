@@ -678,52 +678,77 @@ const PrintReceipt = ({ receiptData, onClose }) => {
   };
 
   const handlePrint = () => {
-    // Mobile-friendly print approach
+    // Detect mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (isMobile) {
-      // For mobile devices, use a different approach
-      const printContent = generatePrintHTML();
-      
-      // Create a temporary div to hold the content
-      const originalContent = document.body.innerHTML;
-      document.body.innerHTML = printContent;
-      
-      // Print and then restore
-      window.print();
-      
-      // Restore original content after print
-      setTimeout(() => {
-        document.body.innerHTML = originalContent;
-        // Re-attach event listeners by reloading the page component
-        window.location.reload();
-      }, 1000);
-      
-    } else {
-      // Desktop: Use popup window approach
-      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-      
-      if (!printWindow) {
-        alert('Pop-up diblokir! Harap izinkan pop-up untuk mencetak.');
-        return;
-      }
-      
-      const receiptHTML = generatePrintHTML();
-      
-      printWindow.document.open();
-      printWindow.document.write(receiptHTML);
-      printWindow.document.close();
-      
-      // Wait for content to load then print
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-      };
-    }
-  };
-
-  const generatePrintHTML = () => {
+    const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Receipt - ${receiptData.client_name}</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background: white;
+        }
+        .receipt-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: white;
+        }
+        .business-header {
+          text-align: center;
+          border-bottom: 2px solid #333;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .business-name {
+          font-size: 28px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .business-subtitle {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 10px;
+        }
+        .business-info {
+          font-size: 12px;
+          color: #888;
+          line-height: 1.4;
+        }
+        .receipt-info {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        .info-section {
+          width: 48%;
+          background: #f9f9f9;
+          padding: 15px;
+          border-radius: 5px;
+        }
+        .info-title {
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          font-size: 12px;
+          color: #333;
+        }
+        .info-line {
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: bold;
     <!DOCTYPE html>
     <html>
     <head>
