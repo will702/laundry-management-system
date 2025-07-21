@@ -2567,20 +2567,38 @@ function App() {
       if (loading) loading.style.display = 'none';
     }, 100);
     
-    // Check for stored user session
-    const storedUser = localStorage.getItem('laundry_user');
-    console.log('📦 Checking stored user session:', storedUser ? 'Found' : 'None');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        console.log('📊 Parsed user data:', userData);
-        // Verify user still exists in the system
-        checkUserValidity(userData);
-      } catch (err) {
-        console.error('❌ Error parsing stored user data:', err);
-        localStorage.removeItem('laundry_user');
+    // Check for stored user session with a small delay to ensure localStorage is ready
+    setTimeout(() => {
+      const storedUser = localStorage.getItem('laundry_user');
+      console.log('📦 Checking stored user session:', storedUser ? 'Found' : 'None');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          console.log('📊 Parsed user data:', userData);
+          
+          // Simple approach: just restore the user directly if data exists and is recent
+          const loginTime = new Date(userData.loginTime);
+          const now = new Date();
+          const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+          
+          if (hoursSinceLogin < 24) { // Session expires after 24 hours
+            console.log('✅ Restoring user session directly (no server validation needed)');
+            setCurrentEmployee({
+              id: userData.id,
+              name: userData.name,
+              role: userData.role,
+              pin: userData.pin
+            });
+          } else {
+            console.log('⏰ Session expired (older than 24 hours), clearing storage');
+            localStorage.removeItem('laundry_user');
+          }
+        } catch (err) {
+          console.error('❌ Error parsing stored user data:', err);
+          localStorage.removeItem('laundry_user');
+        }
       }
-    }
+    }, 200);
   }, []);
 
   const loadEmployees = async () => {
