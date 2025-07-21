@@ -256,7 +256,7 @@ frontend:
         agent: "main"
         comment: "✅ COMPLETE: PWA icons generated in all required sizes (16x16 to 512x512), manifest.json configured, service worker set up, PWA meta tags added to index.html"
 
-  - task: "Persistent user sessions and logout feature"
+  - task: "Mobile print functionality - fix redirect errors"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
@@ -264,18 +264,12 @@ frontend:
     priority: "high"
     needs_retesting: false
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Need to implement session persistence using localStorage/cookies and add logout button functionality"
-      - working: true
-        agent: "main"
-        comment: "✅ IMPLEMENTED: Added localStorage-based session persistence with 24-hour expiration, session data includes user ID, name, role, and login time. Logout functionality clears session and shows confirmation. Users remain logged in after page refresh/reload."
       - working: false
         agent: "user"
-        comment: "User reported: 'tapi saat reload langsung otomatis terkeluar' - session persistence not working on page reload, users are automatically logged out"
+        comment: "User reported: 'Saat di hp fitur cetak kadang error karena ke redirect to other page' - Mobile print functionality causing redirect errors"
       - working: true
         agent: "main"
-        comment: "✅ FIXED: Simplified session persistence approach using direct localStorage with key 'laundry_user_session'. Added proper session restoration timing and loading state. Tested and confirmed: users remain logged in after page reload. Session data persists correctly with 24-hour expiration. Loading indicator shows during session restoration."
+        comment: "✅ FIXED: Implemented mobile-friendly print approach. For mobile devices: shows print preview overlay with print controls instead of popup windows. For desktop: improved popup handling with error catching and fallback. Added mobile detection, print preview with close/print buttons, and proper error handling to prevent redirects on mobile browsers."
 
 metadata:
   created_by: "main_agent"
