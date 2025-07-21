@@ -2536,24 +2536,69 @@ function App() {
   const [activeTab, setActiveTab] = useState('create');
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
 
-  // Function to verify stored user is still valid
-  const checkUserValidity = async (userData) => {
-    console.log('🔍 Checking user validity for:', userData);
+  // Utility functions for session storage (with localStorage and cookie fallback)
+  const saveSession = (userData) => {
+    const sessionData = JSON.stringify(userData);
+    
     try {
-      // Verify user still exists by trying to login with stored PIN
-      const response = await axios.post(`${API}/employees/login`, { pin: userData.pin });
-      console.log('👤 User validation response:', response.data);
-      if (response.data.id === userData.id) {
-        setCurrentEmployee(response.data);
-        console.log('✅ User session restored for:', response.data.name);
-      } else {
-        // User data has changed, clear storage
-        console.log('⚠️ User data has changed, clearing storage');
-        localStorage.removeItem('laundry_user');
+      // Primary: localStorage
+      localStorage.setItem('laundry_user', sessionData);
+      console.log('✅ Session saved to localStorage');
+    } catch (err) {
+      console.error('❌ localStorage failed, trying cookies:', err);
+      
+      // Fallback: cookies
+      try {
+        document.cookie = `laundry_user=${encodeURIComponent(sessionData)}; max-age=${24*60*60}; path=/`;
+        console.log('✅ Session saved to cookies as fallback');
+      } catch (cookieErr) {
+        console.error('❌ Both localStorage and cookies failed:', cookieErr);
+      }
+    }
+  };
+
+  const getSession = () => {
+    try {
+      // Primary: localStorage
+      const stored = localStorage.getItem('laundry_user');
+      if (stored) {
+        console.log('📦 Session found in localStorage');
+        return JSON.parse(stored);
       }
     } catch (err) {
-      console.error('❌ Stored user is no longer valid:', err);
+      console.error('❌ localStorage read failed, trying cookies:', err);
+    }
+    
+    // Fallback: cookies
+    try {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'laundry_user') {
+          console.log('📦 Session found in cookies');
+          return JSON.parse(decodeURIComponent(value));
+        }
+      }
+    } catch (err) {
+      console.error('❌ Cookie read failed:', err);
+    }
+    
+    return null;
+  };
+
+  const clearSession = () => {
+    try {
       localStorage.removeItem('laundry_user');
+      console.log('✅ Session cleared from localStorage');
+    } catch (err) {
+      console.error('❌ localStorage clear failed:', err);
+    }
+    
+    try {
+      document.cookie = 'laundry_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      console.log('✅ Session cleared from cookies');
+    } catch (err) {
+      console.error('❌ Cookie clear failed:', err);
     }
   };
 
