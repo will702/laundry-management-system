@@ -747,11 +747,21 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
 
 // Print Receipt Component - Full Screen Focus with Direct Print
 const PrintReceipt = ({ receiptData, onClose }) => {
+  console.log('🖨️ [PrintReceipt] Component rendered with data:', receiptData);
+  
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString();
   };
 
   const handlePrint = () => {
+    console.log('🖨️ [PrintReceipt] handlePrint called');
+    console.log('📊 [PrintReceipt] Receipt data for print:', {
+      id: receiptData?.receipt_id,
+      client: receiptData?.client_name,
+      items_count: receiptData?.items?.length,
+      total: receiptData?.total_amount
+    });
+    
     // Mobile-friendly print approach with fallback
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
