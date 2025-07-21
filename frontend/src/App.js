@@ -2558,31 +2558,44 @@ function App() {
   };
 
   const getSession = () => {
+    console.log('🔍 [getSession] Starting session retrieval...');
+    
     try {
       // Primary: localStorage
       const stored = localStorage.getItem('laundry_user');
+      console.log('🔍 [getSession] localStorage check:', stored ? 'DATA FOUND' : 'NO DATA');
+      
       if (stored) {
-        console.log('📦 Session found in localStorage');
-        return JSON.parse(stored);
+        console.log('📦 [getSession] Session found in localStorage');
+        const parsed = JSON.parse(stored);
+        console.log('📊 [getSession] Parsed data:', parsed);
+        return parsed;
       }
     } catch (err) {
-      console.error('❌ localStorage read failed, trying cookies:', err);
+      console.error('❌ [getSession] localStorage read failed:', err);
     }
     
     // Fallback: cookies
     try {
+      console.log('🍪 [getSession] Checking cookies as fallback...');
       const cookies = document.cookie.split(';');
+      console.log('🍪 [getSession] Found cookies:', cookies.length);
+      
       for (let cookie of cookies) {
         const [name, value] = cookie.trim().split('=');
         if (name === 'laundry_user') {
-          console.log('📦 Session found in cookies');
-          return JSON.parse(decodeURIComponent(value));
+          console.log('📦 [getSession] Session found in cookies');
+          const parsed = JSON.parse(decodeURIComponent(value));
+          console.log('📊 [getSession] Parsed cookie data:', parsed);
+          return parsed;
         }
       }
+      console.log('🍪 [getSession] No session cookie found');
     } catch (err) {
-      console.error('❌ Cookie read failed:', err);
+      console.error('❌ [getSession] Cookie read failed:', err);
     }
     
+    console.log('❌ [getSession] No session found in any storage');
     return null;
   };
 
