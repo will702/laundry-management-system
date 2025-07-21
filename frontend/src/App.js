@@ -762,6 +762,25 @@ const PrintReceipt = ({ receiptData, onClose }) => {
       total: receiptData?.total_amount
     });
     
+    // Validate receipt data before printing
+    if (!receiptData) {
+      console.error('❌ [PrintReceipt] No receipt data available for printing');
+      alert('Data bon tidak tersedia untuk cetak. Silakan tutup dan coba lagi.');
+      return;
+    }
+    
+    // Validate required fields
+    const requiredFields = ['receipt_id', 'client_name', 'items', 'total_amount', 'business_name'];
+    const missingFields = requiredFields.filter(field => !receiptData[field]);
+    
+    if (missingFields.length > 0) {
+      console.error('❌ [PrintReceipt] Missing required fields:', missingFields);
+      alert(`Data bon tidak lengkap untuk cetak. Field yang hilang: ${missingFields.join(', ')}`);
+      return;
+    }
+    
+    console.log('✅ [PrintReceipt] Data validation passed, proceeding with print...');
+    
     // Mobile-friendly print approach with fallback
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
