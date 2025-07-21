@@ -678,10 +678,52 @@ const PrintReceipt = ({ receiptData, onClose }) => {
   };
 
   const handlePrint = () => {
-    // Create a new window with only the receipt content
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    // Mobile-friendly print approach
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    const receiptHTML = `
+    if (isMobile) {
+      // For mobile devices, use a different approach
+      const printContent = generatePrintHTML();
+      
+      // Create a temporary div to hold the content
+      const originalContent = document.body.innerHTML;
+      document.body.innerHTML = printContent;
+      
+      // Print and then restore
+      window.print();
+      
+      // Restore original content after print
+      setTimeout(() => {
+        document.body.innerHTML = originalContent;
+        // Re-attach event listeners by reloading the page component
+        window.location.reload();
+      }, 1000);
+      
+    } else {
+      // Desktop: Use popup window approach
+      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      
+      if (!printWindow) {
+        alert('Pop-up diblokir! Harap izinkan pop-up untuk mencetak.');
+        return;
+      }
+      
+      const receiptHTML = generatePrintHTML();
+      
+      printWindow.document.open();
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+      
+      // Wait for content to load then print
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      };
+    }
+  };
+
+  const generatePrintHTML = () => {
     <!DOCTYPE html>
     <html>
     <head>
