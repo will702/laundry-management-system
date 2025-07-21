@@ -2740,9 +2740,13 @@ function App() {
     setSelectedClient(null);
     setActiveTab('create');
     
-    // Clear stored session using utility function
-    clearSession();
-    console.log('✅ [Logout] Session cleared');
+    // Clear stored session directly
+    try {
+      localStorage.removeItem('laundry_user_session');
+      console.log('✅ [Logout] Session cleared from localStorage');
+    } catch (error) {
+      console.error('❌ [Logout] Failed to clear session:', error);
+    }
     
     // Show logout confirmation
     setTimeout(() => {
