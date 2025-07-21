@@ -2538,18 +2538,21 @@ function App() {
 
   // Function to verify stored user is still valid
   const checkUserValidity = async (userData) => {
+    console.log('🔍 Checking user validity for:', userData);
     try {
       // Verify user still exists by trying to login with stored PIN
       const response = await axios.post(`${API}/employees/login`, { pin: userData.pin });
+      console.log('👤 User validation response:', response.data);
       if (response.data.id === userData.id) {
         setCurrentEmployee(response.data);
-        console.log('User session restored for:', response.data.name);
+        console.log('✅ User session restored for:', response.data.name);
       } else {
         // User data has changed, clear storage
+        console.log('⚠️ User data has changed, clearing storage');
         localStorage.removeItem('laundry_user');
       }
     } catch (err) {
-      console.error('Stored user is no longer valid:', err);
+      console.error('❌ Stored user is no longer valid:', err);
       localStorage.removeItem('laundry_user');
     }
   };
