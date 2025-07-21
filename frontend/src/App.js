@@ -2536,6 +2536,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('create');
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
 
+  // Load user from localStorage on app start
   useEffect(() => {
     loadEmployees();
     
@@ -2544,7 +2545,38 @@ function App() {
       const loading = document.getElementById('app-loading');
       if (loading) loading.style.display = 'none';
     }, 100);
+    
+    // Check for stored user session
+    const storedUser = localStorage.getItem('laundry_user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Verify user still exists in the system
+        checkUserValidity(userData);
+      } catch (err) {
+        console.error('Error parsing stored user data:', err);
+        localStorage.removeItem('laundry_user');
+      }
+    }
   }, []);
+
+  // Function to verify stored user is still valid
+  const checkUserValidity = async (userData) => {
+    try {
+      // Verify user still exists by trying to login with stored PIN
+      const response = await axios.post(`${API}/employees/login`, { pin: userData.pin });
+      if (response.data.id === userData.id) {
+        setCurrentEmployee(response.data);
+        console.log('User session restored for:', response.data.name);
+      } else {
+        // User data has changed, clear storage
+        localStorage.removeItem('laundry_user');
+      }
+    } catch (err) {
+      console.error('Stored user is no longer valid:', err);
+      localStorage.removeItem('laundry_user');
+    }
+  };
 
   const loadEmployees = async () => {
     try {
