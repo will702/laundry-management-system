@@ -212,7 +212,7 @@ class PrintFunctionalityTester:
                     "business_info": ["business_name", "business_address", "business_phone"],
                     "receipt_details": ["receipt_id", "created_at", "status", "client_name", "client_phone", "employee_name"],
                     "items": ["items"],  # Should be array with service, item_type, quantity, price_per_item, total_price
-                    "totals": ["total_amount"],  # subtotal, discount fields optional
+                    "totals": ["subtotal", "total_amount", "discount_percent", "discount_amount"],  # All discount fields should be present
                     "metadata": ["footer_notes", "print_timestamp"]
                 }
                 
