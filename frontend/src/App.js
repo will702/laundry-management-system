@@ -2403,12 +2403,17 @@ const RecentReceipts = ({ employee }) => {
   };
 
   const openPrintModal = async (receipt) => {
+    console.log('🖨️ [Print] Opening print modal for receipt:', receipt.id);
     try {
+      console.log('📡 [Print] Fetching print data from API...');
       const response = await axios.get(`${API}/receipts/${receipt.id}/print`);
+      console.log('✅ [Print] Print data fetched successfully:', response.data);
+      
       setPrintReceiptData(response.data);
       setPrintModalOpen(true);
+      console.log('✅ [Print] Print modal opened');
     } catch (err) {
-      console.error('Error loading print data:', err);
+      console.error('❌ [Print] Error loading print data:', err);
       alert('Error menyiapkan bon untuk cetak. Silakan coba lagi.');
     }
   };
