@@ -1014,9 +1014,7 @@ const PrintReceipt = ({ receiptData, onClose }) => {
     </html>
     `;
 
-    // Detect mobile device for different print strategy
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+    // Mobile vs Desktop print strategy based on detected device
     if (isMobile) {
       // Mobile approach: Use current page print to avoid popup issues
       const printElement = document.createElement('div');
