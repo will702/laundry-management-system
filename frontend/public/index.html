@@ -237,6 +237,11 @@
                 display: none !important;
                 visibility: hidden !important;
                 opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
             }
             
             /* Hide any badges in bottom right corner */
@@ -244,6 +249,45 @@
                 display: none !important;
             }
         </style>
+        
+        <script>
+            // Aggressively remove any Emergent badges that get added dynamically
+            function removeEmergentBadges() {
+                // Remove by ID
+                const badgeById = document.getElementById('emergent-badge');
+                if (badgeById) {
+                    badgeById.remove();
+                }
+                
+                // Remove any links containing "emergent"
+                const emergentLinks = document.querySelectorAll('a[href*="emergent"]');
+                emergentLinks.forEach(link => link.remove());
+                
+                // Remove any elements with "Made with Emergent" text
+                const allElements = document.querySelectorAll('*');
+                allElements.forEach(el => {
+                    if (el.textContent && el.textContent.includes('Made with Emergent')) {
+                        el.remove();
+                    }
+                });
+            }
+            
+            // Run immediately
+            removeEmergentBadges();
+            
+            // Run after DOM is loaded
+            document.addEventListener('DOMContentLoaded', removeEmergentBadges);
+            
+            // Run periodically to catch dynamically added badges
+            setInterval(removeEmergentBadges, 1000);
+            
+            // Watch for new elements being added
+            const observer = new MutationObserver(removeEmergentBadges);
+            observer.observe(document.body, { 
+                childList: true, 
+                subtree: true 
+            });
+        </script>
         
         <script>
             !(function (t, e) {
