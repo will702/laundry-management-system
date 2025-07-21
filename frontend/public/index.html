@@ -130,11 +130,28 @@
         <script>
             // Hide loading screen once app loads
             document.addEventListener('DOMContentLoaded', function() {
+                // Check periodically if React has rendered
+                const checkReactLoaded = () => {
+                    const rootElement = document.getElementById('root');
+                    if (rootElement && rootElement.children.length > 0) {
+                        const loading = document.getElementById('app-loading');
+                        if (loading) loading.style.display = 'none';
+                    } else {
+                        // Check again after a short delay
+                        setTimeout(checkReactLoaded, 500);
+                    }
+                };
+                
+                // Start checking after a minimum delay
+                setTimeout(checkReactLoaded, 1000);
+                
+                // Fallback: hide loading after maximum 10 seconds
                 setTimeout(function() {
                     const loading = document.getElementById('app-loading');
                     if (loading) loading.style.display = 'none';
-                }, 1000);
+                }, 10000);
             });
+            
             
             // Service Worker Registration
             if ('serviceWorker' in navigator) {
