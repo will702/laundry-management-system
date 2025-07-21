@@ -132,10 +132,10 @@ class PrintFunctionalityTester:
                     self.log_test(f"{test_name} - Items Pricing", False, "No items found")
                 
                 # Test 4: Verify totals and discount fields
-                total_fields = ["subtotal", "total_amount", "discount_percent"]
-                # Note: subtotal might not be in print_data, so we check what's available
+                total_fields = ["subtotal", "total_amount", "discount_percent", "discount_amount"]
                 available_totals = [field for field in total_fields if field in print_data]
-                self.log_test(f"{test_name} - Total Fields", len(available_totals) > 0,
+                totals_complete = len(available_totals) >= 2  # At least subtotal and total_amount
+                self.log_test(f"{test_name} - Total Fields", totals_complete,
                             f"Available: {available_totals}")
                 
                 # Test 5: Verify footer notes and print timestamp
