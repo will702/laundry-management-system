@@ -2535,6 +2535,7 @@ function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [activeTab, setActiveTab] = useState('create');
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(true); // Add loading state for session
 
   // Utility functions for session storage (with localStorage and cookie fallback)
   const saveSession = (userData) => {
