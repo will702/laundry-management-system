@@ -2613,50 +2613,64 @@ function App() {
       if (loading) loading.style.display = 'none';
     }, 100);
     
-    // Check for stored user session with multiple attempts and longer delay
+    // Check for stored user session with multiple attempts
     const checkSession = () => {
-      const storedUser = localStorage.getItem('laundry_user');
-      console.log('🔍 [Session Check] Looking for stored user:', storedUser ? 'FOUND' : 'NOT FOUND');
+      const userData = getSession();
       
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          console.log('📊 [Session Check] Parsed user data:', userData);
-          
-          // Check if session is still valid (within 24 hours)
-          const loginTime = new Date(userData.loginTime);
-          const now = new Date();
-          const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
-          
-          console.log(`⏰ [Session Check] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
-          
-          if (hoursSinceLogin < 24) {
-            console.log('✅ [Session Check] Restoring valid session for:', userData.name);
-            setCurrentEmployee({
-              id: userData.id,
-              name: userData.name,
-              role: userData.role,
-              pin: userData.pin,
-              created_at: userData.created_at || new Date().toISOString(),
-              is_active: true
-            });
-          } else {
-            console.log('⏰ [Session Check] Session expired, clearing storage');
-            localStorage.removeItem('laundry_user');
-          }
-        } catch (err) {
-          console.error('❌ [Session Check] Error parsing stored user data:', err);
-          localStorage.removeItem('laundry_user');
+      if (userData) {
+        console.log('📊 [Session Check] Found user data for:', userData.name);
+        
+        // Check if session is still valid (within 24 hours)
+        const loginTime = new Date(userData.loginTime);
+        const now = new Date();
+        const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+        
+        console.log(`⏰ [Session Check] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
+        
+        if (hoursSinceLogin < 24) {
+          console.log('✅ [Session Check] Restoring valid session for:', userData.name);
+          setCurrentEmployee({
+            id: userData.id,
+            name: userData.name,
+            role: userData.role,
+            pin: userData.pin,
+            created_at: userData.created_at || new Date().toISOString(),
+            is_active: true
+          });
+          return true; // Session restored successfully
+        } else {
+          console.log('⏰ [Session Check] Session expired, clearing storage');
+          clearSession();
         }
       } else {
         console.log('ℹ️ [Session Check] No stored session found');
       }
+      return false;
     };
 
-    // Try multiple times with different delays to ensure localStorage is accessible
-    setTimeout(checkSession, 100);
-    setTimeout(checkSession, 500);
-    setTimeout(checkSession, 1000);
+    // Try to restore session with retries
+    let sessionRestored = false;
+    
+    // Immediate attempt
+    sessionRestored = checkSession();
+    
+    // Retry after delay if first attempt failed
+    if (!sessionRestored) {
+      setTimeout(() => {
+        if (!sessionRestored) {
+          sessionRestored = checkSession();
+        }
+      }, 500);
+    }
+    
+    // Final retry
+    if (!sessionRestored) {
+      setTimeout(() => {
+        if (!sessionRestored) {
+          checkSession();
+        }
+      }, 1500);
+    }
   }, []);
 
   const loadEmployees = async () => {
