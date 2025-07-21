@@ -2641,55 +2641,52 @@ function App() {
       if (loading) loading.style.display = 'none';
     }, 100);
     
-    // Session restoration with proper timing and retries
-    const restoreSession = async () => {
-      console.log('🔄 [Session] Starting session restoration process...');
-      setIsRestoringSession(true);
+    // Simple session restoration
+    const restoreSession = () => {
+      console.log('🔄 [Session] Checking for stored session...');
       
-      // Wait for DOM to be fully ready
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const userData = getSession();
-      
-      if (userData) {
-        console.log('📊 [Session] Found user data for:', userData.name);
+      try {
+        const storedSession = localStorage.getItem('laundry_user_session');
         
-        // Check if session is still valid (within 24 hours)
-        const loginTime = new Date(userData.loginTime);
-        const now = new Date();
-        const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
-        
-        console.log(`⏰ [Session] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
-        
-        if (hoursSinceLogin < 24) {
-          console.log('✅ [Session] Restoring valid session for:', userData.name);
+        if (storedSession) {
+          console.log('📦 [Session] Found stored session data');
           
-          // Set user state directly without waiting for server validation
-          setCurrentEmployee({
-            id: userData.id,
-            name: userData.name,
-            role: userData.role,
-            pin: userData.pin,
-            created_at: userData.created_at || new Date().toISOString(),
-            is_active: true
-          });
+          const userData = JSON.parse(storedSession);
+          const loginTime = new Date(userData.loginTime);
+          const now = new Date();
+          const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
           
-          setIsRestoringSession(false);
-          return true;
+          console.log(`⏰ [Session] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
+          
+          if (hoursSinceLogin < 24) {
+            console.log('✅ [Session] Restoring valid session for:', userData.name);
+            setCurrentEmployee({
+              id: userData.id,
+              name: userData.name,
+              role: userData.role,
+              pin: userData.pin,
+              created_at: userData.created_at || new Date().toISOString(),
+              is_active: true
+            });
+            setIsRestoringSession(false);
+            return;
+          } else {
+            console.log('⏰ [Session] Session expired, removing');
+            localStorage.removeItem('laundry_user_session');
+          }
         } else {
-          console.log('⏰ [Session] Session expired, clearing storage');
-          clearSession();
+          console.log('ℹ️ [Session] No stored session found');
         }
-      } else {
-        console.log('ℹ️ [Session] No stored session found');
+      } catch (error) {
+        console.error('❌ [Session] Error during restoration:', error);
+        localStorage.removeItem('laundry_user_session');
       }
       
       setIsRestoringSession(false);
-      return false;
     };
     
-    // Start session restoration
-    restoreSession();
+    // Start restoration after a brief delay
+    setTimeout(restoreSession, 500);
   }, []);
 
   const loadEmployees = async () => {
