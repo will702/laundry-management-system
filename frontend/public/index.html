@@ -227,7 +227,23 @@
                 console.log('Running as installed PWA');
                 document.body.classList.add('pwa-mode');
             }
-        </script>
+        <style>
+            /* Hide any Emergent badges that might be injected by analytics */
+            #emergent-badge,
+            a[href*="emergent.sh"],
+            a[href*="emergent"],
+            [id*="emergent"],
+            [class*="emergent"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+            }
+            
+            /* Hide any badges in bottom right corner */
+            a[style*="position: fixed"][style*="bottom"][style*="right"] {
+                display: none !important;
+            }
+        </style>
         
         <script>
             !(function (t, e) {
