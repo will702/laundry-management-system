@@ -2705,7 +2705,7 @@ function App() {
     console.log('🔐 [Login] Starting login process for:', employee.name);
     setCurrentEmployee(employee);
     
-    // Store user session using utility function
+    // Store user session using simple direct approach
     const userSession = {
       id: employee.id,
       name: employee.name,
@@ -2716,8 +2716,22 @@ function App() {
       loginTime: new Date().toISOString()
     };
     
-    saveSession(userSession);
-    console.log('✅ [Login] Session saved for:', employee.name);
+    // Direct localStorage save with immediate verification
+    try {
+      localStorage.setItem('laundry_user_session', JSON.stringify(userSession));
+      
+      // Immediately verify
+      const verification = localStorage.getItem('laundry_user_session');
+      if (verification) {
+        console.log('✅ [Login] Session verified saved to localStorage');
+      } else {
+        console.error('❌ [Login] Session save verification failed');
+      }
+    } catch (error) {
+      console.error('❌ [Login] Failed to save session:', error);
+    }
+    
+    console.log('✅ [Login] Login process completed for:', employee.name);
   };
 
   const handleLogout = () => {
