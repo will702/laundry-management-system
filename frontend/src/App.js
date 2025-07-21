@@ -1348,82 +1348,72 @@ const PrintReceipt = ({ receiptData, onClose }) => {
     </html>
     `;
 
-    // Mobile vs Desktop print strategy based on detected device
+    // CONSISTENT PRINT APPROACH FOR MOBILE AND DESKTOP
+    // Both mobile and desktop will print the SAME content - only the receipt
+    
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     if (isMobile) {
-      // Mobile approach: Use current page print to avoid popup issues
-      const printElement = document.createElement('div');
-      printElement.innerHTML = receiptHTML;
-      printElement.style.position = 'fixed';
-      printElement.style.top = '0';
-      printElement.style.left = '0';
-      printElement.style.width = '100%';
-      printElement.style.height = '100%';
-      printElement.style.backgroundColor = 'white';
-      printElement.style.zIndex = '10000';
-      printElement.style.overflow = 'auto';
+      // Mobile: Use invisible iframe to print only receipt content (same as desktop)
+      const printFrame = document.createElement('iframe');
+      printFrame.style.position = 'fixed';
+      printFrame.style.top = '-1000px';
+      printFrame.style.left = '-1000px';
+      printFrame.style.width = '0px';
+      printFrame.style.height = '0px';
+      printFrame.style.border = 'none';
       
-      // Add close button for mobile
-      const closeButton = document.createElement('button');
-      closeButton.innerHTML = '✕ Tutup';
-      closeButton.style.position = 'fixed';
-      closeButton.style.top = '10px';
-      closeButton.style.right = '10px';
-      closeButton.style.zIndex = '10001';
-      closeButton.style.padding = '8px 16px';
-      closeButton.style.backgroundColor = '#dc3545';
-      closeButton.style.color = 'white';
-      closeButton.style.border = 'none';
-      closeButton.style.borderRadius = '4px';
-      closeButton.style.fontWeight = 'bold';
-      closeButton.onclick = () => {
-        document.body.removeChild(printElement);
-      };
+      document.body.appendChild(printFrame);
       
-      printElement.appendChild(closeButton);
+      const frameDoc = printFrame.contentWindow.document;
+      frameDoc.open();
+      frameDoc.write(receiptHTML);
+      frameDoc.close();
       
-      // Add print button for mobile
-      const printButton = document.createElement('button');
-      printButton.innerHTML = '🖨️ Cetak';
-      printButton.style.position = 'fixed';
-      printButton.style.top = '10px';
-      printButton.style.right = '90px';
-      printButton.style.zIndex = '10001';
-      printButton.style.padding = '8px 16px';
-      printButton.style.backgroundColor = '#28a745';
-      printButton.style.color = 'white';
-      printButton.style.border = 'none';
-      printButton.style.borderRadius = '4px';
-      printButton.style.fontWeight = 'bold';
-      printButton.onclick = () => {
-        // Hide buttons during print
-        closeButton.style.display = 'none';
-        printButton.style.display = 'none';
-        
-        window.print();
-        
-        // Show buttons again after print
-        setTimeout(() => {
-          closeButton.style.display = 'block';
-          printButton.style.display = 'block';
-        }, 1000);
-      };
-      
-      printElement.appendChild(printButton);
-      document.body.appendChild(printElement);
+      // Wait for content to load then print
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+          
+          // Clean up after print
+          setTimeout(() => {
+            if (document.body.contains(printFrame)) {
+              document.body.removeChild(printFrame);
+            }
+          }, 1000);
+        } catch (error) {
+          console.error('Mobile print error:', error);
+          // Clean up and show fallback
+          if (document.body.contains(printFrame)) {
+            document.body.removeChild(printFrame);
+          }
+          alert('Print tidak berhasil. Silakan coba lagi.');
+        }
+      }, 500);
       
     } else {
-      // Desktop approach: Use popup window (but with better error handling)
+      // Desktop: Use popup window (same receipt content)
       try {
         const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
         
         if (!printWindow) {
-          // Fallback if popup is blocked
-          alert('Pop-up diblokir! Menggunakan mode cetak alternatif...');
-          const printElement = document.createElement('div');
-          printElement.innerHTML = receiptHTML;
-          document.body.appendChild(printElement);
-          window.print();
-          document.body.removeChild(printElement);
+          // Fallback: use iframe method like mobile
+          const printFrame = document.createElement('iframe');
+          printFrame.style.display = 'none';
+          document.body.appendChild(printFrame);
+          
+          const frameDoc = printFrame.contentWindow.document;
+          frameDoc.open();
+          frameDoc.write(receiptHTML);
+          frameDoc.close();
+          
+          setTimeout(() => {
+            printFrame.contentWindow.print();
+            if (document.body.contains(printFrame)) {
+              document.body.removeChild(printFrame);
+            }
+          }, 500);
           return;
         }
 
@@ -1431,7 +1421,6 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         printWindow.document.write(receiptHTML);
         printWindow.document.close();
         
-        // Wait for content to load then print
         printWindow.onload = () => {
           printWindow.focus();
           printWindow.print();
@@ -1439,13 +1428,23 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         };
         
       } catch (error) {
-        console.error('Error opening print window:', error);
-        alert('Tidak dapat membuka jendela cetak. Menggunakan mode cetak alternatif...');
-        const printElement = document.createElement('div');
-        printElement.innerHTML = receiptHTML;
-        document.body.appendChild(printElement);
-        window.print();
-        document.body.removeChild(printElement);
+        console.error('Desktop print error:', error);
+        // Fallback: use iframe method
+        const printFrame = document.createElement('iframe');
+        printFrame.style.display = 'none';
+        document.body.appendChild(printFrame);
+        
+        const frameDoc = printFrame.contentWindow.document;
+        frameDoc.open();
+        frameDoc.write(receiptHTML);
+        frameDoc.close();
+        
+        setTimeout(() => {
+          printFrame.contentWindow.print();
+          if (document.body.contains(printFrame)) {
+            document.body.removeChild(printFrame);
+          }
+        }, 500);
       }
     }
   };
