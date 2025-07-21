@@ -752,217 +752,282 @@ const PrintReceipt = ({ receiptData, onClose }) => {
   };
 
   const handlePrint = () => {
-    // Use the global print function for consistency between mobile and desktop
-    if (window.printReceipt) {
-      const receiptHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Receipt - ${receiptData.client_name}</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: white;
-          }
-          .receipt-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-          }
-          .business-header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-          }
-          .business-name {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 5px;
-          }
-          .business-subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 10px;
-          }
-          .business-info {
-            font-size: 12px;
-            color: #888;
-            line-height: 1.4;
-          }
-          .receipt-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-          }
-          .info-section {
-            width: 48%;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-          }
-          .info-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            font-size: 12px;
-            color: #333;
-          }
-          .info-line {
-            margin-bottom: 8px;
-            font-size: 14px;
-          }
-          .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-          }
-          .items-table th,
-          .items-table td {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: left;
-          }
-          .items-table th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-          }
-          .text-center { text-align: center; }
-          .text-right { text-align: right; }
-          
-          .totals-section {
-            border-top: 2px solid #333;
-            margin-top: 30px;
-            padding-top: 15px;
-          }
-          .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-          }
-          .final-total {
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 18px;
-          }
-          
-          .footer {
-            text-align: center;
-            font-size: 11px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-            line-height: 1.6;
-          }
-          
-          @media print {
-            body { margin: 0; padding: 10px; }
-            .receipt-container { max-width: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="receipt-container">
-          <!-- Business Header -->
-          <div class="business-header">
-            <div class="business-name">${receiptData.business_name}</div>
-            <div class="business-subtitle">Layanan Laundry Profesional</div>
-            <div class="business-info">
-              ${receiptData.business_address}<br>
-              Telepon: ${receiptData.business_phone}<br>
-              ${receiptData.business_email ? `Email: ${receiptData.business_email}` : ''}
-            </div>
-          </div>
-
-          <!-- Receipt Info -->
-          <div class="receipt-info">
-            <div class="info-section">
-              <div class="info-title">Receipt Information</div>
-              <div class="info-line"><strong>Receipt ID:</strong> #${receiptData.receipt_id.slice(-8).toUpperCase()}</div>
-              <div class="info-line"><strong>Date:</strong> ${formatDateTime(receiptData.created_at)}</div>
-              <div class="info-line"><strong>Status:</strong> ${receiptData.status}</div>
-            </div>
-            <div class="info-section">
-              <div class="info-title">Customer Information</div>
-              <div class="info-line"><strong>Customer:</strong> ${receiptData.client_name}</div>
-              <div class="info-line"><strong>Phone:</strong> ${receiptData.client_phone}</div>
-              <div class="info-line"><strong>Served by:</strong> ${receiptData.employee_name}</div>
-            </div>
-          </div>
-
-          <!-- Items Table -->
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Item Type</th>
-                <th class="text-center">Qty</th>
-                <th class="text-right">Unit Price</th>
-                <th class="text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${receiptData.items.map(item => `
-                <tr>
-                  <td>${item.service}</td>
-                  <td>${item.item_type}</td>
-                  <td class="text-center">${item.quantity}</td>
-                  <td class="text-right">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
-                  <td class="text-right">Rp${item.total_price.toLocaleString('id-ID')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <!-- Totals -->
-          <div class="totals-section">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span>Rp${receiptData.subtotal.toLocaleString('id-ID')}</span>
-            </div>
-            ${receiptData.discount_amount ? `
-            <div class="total-row">
-              <span>Diskon (${receiptData.discount_percent}%):</span>
-              <span>-Rp${receiptData.discount_amount.toLocaleString('id-ID')}</span>
-            </div>
-            ` : ''}
-            <div class="final-total">
-              <span>TOTAL BAYAR:</span>
-              <span>Rp${receiptData.total_amount.toLocaleString('id-ID')}</span>
-            </div>
-          </div>
-
-          ${receiptData.notes ? `
-          <!-- Notes -->
-          <div style="margin: 30px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #333;">
-            <div style="font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 12px;">Instruksi Khusus:</div>
-            <div>${receiptData.notes}</div>
-          </div>
-          ` : ''}
-
-          <!-- Footer -->
-          <div class="footer">
-            <div>Terima kasih atas kepercayaan Anda</div>
-            <div>🖨️ Dicetak pada: ${formatDateTime(receiptData.print_timestamp || new Date())}</div>
+    // Mobile-friendly print approach with fallback
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Receipt - ${receiptData.client_name}</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background: white;
+        }
+        .receipt-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: white;
+        }
+        .business-header {
+          text-align: center;
+          border-bottom: 2px solid #333;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .business-name {
+          font-size: 28px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .business-subtitle {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 10px;
+        }
+        .business-info {
+          font-size: 12px;
+          color: #888;
+          line-height: 1.4;
+        }
+        .receipt-info {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        .info-section {
+          width: 48%;
+          background: #f9f9f9;
+          padding: 15px;
+          border-radius: 5px;
+        }
+        .info-title {
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          font-size: 12px;
+          color: #333;
+        }
+        .info-line {
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        .items-table th,
+        .items-table td {
+          border: 1px solid #333;
+          padding: 10px;
+          text-align: left;
+        }
+        .items-table th {
+          background-color: #f0f0f0;
+          font-weight: bold;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        
+        .totals-section {
+          border-top: 2px solid #333;
+          margin-top: 30px;
+          padding-top: 15px;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .final-total {
+          display: flex;
+          justify-content: space-between;
+          border-top: 1px solid #333;
+          padding-top: 10px;
+          margin-top: 10px;
+          font-weight: bold;
+          font-size: 18px;
+        }
+        
+        .footer {
+          text-align: center;
+          font-size: 11px;
+          color: #666;
+          border-top: 1px solid #ddd;
+          padding-top: 20px;
+          line-height: 1.6;
+        }
+        
+        @media print {
+          body { margin: 0; padding: 10px; }
+          .receipt-container { max-width: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt-container">
+        <!-- Business Header -->
+        <div class="business-header">
+          <div class="business-name">${receiptData.business_name}</div>
+          <div class="business-subtitle">Layanan Laundry Profesional</div>
+          <div class="business-info">
+            ${receiptData.business_address}<br>
+            Telepon: ${receiptData.business_phone}<br>
+            ${receiptData.business_email ? `Email: ${receiptData.business_email}` : ''}
           </div>
         </div>
-      </body>
-      </html>
-      `;
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+          <div class="info-section">
+            <div class="info-title">Receipt Information</div>
+            <div class="info-line"><strong>Receipt ID:</strong> #${receiptData.receipt_id.slice(-8).toUpperCase()}</div>
+            <div class="info-line"><strong>Date:</strong> ${formatDateTime(receiptData.created_at)}</div>
+            <div class="info-line"><strong>Status:</strong> ${receiptData.status}</div>
+          </div>
+          <div class="info-section">
+            <div class="info-title">Customer Information</div>
+            <div class="info-line"><strong>Customer:</strong> ${receiptData.client_name}</div>
+            <div class="info-line"><strong>Phone:</strong> ${receiptData.client_phone}</div>
+            <div class="info-line"><strong>Served by:</strong> ${receiptData.employee_name}</div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Item Type</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Unit Price</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${receiptData.items.map(item => `
+              <tr>
+                <td>${item.service}</td>
+                <td>${item.item_type}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
+                <td class="text-right">Rp${item.total_price.toLocaleString('id-ID')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>Rp${receiptData.subtotal.toLocaleString('id-ID')}</span>
+          </div>
+          ${receiptData.discount_amount ? `
+          <div class="total-row">
+            <span>Diskon (${receiptData.discount_percent}%):</span>
+            <span>-Rp${receiptData.discount_amount.toLocaleString('id-ID')}</span>
+          </div>
+          ` : ''}
+          <div class="final-total">
+            <span>TOTAL BAYAR:</span>
+            <span>Rp${receiptData.total_amount.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+
+        ${receiptData.notes ? `
+        <!-- Notes -->
+        <div style="margin: 30px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #333;">
+          <div style="font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 12px;">Instruksi Khusus:</div>
+          <div>${receiptData.notes}</div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div class="footer">
+          <div>Terima kasih atas kepercayaan Anda</div>
+          <div>🖨️ Dicetak pada: ${formatDateTime(receiptData.print_timestamp || new Date())}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+    
+    // Direct implementation without relying on global function
+    if (isMobile) {
+      // Mobile: Use iframe approach 
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.top = '-1000px';
+      iframe.style.left = '-1000px';
+      iframe.style.width = '1px';
+      iframe.style.height = '1px';
+      iframe.style.border = 'none';
+      iframe.style.visibility = 'hidden';
       
-      // Use the consistent print function
-      window.printReceipt(receiptHTML);
+      document.body.appendChild(iframe);
+      
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(receiptHTML);
+        iframeDoc.close();
+        
+        // Wait and print
+        setTimeout(() => {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            console.log('✅ Mobile print executed successfully');
+          } catch (printError) {
+            console.error('❌ Mobile print error:', printError);
+            alert('Print error: ' + printError.message);
+          }
+          
+          // Cleanup
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 1000);
+        }, 800);
+        
+      } catch (error) {
+        console.error('❌ Mobile iframe error:', error);
+        document.body.removeChild(iframe);
+        alert('Mobile print tidak berhasil: ' + error.message);
+      }
+      
     } else {
-      alert('Print function tidak tersedia. Silakan refresh halaman.');
+      // Desktop: Use popup window
+      try {
+        const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+        if (printWindow) {
+          printWindow.document.open();
+          printWindow.document.write(receiptHTML);
+          printWindow.document.close();
+          
+          printWindow.onload = () => {
+            printWindow.focus();
+            setTimeout(() => {
+              printWindow.print();
+              printWindow.close();
+            }, 500);
+          };
+        } else {
+          alert('Pop-up diblokir! Silakan izinkan pop-up untuk mencetak.');
+        }
+      } catch (error) {
+        console.error('❌ Desktop print error:', error);
+        alert('Desktop print error: ' + error.message);
+      }
     }
   };
 
