@@ -2559,6 +2559,7 @@ function App() {
 
   // Load user from localStorage on app start
   useEffect(() => {
+    // First load employees
     loadEmployees();
     
     // Hide loading screen once React has rendered
@@ -2567,38 +2568,50 @@ function App() {
       if (loading) loading.style.display = 'none';
     }, 100);
     
-    // Check for stored user session with a small delay to ensure localStorage is ready
-    setTimeout(() => {
+    // Check for stored user session with multiple attempts and longer delay
+    const checkSession = () => {
       const storedUser = localStorage.getItem('laundry_user');
-      console.log('📦 Checking stored user session:', storedUser ? 'Found' : 'None');
+      console.log('🔍 [Session Check] Looking for stored user:', storedUser ? 'FOUND' : 'NOT FOUND');
+      
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
-          console.log('📊 Parsed user data:', userData);
+          console.log('📊 [Session Check] Parsed user data:', userData);
           
-          // Simple approach: just restore the user directly if data exists and is recent
+          // Check if session is still valid (within 24 hours)
           const loginTime = new Date(userData.loginTime);
           const now = new Date();
           const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
           
-          if (hoursSinceLogin < 24) { // Session expires after 24 hours
-            console.log('✅ Restoring user session directly (no server validation needed)');
+          console.log(`⏰ [Session Check] Hours since login: ${hoursSinceLogin.toFixed(2)}`);
+          
+          if (hoursSinceLogin < 24) {
+            console.log('✅ [Session Check] Restoring valid session for:', userData.name);
             setCurrentEmployee({
               id: userData.id,
               name: userData.name,
               role: userData.role,
-              pin: userData.pin
+              pin: userData.pin,
+              created_at: userData.created_at || new Date().toISOString(),
+              is_active: true
             });
           } else {
-            console.log('⏰ Session expired (older than 24 hours), clearing storage');
+            console.log('⏰ [Session Check] Session expired, clearing storage');
             localStorage.removeItem('laundry_user');
           }
         } catch (err) {
-          console.error('❌ Error parsing stored user data:', err);
+          console.error('❌ [Session Check] Error parsing stored user data:', err);
           localStorage.removeItem('laundry_user');
         }
+      } else {
+        console.log('ℹ️ [Session Check] No stored session found');
       }
-    }, 200);
+    };
+
+    // Try multiple times with different delays to ensure localStorage is accessible
+    setTimeout(checkSession, 100);
+    setTimeout(checkSession, 500);
+    setTimeout(checkSession, 1000);
   }, []);
 
   const loadEmployees = async () => {
