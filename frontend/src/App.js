@@ -2543,16 +2543,30 @@ function App() {
     try {
       // Primary: localStorage
       localStorage.setItem('laundry_user', sessionData);
-      console.log('✅ Session saved to localStorage');
+      
+      // Verify the save worked immediately
+      const verify = localStorage.getItem('laundry_user');
+      if (verify) {
+        console.log('✅ [saveSession] Session successfully saved and verified in localStorage');
+      } else {
+        throw new Error('localStorage save verification failed');
+      }
     } catch (err) {
-      console.error('❌ localStorage failed, trying cookies:', err);
+      console.error('❌ [saveSession] localStorage failed, trying cookies:', err);
       
       // Fallback: cookies
       try {
-        document.cookie = `laundry_user=${encodeURIComponent(sessionData)}; max-age=${24*60*60}; path=/`;
-        console.log('✅ Session saved to cookies as fallback');
+        const cookieString = `laundry_user=${encodeURIComponent(sessionData)}; max-age=${24*60*60}; path=/; SameSite=Strict`;
+        document.cookie = cookieString;
+        
+        // Verify cookie was set
+        if (document.cookie.includes('laundry_user=')) {
+          console.log('✅ [saveSession] Session saved to cookies as fallback');
+        } else {
+          throw new Error('Cookie save verification failed');
+        }
       } catch (cookieErr) {
-        console.error('❌ Both localStorage and cookies failed:', cookieErr);
+        console.error('❌ [saveSession] Both localStorage and cookies failed:', cookieErr);
       }
     }
   };
