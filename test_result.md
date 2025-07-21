@@ -258,11 +258,11 @@ frontend:
 
   - task: "Persistent user sessions and logout feature"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -270,6 +270,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ IMPLEMENTED: Added localStorage-based session persistence with 24-hour expiration, session data includes user ID, name, role, and login time. Logout functionality clears session and shows confirmation. Users remain logged in after page refresh/reload."
+      - working: false
+        agent: "user"
+        comment: "User reported: 'tapi saat reload langsung otomatis terkeluar' - session persistence not working on page reload, users are automatically logged out"
 
 metadata:
   created_by: "main_agent"
