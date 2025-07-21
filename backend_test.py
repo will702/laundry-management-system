@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import sys
 
 # Backend URL from frontend/.env
-BASE_URL = "https://4998d4f8-238f-4e05-92f0-67590d5aeee5.preview.emergentagent.com/api"
+BASE_URL = "https://18fec97e-b777-4f87-9069-2647de4ef3de.preview.emergentagent.com/api"
 
 class LaundryProTester:
     def __init__(self):
