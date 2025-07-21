@@ -2686,43 +2686,32 @@ function App() {
     console.log('🔐 [Login] Starting login process for:', employee.name);
     setCurrentEmployee(employee);
     
-    // Store user session in localStorage for persistence
+    // Store user session using utility function
     const userSession = {
       id: employee.id,
       name: employee.name,
       role: employee.role,
-      pin: employee.pin, // Store PIN for session validation
+      pin: employee.pin,
       created_at: employee.created_at,
       is_active: employee.is_active,
       loginTime: new Date().toISOString()
     };
     
-    try {
-      localStorage.setItem('laundry_user', JSON.stringify(userSession));
-      console.log('✅ [Login] Session data saved successfully for:', employee.name);
-      
-      // Verify the data was saved correctly
-      const saved = localStorage.getItem('laundry_user');
-      if (saved) {
-        console.log('✓ [Login] Verification: Session data exists in localStorage');
-      } else {
-        console.error('❌ [Login] ERROR: Failed to save session data to localStorage');
-      }
-    } catch (err) {
-      console.error('❌ [Login] ERROR saving session to localStorage:', err);
-    }
+    saveSession(userSession);
+    console.log('✅ [Login] Session saved for:', employee.name);
   };
 
   const handleLogout = () => {
+    console.log('🚪 [Logout] Starting logout process');
     setCurrentEmployee(null);
     setSelectedClient(null);
     setActiveTab('create');
     
-    // Clear stored session
-    localStorage.removeItem('laundry_user');
-    console.log('User session cleared');
+    // Clear stored session using utility function
+    clearSession();
+    console.log('✅ [Logout] Session cleared');
     
-    // Optional: Show logout confirmation
+    // Show logout confirmation
     setTimeout(() => {
       alert('Anda telah berhasil logout. Terima kasih telah menggunakan LaundryPro!');
     }, 100);
