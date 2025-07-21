@@ -2589,12 +2589,33 @@ function App() {
 
   const handleLogin = (employee) => {
     setCurrentEmployee(employee);
+    
+    // Store user session in localStorage for persistence
+    const userSession = {
+      id: employee.id,
+      name: employee.name,
+      role: employee.role,
+      pin: employee.pin, // Store PIN for session validation
+      loginTime: new Date().toISOString()
+    };
+    localStorage.setItem('laundry_user', JSON.stringify(userSession));
+    
+    console.log('User session saved for:', employee.name);
   };
 
   const handleLogout = () => {
     setCurrentEmployee(null);
     setSelectedClient(null);
     setActiveTab('create');
+    
+    // Clear stored session
+    localStorage.removeItem('laundry_user');
+    console.log('User session cleared');
+    
+    // Optional: Show logout confirmation
+    setTimeout(() => {
+      alert('Anda telah berhasil logout. Terima kasih telah menggunakan LaundryPro!');
+    }, 100);
   };
 
   const handleTabChange = (newTab) => {
