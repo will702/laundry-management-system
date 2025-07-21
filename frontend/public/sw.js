@@ -226,7 +226,7 @@ async function handleApiRequest(request) {
 }
 
 // Background sync for offline actions (if supported)
-if ('sync' in window.ServiceWorkerRegistration.prototype) {
+if ('sync' in self.ServiceWorkerRegistration.prototype) {
   self.addEventListener('sync', (event) => {
     console.log('[ServiceWorker] Background sync:', event.tag);
     
