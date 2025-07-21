@@ -229,6 +229,42 @@ frontend:
         agent: "main"
         comment: "Implemented receipt list with status management and audit info display"
 
+  - task: "Mobile UI optimization for receipt creation"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Partially implemented mobile-responsive layouts in ReceiptForm component. Need to complete optimization and fix service worker issues causing app loading problems."
+
+  - task: "PWA icons implementation"
+    implemented: true
+    working: true
+    file: "/app/frontend/public/"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ COMPLETE: PWA icons generated in all required sizes (16x16 to 512x512), manifest.json configured, service worker set up, PWA meta tags added to index.html"
+
+  - task: "Persistent user sessions and logout feature"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to implement session persistence using localStorage/cookies and add logout button functionality"
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
