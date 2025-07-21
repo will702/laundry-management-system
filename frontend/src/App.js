@@ -677,45 +677,6 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
       </div>
     </div>
   );
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Diskon</label>
-              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg font-medium">
-                Rp{calculateDiscountAmount().toLocaleString('id-ID')}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t pt-4 bg-gray-50 p-4 rounded-lg">
-          <div className="space-y-2 text-right">
-            <div className="flex justify-between items-center">
-              <span className="text-lg">Subtotal:</span>
-              <span className="text-lg font-semibold">Rp{calculateSubtotal().toLocaleString('id-ID')}</span>
-            </div>
-            {discount > 0 && (
-              <div className="flex justify-between items-center text-red-600">
-                <span>Diskon ({discount}%):</span>
-                <span>-Rp{calculateDiscountAmount().toLocaleString('id-ID')}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center border-t pt-2">
-              <span className="text-xl font-bold">Total Bayar:</span>
-              <span className="text-2xl font-bold text-indigo-600">Rp{calculateTotal().toLocaleString('id-ID')}</span>
-            </div>
-          </div>
-
-          <button
-            onClick={createReceipt}
-            disabled={loading}
-            className="w-full mt-4 bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Membuat Bon...' : 'Buat Bon'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 // Print Receipt Component - Full Screen Focus with Direct Print
