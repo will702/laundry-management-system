@@ -1014,16 +1014,108 @@ const PrintReceipt = ({ receiptData, onClose }) => {
     </html>
     `;
 
-    printWindow.document.open();
-    printWindow.document.write(receiptHTML);
-    printWindow.document.close();
+    // Detect mobile device for different print strategy
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // Wait for content to load then print
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
+    if (isMobile) {
+      // Mobile approach: Use current page print to avoid popup issues
+      const printElement = document.createElement('div');
+      printElement.innerHTML = receiptHTML;
+      printElement.style.position = 'fixed';
+      printElement.style.top = '0';
+      printElement.style.left = '0';
+      printElement.style.width = '100%';
+      printElement.style.height = '100%';
+      printElement.style.backgroundColor = 'white';
+      printElement.style.zIndex = '10000';
+      printElement.style.overflow = 'auto';
+      
+      // Add close button for mobile
+      const closeButton = document.createElement('button');
+      closeButton.innerHTML = '✕ Tutup';
+      closeButton.style.position = 'fixed';
+      closeButton.style.top = '10px';
+      closeButton.style.right = '10px';
+      closeButton.style.zIndex = '10001';
+      closeButton.style.padding = '8px 16px';
+      closeButton.style.backgroundColor = '#dc3545';
+      closeButton.style.color = 'white';
+      closeButton.style.border = 'none';
+      closeButton.style.borderRadius = '4px';
+      closeButton.style.fontWeight = 'bold';
+      closeButton.onclick = () => {
+        document.body.removeChild(printElement);
+      };
+      
+      printElement.appendChild(closeButton);
+      
+      // Add print button for mobile
+      const printButton = document.createElement('button');
+      printButton.innerHTML = '🖨️ Cetak';
+      printButton.style.position = 'fixed';
+      printButton.style.top = '10px';
+      printButton.style.right = '90px';
+      printButton.style.zIndex = '10001';
+      printButton.style.padding = '8px 16px';
+      printButton.style.backgroundColor = '#28a745';
+      printButton.style.color = 'white';
+      printButton.style.border = 'none';
+      printButton.style.borderRadius = '4px';
+      printButton.style.fontWeight = 'bold';
+      printButton.onclick = () => {
+        // Hide buttons during print
+        closeButton.style.display = 'none';
+        printButton.style.display = 'none';
+        
+        window.print();
+        
+        // Show buttons again after print
+        setTimeout(() => {
+          closeButton.style.display = 'block';
+          printButton.style.display = 'block';
+        }, 1000);
+      };
+      
+      printElement.appendChild(printButton);
+      document.body.appendChild(printElement);
+      
+    } else {
+      // Desktop approach: Use popup window (but with better error handling)
+      try {
+        const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        if (!printWindow) {
+          // Fallback if popup is blocked
+          alert('Pop-up diblokir! Menggunakan mode cetak alternatif...');
+          const printElement = document.createElement('div');
+          printElement.innerHTML = receiptHTML;
+          document.body.appendChild(printElement);
+          window.print();
+          document.body.removeChild(printElement);
+          return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(receiptHTML);
+        printWindow.document.close();
+        
+        // Wait for content to load then print
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
+        };
+        
+      } catch (error) {
+        console.error('Error opening print window:', error);
+        alert('Tidak dapat membuka jendela cetak. Menggunakan mode cetak alternatif...');
+        const printElement = document.createElement('div');
+        printElement.innerHTML = receiptHTML;
+        document.body.appendChild(printElement);
+        window.print();
+        document.body.removeChild(printElement);
+      }
+    }
   };
 
   return (
