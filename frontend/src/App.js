@@ -2624,6 +2624,7 @@ function App() {
   };
 
   const handleLogin = (employee) => {
+    console.log('🔐 [Login] Starting login process for:', employee.name);
     setCurrentEmployee(employee);
     
     // Store user session in localStorage for persistence
@@ -2632,11 +2633,25 @@ function App() {
       name: employee.name,
       role: employee.role,
       pin: employee.pin, // Store PIN for session validation
+      created_at: employee.created_at,
+      is_active: employee.is_active,
       loginTime: new Date().toISOString()
     };
-    localStorage.setItem('laundry_user', JSON.stringify(userSession));
     
-    console.log('User session saved for:', employee.name);
+    try {
+      localStorage.setItem('laundry_user', JSON.stringify(userSession));
+      console.log('✅ [Login] Session data saved successfully for:', employee.name);
+      
+      // Verify the data was saved correctly
+      const saved = localStorage.getItem('laundry_user');
+      if (saved) {
+        console.log('✓ [Login] Verification: Session data exists in localStorage');
+      } else {
+        console.error('❌ [Login] ERROR: Failed to save session data to localStorage');
+      }
+    } catch (err) {
+      console.error('❌ [Login] ERROR saving session to localStorage:', err);
+    }
   };
 
   const handleLogout = () => {
