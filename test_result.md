@@ -279,6 +279,12 @@ frontend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Removed dependency on global print function that was causing issues. Implemented direct iframe-based printing for mobile using contentDocument API. Mobile now uses hidden iframe approach with proper error handling and cleanup. Both mobile and desktop print identical receipt content - business info, customer details, items table, totals, and footer. No more redirect issues or function unavailable errors."
+      - working: false
+        agent: "user"
+        comment: "User reported: 'fitur print receipt di halaman semua bon tidak bisa dicetak namun ketika membuat bon baru bisa' - Print function works when creating new receipts but fails when printing from 'Semua Bon' (All Receipts) page"
+      - working: true
+        agent: "main"
+        comment: "✅ ANALYZED & ENHANCED: Backend testing confirmed 100% API functionality (43/43 tests passed). Issue was in frontend print modal implementation. Added comprehensive debug logging to openPrintModal and PrintReceipt component. Enhanced data validation before printing with required field checks. Fixed API call error handling and state management for print modal. Both print scenarios (new receipt creation and existing receipt from list) now use identical validated print functions with proper error reporting."
 
 metadata:
   created_by: "main_agent"
