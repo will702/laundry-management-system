@@ -712,9 +712,7 @@ const PrintReceipt = ({ receiptData, onClose }) => {
   };
 
   const handlePrint = () => {
-    // Detect mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+    // Generate consistent receipt HTML for both mobile and desktop
     const receiptHTML = `
     <!DOCTYPE html>
     <html>
@@ -783,6 +781,308 @@ const PrintReceipt = ({ receiptData, onClose }) => {
           border-radius: 12px;
           font-size: 11px;
           font-weight: bold;
+          text-transform: uppercase;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-ready { background: #d1ecf1; color: #0c5460; }
+        .status-completed { background: #d4edda; color: #155724; }
+        
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        .items-table th,
+        .items-table td {
+          border: 1px solid #333;
+          padding: 10px;
+          text-align: left;
+        }
+        .items-table th {
+          background-color: #f0f0f0;
+          font-weight: bold;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        
+        .totals-section {
+          border-top: 2px solid #333;
+          margin-top: 30px;
+          padding-top: 15px;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .final-total {
+          display: flex;
+          justify-content: space-between;
+          border-top: 1px solid #333;
+          padding-top: 10px;
+          margin-top: 10px;
+          font-weight: bold;
+          font-size: 18px;
+        }
+        .total-label { text-transform: uppercase; }
+        .total-value { font-weight: bold; }
+        
+        .notes-section {
+          margin: 30px 0;
+          padding: 15px;
+          background: #f9f9f9;
+          border-left: 4px solid #333;
+        }
+        .notes-title {
+          font-weight: bold;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          font-size: 12px;
+        }
+        .footer {
+          text-align: center;
+          font-size: 11px;
+          color: #666;
+          border-top: 1px solid #ddd;
+          padding-top: 20px;
+          line-height: 1.6;
+        }
+        .footer-grid {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 15px;
+        }
+        .footer-item {
+          background: #f5f5f5;
+          padding: 8px;
+          border-radius: 3px;
+          width: 30%;
+          text-align: center;
+        }
+        .print-timestamp {
+          font-weight: bold;
+          margin-top: 10px;
+        }
+        .deleted-warning {
+          background: #f8d7da;
+          border: 2px solid #dc3545;
+          color: #721c24;
+          padding: 15px;
+          text-align: center;
+          border-radius: 5px;
+          margin-top: 20px;
+        }
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 10px; 
+          }
+          .receipt-container { 
+            max-width: none; 
+          }
+          .print-controls {
+            display: none !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt-container">
+        <!-- Business Header -->
+        <div class="business-header">
+          <div class="business-name">${receiptData.business_name}</div>
+          <div class="business-subtitle">Layanan Laundry Profesional</div>
+          <div class="business-info">
+            ${receiptData.business_address}<br>
+            Telepon: ${receiptData.business_phone}<br>
+            ${receiptData.business_email ? `Email: ${receiptData.business_email}` : ''}
+          </div>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+          <div class="info-section">
+            <div class="info-title">Receipt Information</div>
+            <div class="info-line"><strong>Receipt ID:</strong> #${receiptData.receipt_id.slice(-8).toUpperCase()}</div>
+            <div class="info-line"><strong>Date Created:</strong> ${formatDateTime(receiptData.created_at)}</div>
+            <div class="info-line"><strong>Status:</strong> <span class="status-badge status-${receiptData.status.toLowerCase()}">${receiptData.status}</span></div>
+          </div>
+          <div class="info-section">
+            <div class="info-title">Customer Information</div>
+            <div class="info-line"><strong>Customer:</strong> ${receiptData.client_name}</div>
+            <div class="info-line"><strong>Phone:</strong> ${receiptData.client_phone}</div>
+            <div class="info-line"><strong>Served by:</strong> ${receiptData.employee_name}</div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Item Type</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Unit Price</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${receiptData.items.map(item => `
+              <tr>
+                <td>${item.service}</td>
+                <td>${item.item_type}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right">Rp${item.price_per_item.toLocaleString('id-ID')}</td>
+                <td class="text-right">Rp${item.total_price.toLocaleString('id-ID')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>Rp${receiptData.subtotal.toLocaleString('id-ID')}</span>
+          </div>
+          ${receiptData.discount_amount ? `
+          <div class="total-row">
+            <span>Discount (${receiptData.discount_percent}%):</span>
+            <span>-Rp${receiptData.discount_amount.toLocaleString('id-ID')}</span>
+          </div>
+          ` : ''}
+          <div class="final-total">
+            <span class="total-label">TOTAL AMOUNT:</span>
+            <span class="total-value">Rp${receiptData.total_amount.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+
+        ${receiptData.notes ? `
+        <!-- Notes -->
+        <div class="notes-section">
+          <div class="notes-title">Special Instructions:</div>
+          <div>${receiptData.notes}</div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div class="footer">
+          <div class="footer-grid">
+            ${receiptData.footer_notes.split('•').map(note => `
+              <div class="footer-item">${note.trim()}</div>
+            `).join('')}
+          </div>
+          <div class="print-timestamp">🖨️ Dicetak pada: ${formatDateTime(receiptData.print_timestamp)}</div>
+        </div>
+
+        ${receiptData.is_deleted ? `
+        <!-- Deleted Warning -->
+        <div class="deleted-warning">
+          <div style="font-weight: bold; font-size: 16px;">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</div>
+          <div>This is a copy for record purposes only</div>
+        </div>
+        ` : ''}
+      </div>
+    </body>
+    </html>
+    `;
+
+    // Consistent approach for both mobile and desktop: Use dedicated print window/iframe
+    // This ensures only the receipt content is printed, not the entire app interface
+    
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Mobile: Use invisible iframe approach to print only receipt content
+      const printFrame = document.createElement('iframe');
+      printFrame.style.position = 'fixed';
+      printFrame.style.top = '-1000px';
+      printFrame.style.left = '-1000px';
+      printFrame.style.width = '0px';
+      printFrame.style.height = '0px';
+      printFrame.style.border = 'none';
+      
+      document.body.appendChild(printFrame);
+      
+      const frameDoc = printFrame.contentWindow.document;
+      frameDoc.open();
+      frameDoc.write(receiptHTML);
+      frameDoc.close();
+      
+      // Wait for content to load then print
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+          
+          // Clean up after print
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+          }, 1000);
+        } catch (error) {
+          console.error('Mobile print error:', error);
+          // Fallback: show print preview
+          showMobilePrintPreview(receiptHTML);
+          document.body.removeChild(printFrame);
+        }
+      }, 500);
+      
+    } else {
+      // Desktop: Use popup window 
+      try {
+        const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        if (!printWindow) {
+          throw new Error('Popup blocked');
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(receiptHTML);
+        printWindow.document.close();
+        
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
+        };
+        
+      } catch (error) {
+        console.error('Desktop print error:', error);
+        // Fallback: use iframe method
+        const printFrame = document.createElement('iframe');
+        printFrame.style.display = 'none';
+        document.body.appendChild(printFrame);
+        
+        const frameDoc = printFrame.contentWindow.document;
+        frameDoc.open();
+        frameDoc.write(receiptHTML);
+        frameDoc.close();
+        
+        setTimeout(() => {
+          printFrame.contentWindow.print();
+          document.body.removeChild(printFrame);
+        }, 500);
+      }
+    }
+  };
+
+  // Helper function for mobile print preview fallback
+  const showMobilePrintPreview = (receiptHTML) => {
+    const previewElement = document.createElement('div');
+    previewElement.innerHTML = `
+      <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; overflow: auto;">
+        <div class="print-controls" style="position: sticky; top: 0; background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">
+          <button onclick="window.print()" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; font-weight: bold;">🖨️ Cetak Halaman Ini</button>
+          <button onclick="this.parentElement.parentElement.remove()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold;">✕ Tutup</button>
+        </div>
+        <div style="padding: 20px;">
+          ${receiptHTML.replace('<!DOCTYPE html>', '').replace('<html>', '').replace('</html>', '').replace(/<head>.*?<\/head>/s, '').replace('<body>', '').replace('</body>', '')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(previewElement);
+  };
     <!DOCTYPE html>
     <html>
     <head>
