@@ -3574,7 +3574,8 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                   {loading ? 'Menyimpan...' : '💾 Simpan Kategori'}
                 </button>
               </form>
-            )}
+            </div>
+          )}
 
             {/* Categories List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
