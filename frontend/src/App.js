@@ -3804,27 +3804,61 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
             )}
 
             {/* Services List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {services.map((service) => (
-                <div key={service.id} className="bg-gray-50 p-4 rounded-lg border">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">{service.name}</h4>
-                      <p className="text-sm text-gray-600">{service.category_name}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-indigo-600">Rp{service.base_price.toLocaleString('id-ID')}/{service.unit_name}</div>
-                      <div className="text-sm text-orange-600">
-                        ⏱️ {service.duration_days > 0 ? `${service.duration_days}h ` : ''}{service.duration_hours > 0 ? `${service.duration_hours}j ` : ''}{service.duration_minutes > 0 ? `${service.duration_minutes}m` : ''}
-                        {service.duration_days === 0 && service.duration_hours === 0 && service.duration_minutes === 0 ? 'Instan' : ''}
+            <div className="space-y-4">
+              {services.length === 0 && (
+                <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <div className="mb-4">⏱️</div>
+                  <h4 className="text-lg font-medium text-gray-800 mb-2">Belum Ada Layanan</h4>
+                  <p className="text-gray-600 mb-4">
+                    Tambahkan layanan dan atur sendiri estimasi waktu selesai untuk setiap layanan.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Contoh: Cuci Express (3 jam), Dry Clean (3 hari), Setrika Saja (2 jam)
+                  </p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {services.map((service) => (
+                  <div key={service.id} className="bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold text-gray-800">{service.name}</h4>
+                        <p className="text-sm text-gray-600">{service.category_name}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-indigo-600">
+                          Rp{service.base_price.toLocaleString('id-ID')}/{service.unit_name}
+                        </div>
                       </div>
                     </div>
+                    
+                    <div className="bg-white border border-orange-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <span className="text-orange-600 mr-2">⏱️</span>
+                          <span className="text-sm font-medium text-gray-700">Estimasi Manual:</span>
+                        </div>
+                        <div className="text-sm font-bold text-orange-600">
+                          {service.duration_days === 0 && service.duration_hours === 0 && service.duration_minutes === 0 ? (
+                            'Instan'
+                          ) : (
+                            <>
+                              {service.duration_days > 0 && `${service.duration_days}h `}
+                              {service.duration_hours > 0 && `${service.duration_hours}j `}
+                              {service.duration_minutes > 0 && `${service.duration_minutes}m`}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 text-xs text-gray-500">
+                      Dibuat oleh: {service.created_by_employee_name}
+                    </div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    Dibuat oleh: {service.created_by_employee_name}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
