@@ -2992,6 +2992,18 @@ function App() {
                 >
                   ⚙️ Settings
                 </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleTabChange('customization')}
+                    className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
+                      activeTab === 'customization' 
+                        ? 'bg-white text-indigo-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    🎨 Kustomisasi
+                  </button>
+                )}
                 <button
                   onClick={() => handleTabChange('reports')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
