@@ -3143,15 +3143,15 @@ function App() {
                   <span className="text-xs font-medium">Audit</span>
                 </button>
                 <button
-                  onClick={() => handleTabChange('services')}
+                  onClick={() => handleTabChange('customization')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'services' 
+                    activeTab === 'customization' 
                       ? 'text-indigo-600' 
                       : 'text-gray-600'
                   }`}
                 >
-                  <span className="text-lg mb-1">🧽</span>
-                  <span className="text-xs font-medium">Layanan</span>
+                  <span className="text-lg mb-1">🎨</span>
+                  <span className="text-xs font-medium">Kustomisasi</span>
                 </button>
                 <button
                   onClick={() => handleTabChange('reports')}
