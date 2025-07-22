@@ -648,6 +648,615 @@ class LaundryProTester:
             except Exception as e:
                 self.log_test("Print Receipt - Deleted Receipt", False, f"Error: {str(e)}")
 
+    def test_default_data_initialization(self):
+        """Test the default data initialization endpoint"""
+        try:
+            response = self.session.post(f"{BASE_URL}/initialize")
+            if response.status_code == 200:
+                init_data = response.json()
+                self.log_test("Initialize Default Data", True, 
+                            f"Message: {init_data.get('message')}")
+                
+                # Verify expected categories were created
+                expected_categories = ["Pakaian", "Sepatu", "Tas", "Selimut", "Karpet", "Boneka"]
+                created_categories = init_data.get("created_categories", [])
+                
+                if any(cat in created_categories for cat in expected_categories):
+                    self.log_test("Initialize - Categories Created", True,
+                                f"Created categories: {', '.join(created_categories)}")
+                else:
+                    self.log_test("Initialize - Categories Already Exist", True,
+                                "Categories already exist (no new ones created)")
+                
+                # Verify expected units were created
+                expected_units = ["pcs", "kg", "set", "pasang", "lembar", "buah"]
+                created_units = init_data.get("created_units", [])
+                
+                if any(unit in created_units for unit in expected_units):
+                    self.log_test("Initialize - Units Created", True,
+                                f"Created units: {', '.join(created_units)}")
+                else:
+                    self.log_test("Initialize - Units Already Exist", True,
+                                "Units already exist (no new ones created)")
+                
+                # Verify expected services were created
+                expected_services = ["Cuci Setrika", "Cuci Kering", "Setrika Saja", "Dry Clean", "Cuci Sepatu"]
+                created_services = init_data.get("created_services", [])
+                
+                if any(svc in created_services for svc in expected_services):
+                    self.log_test("Initialize - Services Created", True,
+                                f"Created services: {', '.join(created_services)}")
+                else:
+                    self.log_test("Initialize - Services Already Exist", True,
+                                "Services already exist (no new ones created)")
+                
+                # Test that running initialization again doesn't create duplicates
+                second_response = self.session.post(f"{BASE_URL}/initialize")
+                if second_response.status_code == 200:
+                    second_init_data = second_response.json()
+                    second_created = (
+                        len(second_init_data.get("created_categories", [])) +
+                        len(second_init_data.get("created_units", [])) +
+                        len(second_init_data.get("created_services", []))
+                    )
+                    if second_created == 0:
+                        self.log_test("Initialize - No Duplicates", True,
+                                    "Second initialization correctly avoided duplicates")
+                    else:
+                        self.log_test("Initialize - No Duplicates", False,
+                                    f"Second initialization created {second_created} items (should be 0)")
+                else:
+                    self.log_test("Initialize - Second Run", False,
+                                f"Second initialization failed: {second_response.status_code}")
+                
+            else:
+                self.log_test("Initialize Default Data", False,
+                            f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Initialize Default Data", False, f"Error: {str(e)}")
+
+    def test_categories_management(self):
+        """Test categories CRUD operations"""
+        # Get an employee for authentication (use PIN 1234 as mentioned in review request)
+        employee_id = None
+        try:
+            login_response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": "1234"})
+            if login_response.status_code == 200:
+                employee = login_response.json()
+                employee_id = employee["id"]
+                self.log_test("Categories - Employee Authentication", True, 
+                            f"Authenticated as: {employee['name']}")
+            else:
+                self.log_test("Categories - Employee Authentication", False, 
+                            f"Could not authenticate with PIN 1234: {login_response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Categories - Employee Authentication", False, f"Error: {str(e)}")
+            return
+
+        # Test creating categories
+        test_categories = [
+            {"name": "Test Category 1", "description": "Test category for testing", "created_by_employee_id": employee_id},
+            {"name": "Test Category 2", "description": "Another test category", "created_by_employee_id": employee_id}
+        ]
+        
+        created_category_ids = []
+        for cat_data in test_categories:
+            try:
+                response = self.session.post(f"{BASE_URL}/categories", json=cat_data)
+                if response.status_code == 200:
+                    category = response.json()
+                    created_category_ids.append(category["id"])
+                    self.log_test(f"Create Category: {cat_data['name']}", True,
+                                f"ID: {category['id']}, Created by: {category.get('created_by_employee_name')}")
+                else:
+                    self.log_test(f"Create Category: {cat_data['name']}", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Category: {cat_data['name']}", False, f"Error: {str(e)}")
+
+        # Test unique name validation
+        try:
+            duplicate_category = {"name": "Test Category 1", "description": "Duplicate name", "created_by_employee_id": employee_id}
+            response = self.session.post(f"{BASE_URL}/categories", json=duplicate_category)
+            if response.status_code == 400 and "already exists" in response.text:
+                self.log_test("Categories - Unique Name Validation", True,
+                            "Correctly rejected duplicate category name")
+            else:
+                self.log_test("Categories - Unique Name Validation", False,
+                            f"Should reject duplicate name, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Categories - Unique Name Validation", False, f"Error: {str(e)}")
+
+        # Test getting categories
+        try:
+            response = self.session.get(f"{BASE_URL}/categories")
+            if response.status_code == 200:
+                categories = response.json()
+                self.log_test("Get Categories", True, f"Retrieved {len(categories)} categories")
+                
+                # Verify our created categories are in the list
+                created_names = [cat["name"] for cat in categories if cat["id"] in created_category_ids]
+                if len(created_names) == len(created_category_ids):
+                    self.log_test("Categories - Created Items in List", True,
+                                f"Found created categories: {', '.join(created_names)}")
+                else:
+                    self.log_test("Categories - Created Items in List", False,
+                                "Not all created categories found in list")
+            else:
+                self.log_test("Get Categories", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Categories", False, f"Error: {str(e)}")
+
+        # Test updating a category
+        if created_category_ids:
+            try:
+                update_data = {"name": "Updated Test Category", "description": "Updated description", "created_by_employee_id": employee_id}
+                response = self.session.put(f"{BASE_URL}/categories/{created_category_ids[0]}", json=update_data)
+                if response.status_code == 200:
+                    self.log_test("Update Category", True, "Category updated successfully")
+                else:
+                    self.log_test("Update Category", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Update Category", False, f"Error: {str(e)}")
+
+        # Test soft delete (deactivate) category
+        if created_category_ids:
+            try:
+                response = self.session.delete(f"{BASE_URL}/categories/{created_category_ids[0]}")
+                if response.status_code == 200:
+                    self.log_test("Delete Category", True, "Category deactivated successfully")
+                    
+                    # Verify it's no longer in active categories list
+                    get_response = self.session.get(f"{BASE_URL}/categories")
+                    if get_response.status_code == 200:
+                        active_categories = get_response.json()
+                        deactivated_found = any(cat["id"] == created_category_ids[0] for cat in active_categories)
+                        if not deactivated_found:
+                            self.log_test("Category - Soft Delete Verification", True,
+                                        "Deactivated category not in active list")
+                        else:
+                            self.log_test("Category - Soft Delete Verification", False,
+                                        "Deactivated category still in active list")
+                else:
+                    self.log_test("Delete Category", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Delete Category", False, f"Error: {str(e)}")
+
+    def test_units_management(self):
+        """Test units CRUD operations"""
+        # Get an employee for authentication
+        employee_id = None
+        try:
+            login_response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": "1234"})
+            if login_response.status_code == 200:
+                employee = login_response.json()
+                employee_id = employee["id"]
+                self.log_test("Units - Employee Authentication", True, 
+                            f"Authenticated as: {employee['name']}")
+            else:
+                self.log_test("Units - Employee Authentication", False, 
+                            f"Could not authenticate with PIN 1234: {login_response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Units - Employee Authentication", False, f"Error: {str(e)}")
+            return
+
+        # Test creating units
+        test_units = [
+            {"name": "test_unit_1", "description": "Test unit for testing", "created_by_employee_id": employee_id},
+            {"name": "test_unit_2", "description": "Another test unit", "created_by_employee_id": employee_id}
+        ]
+        
+        created_unit_ids = []
+        for unit_data in test_units:
+            try:
+                response = self.session.post(f"{BASE_URL}/units", json=unit_data)
+                if response.status_code == 200:
+                    unit = response.json()
+                    created_unit_ids.append(unit["id"])
+                    self.log_test(f"Create Unit: {unit_data['name']}", True,
+                                f"ID: {unit['id']}, Created by: {unit.get('created_by_employee_name')}")
+                else:
+                    self.log_test(f"Create Unit: {unit_data['name']}", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Unit: {unit_data['name']}", False, f"Error: {str(e)}")
+
+        # Test unique name validation
+        try:
+            duplicate_unit = {"name": "test_unit_1", "description": "Duplicate name", "created_by_employee_id": employee_id}
+            response = self.session.post(f"{BASE_URL}/units", json=duplicate_unit)
+            if response.status_code == 400 and "already exists" in response.text:
+                self.log_test("Units - Unique Name Validation", True,
+                            "Correctly rejected duplicate unit name")
+            else:
+                self.log_test("Units - Unique Name Validation", False,
+                            f"Should reject duplicate name, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Units - Unique Name Validation", False, f"Error: {str(e)}")
+
+        # Test getting units
+        try:
+            response = self.session.get(f"{BASE_URL}/units")
+            if response.status_code == 200:
+                units = response.json()
+                self.log_test("Get Units", True, f"Retrieved {len(units)} units")
+                
+                # Verify our created units are in the list
+                created_names = [unit["name"] for unit in units if unit["id"] in created_unit_ids]
+                if len(created_names) == len(created_unit_ids):
+                    self.log_test("Units - Created Items in List", True,
+                                f"Found created units: {', '.join(created_names)}")
+                else:
+                    self.log_test("Units - Created Items in List", False,
+                                "Not all created units found in list")
+            else:
+                self.log_test("Get Units", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Units", False, f"Error: {str(e)}")
+
+        # Test updating a unit
+        if created_unit_ids:
+            try:
+                update_data = {"name": "updated_test_unit", "description": "Updated description", "created_by_employee_id": employee_id}
+                response = self.session.put(f"{BASE_URL}/units/{created_unit_ids[0]}", json=update_data)
+                if response.status_code == 200:
+                    self.log_test("Update Unit", True, "Unit updated successfully")
+                else:
+                    self.log_test("Update Unit", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Update Unit", False, f"Error: {str(e)}")
+
+        # Test soft delete (deactivate) unit
+        if created_unit_ids:
+            try:
+                response = self.session.delete(f"{BASE_URL}/units/{created_unit_ids[0]}")
+                if response.status_code == 200:
+                    self.log_test("Delete Unit", True, "Unit deactivated successfully")
+                    
+                    # Verify it's no longer in active units list
+                    get_response = self.session.get(f"{BASE_URL}/units")
+                    if get_response.status_code == 200:
+                        active_units = get_response.json()
+                        deactivated_found = any(unit["id"] == created_unit_ids[0] for unit in active_units)
+                        if not deactivated_found:
+                            self.log_test("Unit - Soft Delete Verification", True,
+                                        "Deactivated unit not in active list")
+                        else:
+                            self.log_test("Unit - Soft Delete Verification", False,
+                                        "Deactivated unit still in active list")
+                else:
+                    self.log_test("Delete Unit", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Delete Unit", False, f"Error: {str(e)}")
+
+    def test_enhanced_services_api(self):
+        """Test enhanced services API with duration_days, category, and unit relationships"""
+        # Get an employee for authentication
+        employee_id = None
+        try:
+            login_response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": "1234"})
+            if login_response.status_code == 200:
+                employee = login_response.json()
+                employee_id = employee["id"]
+                self.log_test("Services - Employee Authentication", True, 
+                            f"Authenticated as: {employee['name']}")
+            else:
+                self.log_test("Services - Employee Authentication", False, 
+                            f"Could not authenticate with PIN 1234: {login_response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Services - Employee Authentication", False, f"Error: {str(e)}")
+            return
+
+        # First, get available categories and units
+        categories = []
+        units = []
+        
+        try:
+            cat_response = self.session.get(f"{BASE_URL}/categories")
+            if cat_response.status_code == 200:
+                categories = cat_response.json()
+                self.log_test("Services - Get Categories", True, f"Found {len(categories)} categories")
+            else:
+                self.log_test("Services - Get Categories", False, f"Status: {cat_response.status_code}")
+                
+            unit_response = self.session.get(f"{BASE_URL}/units")
+            if unit_response.status_code == 200:
+                units = unit_response.json()
+                self.log_test("Services - Get Units", True, f"Found {len(units)} units")
+            else:
+                self.log_test("Services - Get Units", False, f"Status: {unit_response.status_code}")
+        except Exception as e:
+            self.log_test("Services - Get Categories/Units", False, f"Error: {str(e)}")
+
+        if not categories or not units:
+            self.log_test("Services - Prerequisites", False, "No categories or units available for service creation")
+            return
+
+        # Test creating services with valid category and unit IDs
+        test_services = [
+            {
+                "name": "Test Service 1",
+                "category_id": categories[0]["id"],
+                "unit_id": units[0]["id"],
+                "base_price": 15000,
+                "duration_days": 2,
+                "created_by_employee_id": employee_id
+            },
+            {
+                "name": "Test Service 2", 
+                "category_id": categories[0]["id"] if len(categories) > 0 else categories[0]["id"],
+                "unit_id": units[1]["id"] if len(units) > 1 else units[0]["id"],
+                "base_price": 25000,
+                "duration_days": 3,
+                "created_by_employee_id": employee_id
+            }
+        ]
+        
+        created_service_ids = []
+        for svc_data in test_services:
+            try:
+                response = self.session.post(f"{BASE_URL}/services", json=svc_data)
+                if response.status_code == 200:
+                    service = response.json()
+                    created_service_ids.append(service["id"])
+                    
+                    # Verify service has all required fields including denormalized data
+                    required_fields = ["id", "name", "category_id", "category_name", "unit_id", "unit_name", 
+                                     "base_price", "duration_days", "created_by_employee_name"]
+                    fields_present = all(field in service for field in required_fields)
+                    
+                    self.log_test(f"Create Service: {svc_data['name']}", True,
+                                f"ID: {service['id']}, Category: {service.get('category_name')}, "
+                                f"Unit: {service.get('unit_name')}, Duration: {service.get('duration_days')} days, "
+                                f"Price: Rp{service.get('base_price')}, Fields Complete: {'✓' if fields_present else '✗'}")
+                else:
+                    self.log_test(f"Create Service: {svc_data['name']}", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test(f"Create Service: {svc_data['name']}", False, f"Error: {str(e)}")
+
+        # Test creating service with invalid category ID
+        try:
+            invalid_service = {
+                "name": "Invalid Service",
+                "category_id": "invalid-category-id",
+                "unit_id": units[0]["id"],
+                "base_price": 10000,
+                "duration_days": 1,
+                "created_by_employee_id": employee_id
+            }
+            response = self.session.post(f"{BASE_URL}/services", json=invalid_service)
+            if response.status_code == 404 and "Category not found" in response.text:
+                self.log_test("Services - Invalid Category ID", True,
+                            "Correctly rejected invalid category ID")
+            else:
+                self.log_test("Services - Invalid Category ID", False,
+                            f"Should reject invalid category ID, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Services - Invalid Category ID", False, f"Error: {str(e)}")
+
+        # Test creating service with invalid unit ID
+        try:
+            invalid_service = {
+                "name": "Invalid Service 2",
+                "category_id": categories[0]["id"],
+                "unit_id": "invalid-unit-id",
+                "base_price": 10000,
+                "duration_days": 1,
+                "created_by_employee_id": employee_id
+            }
+            response = self.session.post(f"{BASE_URL}/services", json=invalid_service)
+            if response.status_code == 404 and "Unit not found" in response.text:
+                self.log_test("Services - Invalid Unit ID", True,
+                            "Correctly rejected invalid unit ID")
+            else:
+                self.log_test("Services - Invalid Unit ID", False,
+                            f"Should reject invalid unit ID, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Services - Invalid Unit ID", False, f"Error: {str(e)}")
+
+        # Test getting services with enhanced data
+        try:
+            response = self.session.get(f"{BASE_URL}/services")
+            if response.status_code == 200:
+                services = response.json()
+                self.log_test("Get Enhanced Services", True, f"Retrieved {len(services)} services")
+                
+                # Verify services have duration_days, category_name, unit_name
+                for service in services[:3]:  # Check first 3 services
+                    has_duration = "duration_days" in service and isinstance(service["duration_days"], int)
+                    has_category_name = "category_name" in service and service["category_name"]
+                    has_unit_name = "unit_name" in service and service["unit_name"]
+                    
+                    if has_duration and has_category_name and has_unit_name:
+                        self.log_test(f"Service Data Validation: {service['name']}", True,
+                                    f"Duration: {service['duration_days']} days, Category: {service['category_name']}, Unit: {service['unit_name']}")
+                    else:
+                        self.log_test(f"Service Data Validation: {service['name']}", False,
+                                    f"Missing fields - Duration: {has_duration}, Category: {has_category_name}, Unit: {has_unit_name}")
+            else:
+                self.log_test("Get Enhanced Services", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Enhanced Services", False, f"Error: {str(e)}")
+
+    def test_package_management(self):
+        """Test package management with service bundling and automatic calculations"""
+        # Get an employee for authentication
+        employee_id = None
+        try:
+            login_response = self.session.post(f"{BASE_URL}/employees/login", json={"pin": "1234"})
+            if login_response.status_code == 200:
+                employee = login_response.json()
+                employee_id = employee["id"]
+                self.log_test("Packages - Employee Authentication", True, 
+                            f"Authenticated as: {employee['name']}")
+            else:
+                self.log_test("Packages - Employee Authentication", False, 
+                            f"Could not authenticate with PIN 1234: {login_response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Packages - Employee Authentication", False, f"Error: {str(e)}")
+            return
+
+        # Get available services for package creation
+        services = []
+        try:
+            response = self.session.get(f"{BASE_URL}/services")
+            if response.status_code == 200:
+                services = response.json()
+                self.log_test("Packages - Get Services", True, f"Found {len(services)} services")
+            else:
+                self.log_test("Packages - Get Services", False, f"Status: {response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Packages - Get Services", False, f"Error: {str(e)}")
+            return
+
+        if len(services) < 2:
+            self.log_test("Packages - Prerequisites", False, "Need at least 2 services for package testing")
+            return
+
+        # Test creating a package with multiple services
+        package_services = [
+            {"service_id": services[0]["id"], "quantity": 2},
+            {"service_id": services[1]["id"], "quantity": 1}
+        ]
+        
+        # Calculate expected totals for verification
+        expected_total = (services[0]["base_price"] * 2) + (services[1]["base_price"] * 1)
+        expected_discount_percent = 15.0
+        expected_discounted_price = expected_total * (1 - expected_discount_percent / 100)
+        expected_duration = max(services[0]["duration_days"], services[1]["duration_days"])
+        
+        package_data = {
+            "name": "Test Package Bundle",
+            "description": "Test package with multiple services",
+            "services": package_services,
+            "discount_percent": expected_discount_percent,
+            "created_by_employee_id": employee_id
+        }
+        
+        try:
+            response = self.session.post(f"{BASE_URL}/packages", json=package_data)
+            if response.status_code == 200:
+                package = response.json()
+                
+                # Verify automatic price calculation
+                price_correct = abs(package.get("total_price", 0) - expected_total) < 0.01
+                discounted_price_correct = abs(package.get("discounted_price", 0) - expected_discounted_price) < 0.01
+                duration_correct = package.get("duration_days") == expected_duration
+                
+                self.log_test("Create Package", True,
+                            f"ID: {package['id']}, Name: {package['name']}")
+                
+                self.log_test("Package - Price Calculation", price_correct,
+                            f"Total: Rp{package.get('total_price', 0)} (expected: Rp{expected_total})")
+                
+                self.log_test("Package - Discounted Price", discounted_price_correct,
+                            f"Discounted: Rp{package.get('discounted_price', 0)} (expected: Rp{expected_discounted_price:.0f})")
+                
+                self.log_test("Package - Duration Estimation", duration_correct,
+                            f"Duration: {package.get('duration_days')} days (expected: {expected_duration} days)")
+                
+                # Verify audit trail
+                audit_fields = ["created_by_employee_name", "created_at"]
+                audit_complete = all(field in package for field in audit_fields)
+                self.log_test("Package - Audit Trail", audit_complete,
+                            f"Created by: {package.get('created_by_employee_name')}")
+                
+            else:
+                self.log_test("Create Package", False,
+                            f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Create Package", False, f"Error: {str(e)}")
+
+        # Test creating package with invalid service ID
+        try:
+            invalid_package = {
+                "name": "Invalid Package",
+                "description": "Package with invalid service",
+                "services": [{"service_id": "invalid-service-id", "quantity": 1}],
+                "discount_percent": 10.0,
+                "created_by_employee_id": employee_id
+            }
+            response = self.session.post(f"{BASE_URL}/packages", json=invalid_package)
+            if response.status_code == 404 and "Service" in response.text and "not found" in response.text:
+                self.log_test("Package - Invalid Service ID", True,
+                            "Correctly rejected invalid service ID")
+            else:
+                self.log_test("Package - Invalid Service ID", False,
+                            f"Should reject invalid service ID, got status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Package - Invalid Service ID", False, f"Error: {str(e)}")
+
+        # Test getting packages
+        try:
+            response = self.session.get(f"{BASE_URL}/packages")
+            if response.status_code == 200:
+                packages = response.json()
+                self.log_test("Get Packages", True, f"Retrieved {len(packages)} packages")
+                
+                # Verify package data structure
+                for package in packages[:2]:  # Check first 2 packages
+                    required_fields = ["id", "name", "services", "total_price", "discounted_price", 
+                                     "discount_percent", "duration_days", "created_by_employee_name"]
+                    fields_present = all(field in package for field in required_fields)
+                    
+                    if fields_present:
+                        self.log_test(f"Package Data: {package['name']}", True,
+                                    f"Services: {len(package['services'])}, Duration: {package['duration_days']} days")
+                    else:
+                        missing_fields = [field for field in required_fields if field not in package]
+                        self.log_test(f"Package Data: {package['name']}", False,
+                                    f"Missing fields: {', '.join(missing_fields)}")
+            else:
+                self.log_test("Get Packages", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Packages", False, f"Error: {str(e)}")
+
+        # Test package with single service (edge case)
+        if len(services) > 0:
+            try:
+                single_service_package = {
+                    "name": "Single Service Package",
+                    "description": "Package with only one service",
+                    "services": [{"service_id": services[0]["id"], "quantity": 3}],
+                    "discount_percent": 5.0,
+                    "created_by_employee_id": employee_id
+                }
+                
+                response = self.session.post(f"{BASE_URL}/packages", json=single_service_package)
+                if response.status_code == 200:
+                    single_package = response.json()
+                    expected_single_total = services[0]["base_price"] * 3
+                    expected_single_discounted = expected_single_total * 0.95
+                    
+                    price_match = abs(single_package.get("total_price", 0) - expected_single_total) < 0.01
+                    discount_match = abs(single_package.get("discounted_price", 0) - expected_single_discounted) < 0.01
+                    duration_match = single_package.get("duration_days") == services[0]["duration_days"]
+                    
+                    self.log_test("Package - Single Service", True,
+                                f"Price: Rp{single_package.get('total_price')}, Duration: {single_package.get('duration_days')} days")
+                    
+                    if price_match and discount_match and duration_match:
+                        self.log_test("Package - Single Service Calculations", True,
+                                    "All calculations correct for single service package")
+                    else:
+                        self.log_test("Package - Single Service Calculations", False,
+                                    f"Calculation errors - Price: {price_match}, Discount: {discount_match}, Duration: {duration_match}")
+                else:
+                    self.log_test("Package - Single Service", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_test("Package - Single Service", False, f"Error: {str(e)}")
+
     def run_all_tests(self):
         """Run complete test suite"""
         print("=" * 60)
