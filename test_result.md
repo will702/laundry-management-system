@@ -294,7 +294,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All pending mobile enhancement tasks completed"
+    - "Service estimation integration with duration_days"
+    - "Package management backend endpoints"  
+    - "Default data initialization endpoint"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
