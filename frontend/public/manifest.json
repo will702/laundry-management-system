@@ -1,6 +1,6 @@
 {
-  "name": "LaundryPro - Aplikasi Manajemen Laundry",
-  "short_name": "LaundryPro",
+  "name": "Mass Laundry - Aplikasi Manajemen Laundry",
+  "short_name": "Mass Laundry",
   "description": "Aplikasi manajemen laundry dengan sistem bon, audit trail, dan laporan lengkap",
   "start_url": "/",
   "display": "standalone",
