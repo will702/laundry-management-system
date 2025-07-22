@@ -3233,6 +3233,22 @@ function App() {
           <LaundrySettings employee={currentEmployee} />
         )}
 
+        {activeTab === 'customization' && isAdmin && (
+          <CustomizationManager 
+            categories={categories}
+            units={units}
+            services={services}
+            packages={packages}
+            employee={currentEmployee}
+            onDataUpdate={() => {
+              loadCategories();
+              loadUnits();
+              loadServices();
+              loadPackages();
+            }}
+          />
+        )}
+
         {activeTab === 'reports' && (
           <ExcelReportExport employee={currentEmployee} />
         )}
