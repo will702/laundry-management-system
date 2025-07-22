@@ -3548,7 +3548,8 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
 
             {/* Category Form */}
             {showCategoryForm && (
-              <form onSubmit={handleCreateCategory} className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <div>
+                <form onSubmit={handleCreateCategory} className="bg-gray-50 p-4 rounded-lg space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input
                     type="text"
