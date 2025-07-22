@@ -3322,7 +3322,8 @@ function App() {
           <LaundrySettings employee={currentEmployee} />
         )}
 
-        {activeTab === 'customization' && isAdmin && (
+        {/* Show Customization for all users */}
+        {activeTab === 'customization' && (
           <CustomizationManager 
             categories={categories}
             units={units}
