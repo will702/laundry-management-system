@@ -3657,7 +3657,10 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
         {activeCustomTab === 'services' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-800">Layanan dengan Estimasi</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Layanan dengan Estimasi Manual</h3>
+                <p className="text-sm text-gray-600 mt-1">Atur sendiri berapa lama setiap layanan akan selesai</p>
+              </div>
               <button
                 onClick={() => setShowServiceForm(!showServiceForm)}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
