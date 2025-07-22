@@ -1072,6 +1072,91 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
 # ============================================
+# ADMIN & USER MANAGEMENT
+# ============================================
+
+# Secret admin code for security
+SECRET_ADMIN_CODE = "MASS2025"
+
+@api_router.post("/admin/register")
+async def register_admin(admin_data: dict):
+    """Register admin with secret code validation"""
+    
+    # Validate admin secret code
+    if admin_data.get("admin_code") != SECRET_ADMIN_CODE:
+        raise HTTPException(status_code=403, detail="Kode admin tidak valid")
+    
+    # Check if PIN already exists
+    existing_employee = await db.employees.find_one({"pin": admin_data["pin"]})
+    if existing_employee:
+        raise HTTPException(status_code=400, detail="PIN sudah digunakan")
+    
+    # Create admin employee
+    employee = Employee(
+        id=str(uuid.uuid4()),
+        name=admin_data["name"],
+        pin=admin_data["pin"],
+        role="admin",
+        phone=admin_data.get("phone", ""),
+        address=admin_data.get("address", ""),
+        is_active=True,
+        created_by="system",
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    await db.employees.insert_one(employee.dict())
+    
+    # Initialize default data for new installation
+    try:
+        await initialize_default_data()
+    except Exception as e:
+        # Don't fail registration if default data initialization fails
+        print(f"Warning: Could not initialize default data: {e}")
+    
+    return {
+        "message": "Admin berhasil didaftarkan",
+        "employee": {
+            "id": employee.id,
+            "name": employee.name,
+            "role": employee.role
+        }
+    }
+
+@api_router.post("/create-default-user")
+async def create_default_user():
+    """Create default user account for testing"""
+    
+    # Check if user already exists
+    existing_user = await db.employees.find_one({"name": "user"})
+    if existing_user:
+        return {"message": "Default user already exists", "employee": existing_user}
+    
+    # Create default user
+    user_employee = Employee(
+        id=str(uuid.uuid4()),
+        name="user",
+        pin="1234",
+        role="employee",
+        phone="+62812345678",
+        address="Default Address",
+        is_active=True,
+        created_by="system",
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    await db.employees.insert_one(user_employee.dict())
+    
+    return {
+        "message": "Default user 'user' created successfully",
+        "employee": {
+            "id": user_employee.id,
+            "name": user_employee.name,
+            "role": user_employee.role,
+            "pin": user_employee.pin
+        }
+    }
+
+# ============================================
 # NEW CUSTOMIZATION ENDPOINTS
 # ============================================
 
