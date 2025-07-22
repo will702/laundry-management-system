@@ -33,7 +33,14 @@ const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">🧺 Mass Laundry</h1>
+          <div className="flex justify-center mb-4">
+            <img 
+              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDMwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNhMGYwZWQiLz4KPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM1YmVhZTQiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGY3MmJmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPCEtLSBDaXJjbGUgQmFja2dyb3VuZCAtLT4KPGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMzUiIGZpbGw9IiMyMTIxNjEiLz4KPCEtLSBXYXRlciBXYXZlIC0tPgo8Y2lyY2xlIGN4PSI3NSIgY3k9IjUwIiByPSIyOCIgZmlsbD0idXJsKCNncmFkaWVudDEpIi8+CjxwYXRoIGQ9Ik01MCA1MEM1MCA0MCA2MCAzNSA3NSAzNUM5MCAzNSAxMDAgNDAgMTAwIDUwQzEwMCA2MCA5MCA2NSA3NSA2NUM2MCA2NSA1MCA2MCA1MCA1MFoiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuMyIvPgo8IS0tIFdhdGVyIERyb3BsZXRzIC0tPgo8Y2lyY2xlIGN4PSI1NSIgY3k9IjM1IiByPSIyIiBmaWxsPSIjMDc4OGZkIiBvcGFjaXR5PSIwLjciLz4KPGNpcmNsZSBjeD0iNjIiIGN5PSI0MiIgcj0iMS41IiBmaWxsPSIjMDc4OGZkIiBvcGFjaXR5PSIwLjUiLz4KPGNpcmNsZSBjeD0iOTUiIGN5PSIzOCIgcj0iMS44IiBmaWxsPSIjMDc4OGZkIiBvcGFjaXR5PSIwLjYiLz4KPGNpcmNsZSBjeD0iODgiIGN5PSI0NSIgcj0iMS4yIiBmaWxsPSIjMDc4OGZkIiBvcGFjaXR5PSIwLjQiLz4KPCEtLSBMYXVuZHJ5IFN0YWNrIC0tPgo8cmVjdCB4PSIxMzAiIHk9IjMwIiB3aWR0aD0iNDAiIGhlaWdodD0iOCIgcng9IjMiIGZpbGw9IiNmOWZhZmIiLz4KPHJlY3QgeD0iMTM1IiB5PSI0MCIgd2lkdGg9IjM1IiBoZWlnaHQ9IjgiIHJ4PSIzIiBmaWxsPSIjZTVlN2ViIi8+CjxyZWN0IHg9IjE0MCIgeT0iNTAiIHdpZHRoPSIzMCIgaGVpZ2h0PSI4IiByeD0iMyIgZmlsbD0iIzVmYWZlNiIvPgo8IS0tIFRleHQgLS0+Cjx0ZXh0IHg9IjMwIiB5PSI5NSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzIxMjE2MSI+TUFTUYA8L3RleHQ+Cjx0ZXh0IHg9IjE0MCIgeT0iOTUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM1ZmFmZTYiPkxBVU5EUlk8L3RleHQ+CjxwYXRoIGQ9Ik0zMCAxMTBRMTUwIDEwMCAyNzAgMTEwIiBzdHJva2U9IiM2ZGRiNzMiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4=" 
+              alt="Mass Laundry Logo"
+              className="h-20 w-auto"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Mass Laundry</h1>
           <p className="text-gray-600">Akses Karyawan</p>
         </div>
 
