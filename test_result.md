@@ -165,23 +165,65 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: Fraud prevention audit system working perfectly. Receipts-by-employee endpoint provides complete audit trail with employee names, receipt counts, and total amounts. Daily summary endpoint working (fixed minor timedelta import issue). All employee actions properly tracked for fraud prevention."
 
-  - task: "Print receipt functionality"
+  - task: "Enhanced Services with duration_days and customization"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented print receipt endpoint GET /api/receipts/{receipt_id}/print with business information, receipt details, and print timestamps"
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED: Print receipt functionality working excellently. Print endpoint returns comprehensive receipt data formatted for printing including business information (LaundryPro Professional Services, address, phone), complete receipt details (client info, employee info, itemized list with pricing), total amount, status, creation and print timestamps. Successfully handles both active and deleted receipts for audit trail maintenance. All 8 print-related test scenarios passed."
-      - working: true
-        agent: "testing"
-        comment: "✅ COMPREHENSIVE PRINT TESTING COMPLETED: Conducted focused testing of print functionality as requested in review. Fixed missing subtotal and discount fields in print endpoint response. All print API endpoints working perfectly with 100% success rate (43/43 tests passed). Print data structure is complete and consistent. GET /api/receipts/{receipt_id}/print returns all required fields: business info, receipt details, items with pricing, subtotal, discount fields, total amounts, and footer notes. Print functionality works correctly for existing receipts from 'Semua Bon' page - the issue is likely in frontend implementation, not backend API."
+        comment: "Enhanced Service model with duration_days field for estimated completion time. Updated service endpoints to use new enhanced services API with category and unit relationships."
+        
+  - task: "Categories management CRUD endpoints"
+    implemented: true
+    working: "NA" 
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Category model and CRUD endpoints: POST/GET/PUT/DELETE /api/categories with employee audit trail and name uniqueness validation."
+        
+  - task: "Units management CRUD endpoints"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py" 
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Unit model and CRUD endpoints: POST/GET/PUT/DELETE /api/units with employee audit trail and name uniqueness validation."
+        
+  - task: "Package management endpoints with service bundling"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0  
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Package model with service bundling, automatic pricing calculation, discount support, and duration estimation based on longest service. POST/GET endpoints with employee audit trail."
+
+  - task: "Default data initialization endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high" 
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented POST /api/initialize endpoint that creates default categories (Pakaian, Sepatu, Tas, etc), units (pcs, kg, set, etc), and services (Cuci Setrika, Dry Clean, etc) for new installations."
 
 frontend:
   - task: "PIN-based employee authentication"
