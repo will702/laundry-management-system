@@ -98,6 +98,80 @@ class ReceiptDelete(BaseModel):
     employee_id: str
     deletion_reason: str
 
+# Category and Unit Models for Customization
+class Category(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_by_employee_id: str
+    created_by_employee_name: str
+
+class CategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    created_by_employee_id: str
+
+class Unit(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # pcs, kg, set, pasang, lembar, buah, dll
+    description: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_by_employee_id: str
+    created_by_employee_name: str
+
+class UnitCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    created_by_employee_id: str
+
+# Enhanced Service Model with Categories and Units
+class Service(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # wash, dry_clean, iron, etc.
+    category_id: str
+    category_name: str  # denormalized
+    unit_id: str
+    unit_name: str  # denormalized
+    base_price: float
+    duration_days: int = 3  # estimation in days
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_by_employee_id: str
+    created_by_employee_name: str
+
+class ServiceCreate(BaseModel):
+    name: str
+    category_id: str
+    unit_id: str
+    base_price: float
+    duration_days: int = 3
+    created_by_employee_id: str
+
+# Package Model for Bundle Services
+class Package(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    services: List[dict]  # List of {service_id, quantity, discounted_price}
+    total_price: float
+    discounted_price: float
+    discount_percent: float
+    duration_days: int  # max duration from all services
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_by_employee_id: str
+    created_by_employee_name: str
+
+class PackageCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    services: List[dict]  # {service_id: str, quantity: int}
+    discount_percent: float
+    created_by_employee_id: str
+
 class LaundrySettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     business_name: str = "LaundryPro"
