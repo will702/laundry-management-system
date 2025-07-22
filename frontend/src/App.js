@@ -3906,7 +3906,15 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                     <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
                     <div className="mt-2 flex justify-between items-end">
                       <div className="text-sm text-gray-500">
-                        {pkg.services.length} layanan • {pkg.duration_days} hari
+                        {pkg.services.length} layanan • ⏱️ {
+                          pkg.duration_days > 0 ? `${pkg.duration_days}h ` : ''
+                        }{
+                          pkg.duration_hours > 0 ? `${pkg.duration_hours}j ` : ''
+                        }{
+                          pkg.duration_minutes > 0 ? `${pkg.duration_minutes}m` : ''
+                        }{
+                          pkg.duration_days === 0 && pkg.duration_hours === 0 && pkg.duration_minutes === 0 ? 'Instan' : ''
+                        }
                       </div>
                       <div className="text-right">
                         <div className="text-xs text-gray-400 line-through">Rp{pkg.total_price.toLocaleString('id-ID')}</div>
