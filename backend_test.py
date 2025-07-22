@@ -1293,6 +1293,21 @@ class LaundryProTester:
         print("\n🖨️ Testing Print Receipt Functionality...")
         self.test_print_receipt_functionality()
 
+        print("\n🚀 Testing Default Data Initialization...")
+        self.test_default_data_initialization()
+
+        print("\n📂 Testing Categories Management...")
+        self.test_categories_management()
+
+        print("\n📏 Testing Units Management...")
+        self.test_units_management()
+
+        print("\n⚙️ Testing Enhanced Services API...")
+        self.test_enhanced_services_api()
+
+        print("\n📦 Testing Package Management...")
+        self.test_package_management()
+
         # Print summary
         print("\n" + "=" * 60)
         print("TEST SUMMARY")
