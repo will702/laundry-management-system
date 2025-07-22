@@ -3683,7 +3683,7 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                   </ul>
                 </div>
                 
-                <form onSubmit={handleCreateService} className="space-y-4">&gt;
+                <form onSubmit={handleCreateService} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <input
                     type="text"
