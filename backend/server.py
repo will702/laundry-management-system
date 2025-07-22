@@ -136,7 +136,9 @@ class Service(BaseModel):
     unit_id: str
     unit_name: str  # denormalized
     base_price: float
-    duration_days: int = 3  # estimation in days
+    duration_days: int = 0
+    duration_hours: int = 0
+    duration_minutes: int = 0
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_by_employee_id: str
@@ -147,7 +149,9 @@ class ServiceCreate(BaseModel):
     category_id: str
     unit_id: str
     base_price: float
-    duration_days: int = 3
+    duration_days: int = 0
+    duration_hours: int = 0
+    duration_minutes: int = 0
     created_by_employee_id: str
 
 # Package Model for Bundle Services
