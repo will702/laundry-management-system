@@ -2674,8 +2674,12 @@ function App() {
 
   // Load user from localStorage on app start
   useEffect(() => {
-    // First load employees
+    // Load all initial data
     loadEmployees();
+    loadCategories();
+    loadUnits();
+    loadServices();
+    loadPackages();
     
     // Hide loading screen once React has rendered
     setTimeout(() => {
