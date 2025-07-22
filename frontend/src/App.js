@@ -2746,6 +2746,41 @@ function App() {
 
   // Load user from localStorage on app start
   useEffect(() => {
+    // Force service worker update for logo changes
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration()
+        .then(registration => {
+          if (registration) {
+            console.log('🔄 Forcing service worker update...');
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed') {
+                  if (navigator.serviceWorker.controller) {
+                    console.log('⚡ New service worker available, updating...');
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+            registration.update(); // Force check for updates
+          }
+        });
+    }
+
+    // Clear all browser cache programmatically
+    if ('caches' in window) {
+      caches.keys().then(cacheNames => {
+        cacheNames.forEach(cacheName => {
+          if (cacheName.includes('mass-laundry') || cacheName.includes('laundry')) {
+            console.log('🗑️ Clearing cache:', cacheName);
+            caches.delete(cacheName);
+          }
+        });
+      });
+    }
+
     // Load all initial data
     loadEmployees();
     loadCategories();
