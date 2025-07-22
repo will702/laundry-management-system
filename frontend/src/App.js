@@ -263,7 +263,9 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         name: service.name,
         price: service.base_price,
         unit: service.unit_name,
-        duration_days: service.duration_days,
+        duration_days: service.duration_days || 0,
+        duration_hours: service.duration_hours || 0,
+        duration_minutes: service.duration_minutes || 0,
         category_name: service.category_name
       }));
       
