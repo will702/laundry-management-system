@@ -546,6 +546,40 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     }
   };
 
+  // Calculate estimated completion time based on selected services
+  const calculateEstimatedCompletion = () => {
+    if (items.length === 0) return "";
+    
+    // Find the maximum duration from all selected services
+    let maxDuration = 0;
+    items.forEach(item => {
+      const service = serviceItems.find(s => s.name === item.service);
+      if (service && service.duration_days > maxDuration) {
+        maxDuration = service.duration_days;
+      }
+    });
+    
+    // If no duration found, default to 3 days
+    if (maxDuration === 0) maxDuration = 3;
+    
+    // Calculate completion date and time
+    const now = new Date();
+    const completionDate = new Date(now);
+    completionDate.setDate(completionDate.getDate() + maxDuration);
+    
+    // Format the completion time
+    const options = {
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    
+    return completionDate.toLocaleDateString('id-ID', options);
+  };
+
   if (loadingServices) {
     return <div className="text-center py-8">Memuat layanan...</div>;
   }
