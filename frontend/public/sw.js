@@ -1,49 +1,36 @@
-// Clear cache and force reload when logo updates
+// Fresh service worker for clean deployment - no existing cache
+const CACHE_VERSION = 'mass-laundry-fresh-' + Date.now();
+
+self.addEventListener('install', (event) => {
+  console.log('🆕 Fresh Service Worker installing...');
+  self.skipWaiting();
+});
+
 self.addEventListener('activate', (event) => {
-  console.log('🔄 Service Worker: Aktivasi - clearing old cache...');
+  console.log('🔄 Fresh Service Worker: Activating and clearing ALL caches...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          console.log('🗑️ Deleting cache:', cacheName);
+          console.log('🗑️ Deleting ALL cache:', cacheName);
           return caches.delete(cacheName);
         })
       );
     }).then(() => {
-      console.log('✅ All cache cleared - forcing clients claim');
+      console.log('✅ All caches cleared - fresh start!');
       return self.clients.claim();
     })
   );
 });
 
-// Force update when new version available
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('⚡ Service Worker: Force update requested');
-    self.skipWaiting();
-  }
-});
-
-// Version timestamp to force cache refresh
-const CACHE_VERSION = 'mass-laundry-v' + Date.now();
-const STATIC_CACHE = CACHE_VERSION + '-static';
-
 self.addEventListener('fetch', (event) => {
-  // Don't cache during development or for API calls
+  // No caching for fresh start - always fetch from network
   if (event.request.url.includes('/api/') || 
-      event.request.url.includes('localhost:3000')) {
+      event.request.url.includes('localhost')) {
     return fetch(event.request);
   }
   
-  event.respondWith(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchResponse) => {
-          cache.put(event.request, fetchResponse.clone());
-          return fetchResponse;
-        });
-      });
-    })
-  );
+  // For other requests, always fetch fresh
+  event.respondWith(fetch(event.request));
 });
 
