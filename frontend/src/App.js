@@ -3419,7 +3419,7 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
         duration_days: parseInt(serviceForm.duration_days),
         created_by_employee_id: employee.id
       });
-      setServiceForm({ name: '', category_id: '', unit_id: '', base_price: '', duration_days: 3 });
+      setServiceForm({ name: '', category_id: '', unit_id: '', base_price: '', duration_days: 0, duration_hours: 0, duration_minutes: 0 });
       setShowServiceForm(false);
       onDataUpdate();
       alert('Layanan berhasil ditambahkan!');
