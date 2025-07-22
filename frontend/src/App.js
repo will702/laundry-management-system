@@ -2848,7 +2848,7 @@ function App() {
             <div className="flex items-center space-x-2">
               <h1 className="text-base sm:text-2xl font-bold text-indigo-600 flex items-center">
                 <span className="text-lg sm:text-2xl mr-1">🧺</span>
-                <span className="hidden xs:inline">LaundryPro</span>
+                <span className="hidden xs:inline">Mass Laundry</span>
                 <span className="xs:hidden">LP</span>
               </h1>
               {/* User info - Hidden on small mobile */}
