@@ -3671,7 +3671,19 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
 
             {/* Service Form */}
             {showServiceForm && (
-              <form onSubmit={handleCreateService} className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <div className="bg-gray-50 p-6 rounded-lg space-y-4 border-2 border-indigo-200">
+                <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-lg mb-4">
+                  <h4 className="text-sm font-semibold text-indigo-800 mb-2">💡 Tips Estimasi Manual:</h4>
+                  <ul className="text-xs text-indigo-700 space-y-1">
+                    <li>• <strong>Cuci Express:</strong> 0 hari + 3 jam + 0 menit</li>
+                    <li>• <strong>Setrika Saja:</strong> 0 hari + 2 jam + 0 menit</li>
+                    <li>• <strong>Dry Clean:</strong> 3 hari + 0 jam + 0 menit</li>
+                    <li>• <strong>Cuci Setrika:</strong> 2 hari + 0 jam + 0 menit</li>
+                    <li>• <strong>Instan:</strong> 0 hari + 0 jam + 0 menit</li>
+                  </ul>
+                </div>
+                
+                <form onSubmit={handleCreateService} className="space-y-4">&gt;
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <input
                     type="text"
