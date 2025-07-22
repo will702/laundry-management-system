@@ -306,6 +306,9 @@ async def create_default_user():
     # Check if user already exists
     existing_user = await db.employees.find_one({"name": "user"})
     if existing_user:
+        # Remove MongoDB ObjectId for serialization
+        if '_id' in existing_user:
+            del existing_user['_id']
         return {"message": "Default user already exists", "employee": existing_user}
     
     # Create default user
