@@ -1051,8 +1051,13 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         </div>
         ` : ''}
 
-        <!-- Footer -->
+        <!-- Footer with footer_notes -->
         <div class="footer">
+          ${receiptData.footer_notes ? `
+            <div style="margin-bottom: 15px;">
+              ${receiptData.footer_notes.split('\n').map(line => `<div>${line.trim()}</div>`).join('')}
+            </div>
+          ` : ''}
           <div>Terima kasih atas kepercayaan Anda</div>
           <div>🖨️ Dicetak pada: ${formatDateTime(receiptData.print_timestamp || new Date())}</div>
         </div>
