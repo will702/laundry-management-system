@@ -3350,7 +3350,9 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
     category_id: '',
     unit_id: '',
     base_price: '',
-    duration_days: 3
+    duration_days: 0,
+    duration_hours: 0,
+    duration_minutes: 0
   });
 
   // Package Management
