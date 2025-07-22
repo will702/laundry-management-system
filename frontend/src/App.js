@@ -577,6 +577,11 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         <div className="text-left sm:text-right text-sm text-gray-600">
           <div>Karyawan: {employee.name}</div>
           <div>Pelanggan: {client.name}</div>
+          {items.length > 0 && (
+            <div className="mt-1 text-indigo-600 font-medium">
+              ⏰ Estimasi selesai: {calculateEstimatedCompletion()}
+            </div>
+          )}
         </div>
       </div>
 
