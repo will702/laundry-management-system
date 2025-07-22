@@ -32,6 +32,9 @@ class Employee(BaseModel):
     name: str
     pin: str
     role: str = "employee"  # "employee" or "admin"
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    created_by: Optional[str] = "system"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_active: bool = True
 
