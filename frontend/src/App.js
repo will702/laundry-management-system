@@ -3637,6 +3637,7 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                   {loading ? 'Menyimpan...' : '💾 Simpan Satuan'}
                 </button>
               </form>
+              </div>
             )}
 
             {/* Units List */}
