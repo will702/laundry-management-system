@@ -1,155 +1,49 @@
-const CACHE_NAME = 'laundry-pro-v1.0.0';
-const API_CACHE_NAME = 'laundry-api-v1.0.0';
-
-// Assets to cache for offline use
-const urlsToCache = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json',
-  // Add other static assets as needed
-];
-
-// API endpoints to cache
-const apiEndpointsToCache = [
-  '/api/employees',
-  '/api/clients',
-  '/api/service-items',
-  '/api/settings'
-];
-
-// Install event - cache static assets
-self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Install');
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[ServiceWorker] Caching static assets');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('[ServiceWorker] Skip waiting');
-        return self.skipWaiting();
-      })
-  );
-});
-
-// Activate event - clean old caches
+// Clear cache and force reload when logo updates
 self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activate');
-  
+  console.log('🔄 Service Worker: Aktivasi - clearing old cache...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
-            console.log('[ServiceWorker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
+          console.log('🗑️ Deleting cache:', cacheName);
+          return caches.delete(cacheName);
         })
       );
     }).then(() => {
-      console.log('[ServiceWorker] Claiming clients');
+      console.log('✅ All cache cleared - forcing clients claim');
       return self.clients.claim();
     })
   );
 });
 
-// Fetch event - serve cached content when offline
+// Force update when new version available
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('⚡ Service Worker: Force update requested');
+    self.skipWaiting();
+  }
+});
+
+// Version timestamp to force cache refresh
+const CACHE_VERSION = 'mass-laundry-v' + Date.now();
+const STATIC_CACHE = CACHE_VERSION + '-static';
+
 self.addEventListener('fetch', (event) => {
-  const requestUrl = new URL(event.request.url);
-  
-  // Handle API requests
-  if (requestUrl.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(event.request));
-    return;
+  // Don't cache during development or for API calls
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('localhost:3000')) {
+    return fetch(event.request);
   }
   
-  // Handle static assets
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          console.log('[ServiceWorker] Serving from cache:', event.request.url);
-          return response;
-        }
-        
-        console.log('[ServiceWorker] Fetching from network:', event.request.url);
-        return fetch(event.request).then((response) => {
-          // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response as it can only be consumed once
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          cache.put(event.request, fetchResponse.clone());
+          return fetchResponse;
         });
-      })
-      .catch(() => {
-        // If both cache and network fail, return offline page
-        if (event.request.destination === 'document') {
-          return new Response(
-            `<!DOCTYPE html>
-            <html>
-              <head>
-                <title>LaundryPro - Offline</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
-                    padding: 50px; 
-                    background: #f5f5f5;
-                  }
-                  .offline-message {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 10px;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    max-width: 400px;
-                    margin: 0 auto;
-                  }
-                  .icon { font-size: 48px; margin-bottom: 20px; }
-                  h1 { color: #333; margin-bottom: 20px; }
-                  p { color: #666; line-height: 1.6; }
-                  button {
-                    background: #4f46e5;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    margin-top: 20px;
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="offline-message">
-                  <div class="icon">🧺</div>
-                  <h1>LaundryPro</h1>
-                  <h2>Aplikasi Offline</h2>
-                  <p>Anda sedang offline. Beberapa fitur mungkin tidak tersedia, tetapi Anda masih dapat mengakses data yang telah dimuat sebelumnya.</p>
-                  <button onclick="window.location.reload()">Coba Lagi</button>
-                </div>
-              </body>
-            </html>`,
-            {
-              headers: {
-                'Content-Type': 'text/html'
-              }
-            }
-          );
-        }
-      })
+      });
+    })
   );
 });
 
