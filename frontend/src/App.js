@@ -2777,7 +2777,7 @@ function App() {
     
     // Show logout confirmation
     setTimeout(() => {
-      alert('Anda telah berhasil logout. Terima kasih telah menggunakan LaundryPro!');
+      alert('Anda telah berhasil logout. Terima kasih telah menggunakan Mass Laundry!');
     }, 100);
   };
 
