@@ -42,6 +42,8 @@ class EmployeeCreate(BaseModel):
     name: str
     pin: str
     role: str = "employee"
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
 
 class AdminRegister(BaseModel):
     name: str
