@@ -1242,6 +1242,8 @@ async def create_package(package_data: PackageCreate):
         total_price=total_price,
         discounted_price=discounted_price,
         duration_days=duration_days,
+        duration_hours=duration_hours,
+        duration_minutes=duration_minutes,
         created_by_employee_name=employee["name"]
     )
     await db.packages.insert_one(package.dict())
