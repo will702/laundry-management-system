@@ -34,6 +34,16 @@ const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration }) => {
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 via-blue-600 to-gray-700 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-gray-600 flex items-center justify-center relative">
+                {/* Water Wave Effect */}
+                <div className="absolute inset-2 bg-white bg-opacity-30 rounded-full"></div>
+                {/* Water Bubbles */}
+                <div className="absolute top-2 left-3 w-1.5 h-1.5 bg-white bg-opacity-70 rounded-full"></div>
+                <div className="absolute top-3 right-2 w-1 h-1 bg-white bg-opacity-50 rounded-full"></div>
+                <div className="absolute bottom-2 left-2 w-1.5 h-1.5 bg-white bg-opacity-60 rounded-full"></div>
+              </div>
+            </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Mass Laundry</h1>
           <p className="text-gray-600">Sistem Manajemen Laundry</p>
