@@ -256,12 +256,22 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
 
   const loadServiceItems = async () => {
     try {
-      const response = await axios.get(`${API}/service-items?active_only=true`);
-      setServiceItems(response.data);
+      // Use the new services API that includes duration_days
+      const response = await axios.get(`${API}/services`);
+      const servicesData = response.data.map(service => ({
+        id: service.id,
+        name: service.name,
+        price: service.base_price,
+        unit: service.unit_name,
+        duration_days: service.duration_days,
+        category_name: service.category_name
+      }));
+      
+      setServiceItems(servicesData);
       
       // Update first item with first service if available
-      if (response.data.length > 0) {
-        const firstService = response.data[0];
+      if (servicesData.length > 0) {
+        const firstService = servicesData[0];
         setItems([{
           service_item_id: firstService.id,
           service_name: firstService.name,
@@ -272,7 +282,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
         }]);
       }
     } catch (err) {
-      console.error('Error loading service items:', err);
+      console.error('Error loading services:', err);
     } finally {
       setLoadingServices(false);
     }
