@@ -1355,7 +1355,9 @@ async def initialize_default_data():
                     unit_id=unit["id"],
                     unit_name=unit["name"],
                     base_price=svc_data["price"],
-                    duration_days=svc_data["duration"],
+                    duration_days=svc_data["duration_days"],
+                    duration_hours=svc_data["duration_hours"],
+                    duration_minutes=svc_data["duration_minutes"],
                     created_by_employee_id=admin_id,
                     created_by_employee_name=admin_name
                 )
