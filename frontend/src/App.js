@@ -2660,6 +2660,18 @@ function App() {
   const [showAdminRegistration, setShowAdminRegistration] = useState(false);
   const [isRestoringSession, setIsRestoringSession] = useState(true); // Add loading state for session
 
+  // New state for customization features
+  const [categories, setCategories] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [services, setServices] = useState([]);
+  const [packages, setPackages] = useState([]);
+  
+  // Modal states
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showUnitModal, setShowUnitModal] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [showPackageModal, setShowPackageModal] = useState(false);
+
   // Load user from localStorage on app start
   useEffect(() => {
     // First load employees
