@@ -1185,40 +1185,6 @@ async def register_admin(admin_data: dict):
         }
     }
 
-@api_router.post("/create-default-user")
-async def create_default_user():
-    """Create default user account for testing"""
-    
-    # Check if user already exists
-    existing_user = await db.employees.find_one({"name": "user"})
-    if existing_user:
-        return {"message": "Default user already exists", "employee": existing_user}
-    
-    # Create default user
-    user_employee = Employee(
-        id=str(uuid.uuid4()),
-        name="user",
-        pin="1234",
-        role="employee",
-        phone="+62812345678",
-        address="Default Address",
-        is_active=True,
-        created_by="system",
-        created_at=datetime.now(timezone.utc)
-    )
-    
-    await db.employees.insert_one(user_employee.dict())
-    
-    return {
-        "message": "Default user 'user' created successfully",
-        "employee": {
-            "id": user_employee.id,
-            "name": user_employee.name,
-            "role": user_employee.role,
-            "pin": user_employee.pin
-        }
-    }
-
 # ============================================
 # NEW CUSTOMIZATION ENDPOINTS
 # ============================================
