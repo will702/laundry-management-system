@@ -3381,27 +3381,55 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
     setLoading(false);
   };
 
-  // Create Service
-  const handleCreateService = async (e) => {
+  // Create Package
+  const handleCreatePackage = async (e) => {
     e.preventDefault();
-    if (!serviceForm.name.trim() || !serviceForm.category_id || !serviceForm.unit_id) return;
+    if (!packageForm.name.trim() || packageForm.services.length === 0) return;
     
     setLoading(true);
     try {
-      await axios.post(`${API}/services`, {
-        ...serviceForm,
-        base_price: parseFloat(serviceForm.base_price),
-        duration_days: parseInt(serviceForm.duration_days),
+      await axios.post(`${API}/packages`, {
+        ...packageForm,
         created_by_employee_id: employee.id
       });
-      setServiceForm({ name: '', category_id: '', unit_id: '', base_price: '', duration_days: 3 });
-      setShowServiceForm(false);
+      setPackageForm({ name: '', description: '', services: [], discount_percent: 0 });
+      setShowPackageForm(false);
       onDataUpdate();
-      alert('Layanan berhasil ditambahkan!');
+      alert('Paket berhasil ditambahkan!');
     } catch (err) {
-      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah layanan'));
+      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah paket'));
     }
     setLoading(false);
+  };
+
+  // Add service to package
+  const addServiceToPackage = () => {
+    if (services.length === 0) return;
+    setPackageForm({
+      ...packageForm,
+      services: [
+        ...packageForm.services,
+        { service_id: services[0].id, quantity: 1 }
+      ]
+    });
+  };
+
+  // Remove service from package
+  const removeServiceFromPackage = (index) => {
+    setPackageForm({
+      ...packageForm,
+      services: packageForm.services.filter((_, i) => i !== index)
+    });
+  };
+
+  // Update package service
+  const updatePackageService = (index, field, value) => {
+    const updatedServices = [...packageForm.services];
+    updatedServices[index][field] = value;
+    setPackageForm({
+      ...packageForm,
+      services: updatedServices
+    });
   };
 
   return (
