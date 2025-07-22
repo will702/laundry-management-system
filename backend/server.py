@@ -1328,15 +1328,16 @@ async def initialize_default_data():
     
     # Default Services
     default_services = [
-        {"name": "Cuci Setrika", "category": "Pakaian", "unit": "kg", "price": 8000, "duration": 2},
-        {"name": "Cuci Kering", "category": "Pakaian", "unit": "kg", "price": 6000, "duration": 1},
-        {"name": "Setrika Saja", "category": "Pakaian", "unit": "kg", "price": 4000, "duration": 1},
-        {"name": "Dry Clean", "category": "Pakaian", "unit": "pcs", "price": 15000, "duration": 3},
-        {"name": "Cuci Sepatu", "category": "Sepatu", "unit": "pasang", "price": 25000, "duration": 2},
-        {"name": "Deep Clean Sepatu", "category": "Sepatu", "unit": "pasang", "price": 35000, "duration": 3},
-        {"name": "Cuci Tas", "category": "Tas", "unit": "buah", "price": 20000, "duration": 2},
-        {"name": "Cuci Selimut", "category": "Selimut", "unit": "lembar", "price": 15000, "duration": 2},
-        {"name": "Cuci Karpet", "category": "Karpet", "unit": "lembar", "price": 30000, "duration": 3},
+        {"name": "Cuci Setrika", "category": "Pakaian", "unit": "kg", "price": 8000, "duration_days": 2, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Cuci Kering", "category": "Pakaian", "unit": "kg", "price": 6000, "duration_days": 1, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Setrika Saja", "category": "Pakaian", "unit": "kg", "price": 4000, "duration_days": 0, "duration_hours": 2, "duration_minutes": 0},
+        {"name": "Dry Clean", "category": "Pakaian", "unit": "pcs", "price": 15000, "duration_days": 3, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Cuci Express", "category": "Pakaian", "unit": "kg", "price": 12000, "duration_days": 0, "duration_hours": 3, "duration_minutes": 0},
+        {"name": "Cuci Sepatu", "category": "Sepatu", "unit": "pasang", "price": 25000, "duration_days": 2, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Deep Clean Sepatu", "category": "Sepatu", "unit": "pasang", "price": 35000, "duration_days": 3, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Cuci Tas", "category": "Tas", "unit": "buah", "price": 20000, "duration_days": 2, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Cuci Selimut", "category": "Selimut", "unit": "lembar", "price": 15000, "duration_days": 2, "duration_hours": 0, "duration_minutes": 0},
+        {"name": "Cuci Karpet", "category": "Karpet", "unit": "lembar", "price": 30000, "duration_days": 3, "duration_hours": 0, "duration_minutes": 0},
     ]
     
     created_services = []
