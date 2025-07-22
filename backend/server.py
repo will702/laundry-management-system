@@ -1064,6 +1064,181 @@ async def export_receipts_to_excel(start_date: str, end_date: str, include_delet
 @api_router.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+
+# ============================================
+# NEW CUSTOMIZATION ENDPOINTS
+# ============================================
+
+# Categories endpoints
+@api_router.post("/categories", response_model=Category)
+async def create_category(category_data: CategoryCreate):
+    # Get employee details for audit trail
+    employee = await db.employees.find_one({"id": category_data.created_by_employee_id, "is_active": True})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Check if category name already exists
+    existing = await db.categories.find_one({"name": category_data.name.lower(), "is_active": True})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category name already exists")
+    
+    category = Category(
+        **category_data.dict(),
+        created_by_employee_name=employee["name"]
+    )
+    await db.categories.insert_one(category.dict())
+    return category
+
+@api_router.get("/categories", response_model=List[Category])
+async def get_categories():
+    categories = await db.categories.find({"is_active": True}).to_list(100)
+    return [Category(**cat) for cat in categories]
+
+@api_router.put("/categories/{category_id}")
+async def update_category(category_id: str, category_data: CategoryCreate):
+    result = await db.categories.update_one(
+        {"id": category_id, "is_active": True},
+        {"$set": {
+            "name": category_data.name,
+            "description": category_data.description,
+            "updated_at": datetime.now(timezone.utc)
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category updated successfully"}
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str):
+    result = await db.categories.update_one(
+        {"id": category_id},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category deactivated successfully"}
+
+# Units endpoints
+@api_router.post("/units", response_model=Unit)
+async def create_unit(unit_data: UnitCreate):
+    # Get employee details for audit trail
+    employee = await db.employees.find_one({"id": unit_data.created_by_employee_id, "is_active": True})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Check if unit name already exists
+    existing = await db.units.find_one({"name": unit_data.name.lower(), "is_active": True})
+    if existing:
+        raise HTTPException(status_code=400, detail="Unit name already exists")
+    
+    unit = Unit(
+        **unit_data.dict(),
+        created_by_employee_name=employee["name"]
+    )
+    await db.units.insert_one(unit.dict())
+    return unit
+
+@api_router.get("/units", response_model=List[Unit])
+async def get_units():
+    units = await db.units.find({"is_active": True}).to_list(100)
+    return [Unit(**unit) for unit in units]
+
+@api_router.put("/units/{unit_id}")
+async def update_unit(unit_id: str, unit_data: UnitCreate):
+    result = await db.units.update_one(
+        {"id": unit_id, "is_active": True},
+        {"$set": {
+            "name": unit_data.name,
+            "description": unit_data.description,
+            "updated_at": datetime.now(timezone.utc)
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Unit not found")
+    return {"message": "Unit updated successfully"}
+
+@api_router.delete("/units/{unit_id}")
+async def delete_unit(unit_id: str):
+    result = await db.units.update_one(
+        {"id": unit_id},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Unit not found")
+    return {"message": "Unit deactivated successfully"}
+
+# Enhanced Services endpoints
+@api_router.post("/services", response_model=Service)
+async def create_service(service_data: ServiceCreate):
+    # Get employee details
+    employee = await db.employees.find_one({"id": service_data.created_by_employee_id, "is_active": True})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Get category and unit details
+    category = await db.categories.find_one({"id": service_data.category_id, "is_active": True})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+        
+    unit = await db.units.find_one({"id": service_data.unit_id, "is_active": True})
+    if not unit:
+        raise HTTPException(status_code=404, detail="Unit not found")
+    
+    service = Service(
+        **service_data.dict(),
+        category_name=category["name"],
+        unit_name=unit["name"],
+        created_by_employee_name=employee["name"]
+    )
+    await db.services.insert_one(service.dict())
+    return service
+
+@api_router.get("/services", response_model=List[Service])
+async def get_services():
+    services = await db.services.find({"is_active": True}).to_list(100)
+    return [Service(**svc) for svc in services]
+
+# Packages endpoints
+@api_router.post("/packages", response_model=Package)
+async def create_package(package_data: PackageCreate):
+    # Get employee details
+    employee = await db.employees.find_one({"id": package_data.created_by_employee_id, "is_active": True})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Calculate package pricing and duration
+    total_price = 0
+    max_duration = 0
+    
+    for service_item in package_data.services:
+        service = await db.services.find_one({"id": service_item["service_id"], "is_active": True})
+        if not service:
+            raise HTTPException(status_code=404, detail=f"Service {service_item['service_id']} not found")
+        
+        quantity = service_item["quantity"]
+        total_price += service["base_price"] * quantity
+        if service["duration_days"] > max_duration:
+            max_duration = service["duration_days"]
+    
+    discounted_price = total_price * (1 - package_data.discount_percent / 100)
+    
+    package = Package(
+        **package_data.dict(),
+        total_price=total_price,
+        discounted_price=discounted_price,
+        duration_days=max_duration,
+        created_by_employee_name=employee["name"]
+    )
+    await db.packages.insert_one(package.dict())
+    return package
+
+@api_router.get("/packages", response_model=List[Package])
+async def get_packages():
+    packages = await db.packages.find({"is_active": True}).to_list(100)
+    return [Package(**pkg) for pkg in packages]
+
+# ============================================
+
 app.include_router(api_router)
 
 app.add_middleware(
