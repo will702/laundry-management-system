@@ -561,21 +561,30 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     if (items.length === 0) return "";
     
     // Find the maximum duration from all selected services
-    let maxDuration = 0;
+    let maxDurationMinutes = 0;
     items.forEach(item => {
       const service = serviceItems.find(s => s.id === item.service_item_id);
-      if (service && service.duration_days > maxDuration) {
-        maxDuration = service.duration_days;
+      if (service) {
+        // Convert service duration to total minutes
+        const serviceDurationMinutes = 
+          (service.duration_days || 0) * 24 * 60 + 
+          (service.duration_hours || 0) * 60 + 
+          (service.duration_minutes || 0);
+        
+        if (serviceDurationMinutes > maxDurationMinutes) {
+          maxDurationMinutes = serviceDurationMinutes;
+        }
       }
     });
     
-    // If no duration found, default to 3 days
-    if (maxDuration === 0) maxDuration = 3;
+    // If no duration found, default to instant
+    if (maxDurationMinutes === 0) {
+      return "Siap dalam hitungan menit";
+    }
     
     // Calculate completion date and time
     const now = new Date();
-    const completionDate = new Date(now);
-    completionDate.setDate(completionDate.getDate() + maxDuration);
+    const completionDate = new Date(now.getTime() + maxDurationMinutes * 60 * 1000);
     
     // Format the completion time
     const options = {
