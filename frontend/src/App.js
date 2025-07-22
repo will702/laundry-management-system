@@ -3689,17 +3689,46 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                     required
                   />
                 </div>
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-medium text-gray-700">Estimasi Selesai:</label>
-                  <select
-                    value={serviceForm.duration_days}
-                    onChange={(e) => setServiceForm({...serviceForm, duration_days: parseInt(e.target.value)})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    {[1,2,3,4,5,6,7].map(days => (
-                      <option key={days} value={days}>{days} hari</option>
-                    ))}
-                  </select>
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-gray-700">Estimasi Waktu Selesai:</label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Hari</label>
+                      <select
+                        value={serviceForm.duration_days}
+                        onChange={(e) => setServiceForm({...serviceForm, duration_days: parseInt(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        {[0,1,2,3,4,5,6,7,8,9,10].map(days => (
+                          <option key={days} value={days}>{days} hari</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Jam</label>
+                      <select
+                        value={serviceForm.duration_hours}
+                        onChange={(e) => setServiceForm({...serviceForm, duration_hours: parseInt(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        {Array.from({length: 24}, (_, i) => (
+                          <option key={i} value={i}>{i} jam</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Menit</label>
+                      <select
+                        value={serviceForm.duration_minutes}
+                        onChange={(e) => setServiceForm({...serviceForm, duration_minutes: parseInt(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        {[0,15,30,45].map(minutes => (
+                          <option key={minutes} value={minutes}>{minutes} menit</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="submit"
