@@ -252,28 +252,49 @@ async def employee_login(login_data: EmployeeLogin):
     return Employee(**employee)
 
 # Admin registration endpoint
-@api_router.post("/admin/register", response_model=Employee)
-async def register_admin(admin_data: AdminRegister):
-    # Secret admin code - in production, this should be environment variable
-    ADMIN_SECRET_CODE = "LAUNDRY_ADMIN_2025"
+@api_router.post("/admin/register")
+async def register_admin(admin_data: dict):
+    """Register admin with secret code validation"""
     
-    if admin_data.admin_code != ADMIN_SECRET_CODE:
-        raise HTTPException(status_code=403, detail="Invalid admin code")
+    # Validate admin secret code
+    if admin_data.get("admin_code") != SECRET_ADMIN_CODE:
+        raise HTTPException(status_code=403, detail="Kode admin tidak valid")
     
     # Check if PIN already exists
-    existing = await db.employees.find_one({"pin": admin_data.pin})
-    if existing:
-        raise HTTPException(status_code=400, detail="PIN already exists")
+    existing_employee = await db.employees.find_one({"pin": admin_data["pin"]})
+    if existing_employee:
+        raise HTTPException(status_code=400, detail="PIN sudah digunakan")
     
     # Create admin employee
-    admin = Employee(
-        name=admin_data.name,
-        pin=admin_data.pin,
-        role="admin"
+    employee = Employee(
+        id=str(uuid.uuid4()),
+        name=admin_data["name"],
+        pin=admin_data["pin"],
+        role="admin",
+        phone=admin_data.get("phone", ""),
+        address=admin_data.get("address", ""),
+        is_active=True,
+        created_by="system",
+        created_at=datetime.now(timezone.utc)
     )
     
-    await db.employees.insert_one(admin.dict())
-    return admin
+    await db.employees.insert_one(employee.dict())
+    
+    # Initialize default data for new installation
+    try:
+        await initialize_default_data()
+    except Exception as e:
+        # Don't fail registration if default data initialization fails
+        print(f"Warning: Could not initialize default data: {e}")
+    
+    return {
+        "message": "Admin berhasil didaftarkan",
+        "employee": {
+            "id": employee.id,
+            "name": employee.name,
+            "role": employee.role
+        }
+    }
 
 # Helper function to check admin role
 async def verify_admin(employee_id: str):
