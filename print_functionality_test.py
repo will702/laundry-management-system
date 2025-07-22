@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import sys
 
 # Backend URL from frontend/.env
-BASE_URL = "https://18fec97e-b777-4f87-9069-2647de4ef3de.preview.emergentagent.com/api"
+BASE_URL = "https://a463ed99-dc6b-4010-8927-dcb0282194de.preview.emergentagent.com/api"
 
 class PrintFunctionalityTester:
     def __init__(self):
