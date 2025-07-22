@@ -1237,6 +1237,120 @@ async def get_packages():
     packages = await db.packages.find({"is_active": True}).to_list(100)
     return [Package(**pkg) for pkg in packages]
 
+# Initialization endpoint
+@api_router.post("/initialize")
+async def initialize_default_data():
+    """Initialize default categories, units, and services for new installation"""
+    
+    # Create system admin employee if not exists
+    admin_employee = await db.employees.find_one({"role": "admin", "is_active": True})
+    if not admin_employee:
+        admin_employee = Employee(
+            name="System Admin",
+            pin="0000",
+            role="admin"
+        )
+        await db.employees.insert_one(admin_employee.dict())
+    
+    admin_id = admin_employee["id"] if isinstance(admin_employee, dict) else admin_employee.id
+    admin_name = admin_employee["name"] if isinstance(admin_employee, dict) else admin_employee.name
+    
+    # Default Categories
+    default_categories = [
+        {"name": "Pakaian", "description": "Baju, celana, dan pakaian umum"},
+        {"name": "Sepatu", "description": "Sepatu dan alas kaki"},
+        {"name": "Tas", "description": "Tas, dompet, dan aksesoris"},
+        {"name": "Selimut", "description": "Selimut, sprei, dan perlengkapan tidur"},
+        {"name": "Karpet", "description": "Karpet dan permadani"},
+        {"name": "Boneka", "description": "Boneka dan mainan kain"},
+    ]
+    
+    created_categories = []
+    for cat_data in default_categories:
+        existing = await db.categories.find_one({"name": cat_data["name"], "is_active": True})
+        if not existing:
+            category = Category(
+                name=cat_data["name"],
+                description=cat_data["description"],
+                created_by_employee_id=admin_id,
+                created_by_employee_name=admin_name
+            )
+            await db.categories.insert_one(category.dict())
+            created_categories.append(category.name)
+    
+    # Default Units
+    default_units = [
+        {"name": "pcs", "description": "Pieces - untuk menghitung per potong"},
+        {"name": "kg", "description": "Kilogram - untuk menghitung per berat"},
+        {"name": "set", "description": "Set - untuk menghitung per set/pasang"},
+        {"name": "pasang", "description": "Pasang - untuk sepatu, sandal"},
+        {"name": "lembar", "description": "Lembar - untuk sprei, selimut"},
+        {"name": "buah", "description": "Buah - untuk tas, koper"},
+    ]
+    
+    created_units = []
+    for unit_data in default_units:
+        existing = await db.units.find_one({"name": unit_data["name"], "is_active": True})
+        if not existing:
+            unit = Unit(
+                name=unit_data["name"],
+                description=unit_data["description"],
+                created_by_employee_id=admin_id,
+                created_by_employee_name=admin_name
+            )
+            await db.units.insert_one(unit.dict())
+            created_units.append(unit.name)
+    
+    # Get created categories and units for creating default services
+    categories = await db.categories.find({"is_active": True}).to_list(100)
+    units = await db.units.find({"is_active": True}).to_list(100)
+    
+    # Create mapping for easy lookup
+    category_map = {cat["name"]: cat for cat in categories}
+    unit_map = {unit["name"]: unit for unit in units}
+    
+    # Default Services
+    default_services = [
+        {"name": "Cuci Setrika", "category": "Pakaian", "unit": "kg", "price": 8000, "duration": 2},
+        {"name": "Cuci Kering", "category": "Pakaian", "unit": "kg", "price": 6000, "duration": 1},
+        {"name": "Setrika Saja", "category": "Pakaian", "unit": "kg", "price": 4000, "duration": 1},
+        {"name": "Dry Clean", "category": "Pakaian", "unit": "pcs", "price": 15000, "duration": 3},
+        {"name": "Cuci Sepatu", "category": "Sepatu", "unit": "pasang", "price": 25000, "duration": 2},
+        {"name": "Deep Clean Sepatu", "category": "Sepatu", "unit": "pasang", "price": 35000, "duration": 3},
+        {"name": "Cuci Tas", "category": "Tas", "unit": "buah", "price": 20000, "duration": 2},
+        {"name": "Cuci Selimut", "category": "Selimut", "unit": "lembar", "price": 15000, "duration": 2},
+        {"name": "Cuci Karpet", "category": "Karpet", "unit": "lembar", "price": 30000, "duration": 3},
+    ]
+    
+    created_services = []
+    for svc_data in default_services:
+        existing = await db.services.find_one({"name": svc_data["name"], "is_active": True})
+        if not existing:
+            category = category_map.get(svc_data["category"])
+            unit = unit_map.get(svc_data["unit"])
+            
+            if category and unit:
+                service = Service(
+                    name=svc_data["name"],
+                    category_id=category["id"],
+                    category_name=category["name"],
+                    unit_id=unit["id"],
+                    unit_name=unit["name"],
+                    base_price=svc_data["price"],
+                    duration_days=svc_data["duration"],
+                    created_by_employee_id=admin_id,
+                    created_by_employee_name=admin_name
+                )
+                await db.services.insert_one(service.dict())
+                created_services.append(service.name)
+    
+    return {
+        "message": "Default data initialized successfully",
+        "created_categories": created_categories,
+        "created_units": created_units,
+        "created_services": created_services
+    }
+
 # ============================================
 
 app.include_router(api_router)
