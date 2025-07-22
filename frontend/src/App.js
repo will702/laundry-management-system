@@ -3709,27 +3709,32 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                     required
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-gray-700">Estimasi Waktu Selesai:</label>
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg space-y-3">
+                  <h4 className="text-sm font-semibold text-blue-800 flex items-center">
+                    ⏱️ Estimasi Waktu Selesai (Atur Manual)
+                  </h4>
+                  <p className="text-xs text-blue-700 mb-3">
+                    Atur sendiri berapa lama layanan ini akan selesai. Pelanggan akan melihat estimasi ini saat membuat bon.
+                  </p>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Hari</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Hari</label>
                       <select
                         value={serviceForm.duration_days}
                         onChange={(e) => setServiceForm({...serviceForm, duration_days: parseInt(e.target.value)})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       >
-                        {[0,1,2,3,4,5,6,7,8,9,10].map(days => (
+                        {[0,1,2,3,4,5,6,7,8,9,10,14,21,30].map(days => (
                           <option key={days} value={days}>{days} hari</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Jam</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Jam</label>
                       <select
                         value={serviceForm.duration_hours}
                         onChange={(e) => setServiceForm({...serviceForm, duration_hours: parseInt(e.target.value)})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       >
                         {Array.from({length: 24}, (_, i) => (
                           <option key={i} value={i}>{i} jam</option>
@@ -3737,16 +3742,51 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Menit</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Menit</label>
                       <select
                         value={serviceForm.duration_minutes}
                         onChange={(e) => setServiceForm({...serviceForm, duration_minutes: parseInt(e.target.value)})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       >
                         {[0,15,30,45].map(minutes => (
                           <option key={minutes} value={minutes}>{minutes} menit</option>
                         ))}
                       </select>
+                    </div>
+                  </div>
+                  
+                  {/* Preview Estimasi */}
+                  <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                    <div className="text-sm font-medium text-green-800 mb-1">
+                      📅 Preview Estimasi:
+                    </div>
+                    <div className="text-sm text-green-700">
+                      {serviceForm.duration_days === 0 && serviceForm.duration_hours === 0 && serviceForm.duration_minutes === 0 ? (
+                        "⚡ Selesai dalam hitungan menit (Instan)"
+                      ) : (
+                        <>
+                          Jika masuk sekarang ({new Date().toLocaleString('id-ID', {
+                            day: 'numeric',
+                            month: 'long', 
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}), akan selesai pada:{" "}
+                          <strong className="text-green-900">
+                            {(() => {
+                              const now = new Date();
+                              const totalMinutes = (serviceForm.duration_days * 24 * 60) + (serviceForm.duration_hours * 60) + serviceForm.duration_minutes;
+                              const completionTime = new Date(now.getTime() + totalMinutes * 60 * 1000);
+                              return completionTime.toLocaleString('id-ID', {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              });
+                            })()}
+                          </strong>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
