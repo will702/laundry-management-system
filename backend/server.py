@@ -163,7 +163,9 @@ class Package(BaseModel):
     total_price: float
     discounted_price: float
     discount_percent: float
-    duration_days: int  # max duration from all services
+    duration_days: int = 0
+    duration_hours: int = 0
+    duration_minutes: int = 0
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_by_employee_id: str
