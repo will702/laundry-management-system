@@ -3202,20 +3202,6 @@ function App() {
                   <span className="text-xs font-medium">Semua Bon</span>
                 </button>
                 <button
-                  onClick={() => handleTabChange('audit')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'audit' 
-                      ? 'text-indigo-600' 
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <span className="text-lg mb-1">🔍</span>
-                  <span className="text-xs font-medium">Audit</span>
-                </button>
-              </div>
-              {/* Second Row */}
-              <div className="flex justify-around">
-                <button
                   onClick={() => handleTabChange('services')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
                     activeTab === 'services' 
@@ -3226,18 +3212,9 @@ function App() {
                   <span className="text-lg mb-1">🧽</span>
                   <span className="text-xs font-medium">Layanan</span>
                 </button>
-                {/* Mobile: Show Kustomisasi for all users */}
-                <button
-                  onClick={() => handleTabChange('customization')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'customization'
-                      ? 'text-indigo-600'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <span className="text-lg mb-1">🎨</span>
-                  <span className="text-xs font-medium">Kustomisasi</span>
-                </button>
+              </div>
+              {/* Second Row - Employee gets limited options */}
+              <div className="flex justify-around">
                 <button
                   onClick={() => handleTabChange('reports')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
@@ -3249,6 +3226,15 @@ function App() {
                   <span className="text-lg mb-1">📊</span>
                   <span className="text-xs font-medium">Laporan</span>
                 </button>
+                {/* Empty slots for balanced layout */}
+                <div className="flex flex-col items-center py-1 px-2 opacity-0">
+                  <span className="text-lg mb-1">⚪</span>
+                  <span className="text-xs font-medium">-</span>
+                </div>
+                <div className="flex flex-col items-center py-1 px-2 opacity-0">
+                  <span className="text-lg mb-1">⚪</span>
+                  <span className="text-xs font-medium">-</span>
+                </div>
               </div>
             </div>
           ) : (
