@@ -3381,6 +3381,29 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
     setLoading(false);
   };
 
+  // Create Service
+  const handleCreateService = async (e) => {
+    e.preventDefault();
+    if (!serviceForm.name.trim() || !serviceForm.category_id || !serviceForm.unit_id) return;
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/services`, {
+        ...serviceForm,
+        base_price: parseFloat(serviceForm.base_price),
+        duration_days: parseInt(serviceForm.duration_days),
+        created_by_employee_id: employee.id
+      });
+      setServiceForm({ name: '', category_id: '', unit_id: '', base_price: '', duration_days: 3 });
+      setShowServiceForm(false);
+      onDataUpdate();
+      alert('Layanan berhasil ditambahkan!');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah layanan'));
+    }
+    setLoading(false);
+  };
+
   // Create Package
   const handleCreatePackage = async (e) => {
     e.preventDefault();
