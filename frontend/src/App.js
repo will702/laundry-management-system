@@ -2744,44 +2744,43 @@ function App() {
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showPackageModal, setShowPackageModal] = useState(false);
 
-  // Load user from localStorage on app start
+  // Fresh start - clear all existing data and cache
   useEffect(() => {
-    // Force service worker update for logo changes
+    console.log('🆕 Fresh App Start - Clearing all caches...');
+    
+    // Unregister all existing service workers for fresh start
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration()
-        .then(registration => {
-          if (registration) {
-            console.log('🔄 Forcing service worker update...');
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed') {
-                  if (navigator.serviceWorker.controller) {
-                    console.log('⚡ New service worker available, updating...');
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
-                  }
-                }
-              });
-            });
-            registration.update(); // Force check for updates
-          }
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          console.log('🗑️ Unregistering old service worker...');
+          registration.unregister();
         });
+        
+        // Register fresh service worker
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('✅ Fresh Service Worker registered'))
+          .catch(err => console.error('❌ SW registration failed:', err));
+      });
     }
 
-    // Clear all browser cache programmatically
+    // Clear all existing caches
     if ('caches' in window) {
       caches.keys().then(cacheNames => {
         cacheNames.forEach(cacheName => {
-          if (cacheName.includes('mass-laundry') || cacheName.includes('laundry')) {
-            console.log('🗑️ Clearing cache:', cacheName);
-            caches.delete(cacheName);
-          }
+          console.log('🗑️ Clearing cache:', cacheName);
+          caches.delete(cacheName);
         });
       });
     }
 
-    // Load all initial data
+    // Clear localStorage for fresh start (except keep current session)
+    const currentSession = localStorage.getItem('laundry_user_session');
+    localStorage.clear();
+    if (currentSession) {
+      localStorage.setItem('laundry_user_session', currentSession);
+    }
+
+    // Load all initial data (will be empty on fresh start)
     loadEmployees();
     loadCategories();
     loadUnits();
@@ -2841,6 +2840,14 @@ function App() {
     // Start restoration after a brief delay
     setTimeout(restoreSession, 500);
   }, []);
+
+  // Initialize default data
+  useEffect(() => {
+    if (currentEmployee && categories.length === 0) {
+      console.log('🔄 Initializing default data...');
+      initializeDefaultData();
+    }
+  }, [currentEmployee, categories.length]);
 
   const loadEmployees = async () => {
     try {
