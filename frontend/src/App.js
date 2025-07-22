@@ -2798,6 +2798,11 @@ function App() {
     try {
       const response = await axios.get(`${API}/categories`);
       setCategories(response.data);
+      
+      // If no categories exist, initialize default data
+      if (response.data.length === 0) {
+        await initializeDefaultData();
+      }
     } catch (err) {
       console.error('Error loading categories:', err);
     }
@@ -2827,6 +2832,24 @@ function App() {
       setPackages(response.data);
     } catch (err) {
       console.error('Error loading packages:', err);
+    }
+  };
+
+  // Initialize default data
+  const initializeDefaultData = async () => {
+    try {
+      const response = await axios.post(`${API}/initialize`);
+      console.log('✅ Default data initialized:', response.data);
+      
+      // Reload all data after initialization
+      setTimeout(() => {
+        loadCategories();
+        loadUnits();
+        loadServices();
+        loadPackages();
+      }, 1000);
+    } catch (err) {
+      console.error('Error initializing default data:', err);
     }
   };
 
