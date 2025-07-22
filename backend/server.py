@@ -1212,7 +1212,7 @@ async def create_package(package_data: PackageCreate):
     
     # Calculate package pricing and duration
     total_price = 0
-    max_duration = 0
+    max_duration_minutes = 0  # Total duration in minutes for easier comparison
     
     for service_item in package_data.services:
         service = await db.services.find_one({"id": service_item["service_id"], "is_active": True})
@@ -1221,8 +1221,17 @@ async def create_package(package_data: PackageCreate):
         
         quantity = service_item["quantity"]
         total_price += service["base_price"] * quantity
-        if service["duration_days"] > max_duration:
-            max_duration = service["duration_days"]
+        
+        # Convert service duration to total minutes for comparison
+        service_minutes = (service.get("duration_days", 0) * 24 * 60) + (service.get("duration_hours", 0) * 60) + service.get("duration_minutes", 0)
+        if service_minutes > max_duration_minutes:
+            max_duration_minutes = service_minutes
+    
+    # Convert back to days, hours, minutes
+    duration_days = max_duration_minutes // (24 * 60)
+    remaining_minutes = max_duration_minutes % (24 * 60)
+    duration_hours = remaining_minutes // 60
+    duration_minutes = remaining_minutes % 60
     
     discounted_price = total_price * (1 - package_data.discount_percent / 100)
     
@@ -1230,7 +1239,7 @@ async def create_package(package_data: PackageCreate):
         **package_data.dict(),
         total_price=total_price,
         discounted_price=discounted_price,
-        duration_days=max_duration,
+        duration_days=duration_days,
         created_by_employee_name=employee["name"]
     )
     await db.packages.insert_one(package.dict())
