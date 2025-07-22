@@ -3722,16 +3722,105 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
               </button>
             </div>
 
-            {/* Package Form (Coming Soon) */}
+            {/* Package Form */}
             {showPackageForm && (
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <div className="text-center">
-                  <h4 className="text-lg font-medium text-yellow-800 mb-2">🚧 Fitur Paket Segera Hadir</h4>
-                  <p className="text-sm text-yellow-700">
-                    Fitur paket layanan sedang dalam pengembangan. Akan segera tersedia untuk mengelola bundle layanan dengan harga khusus.
-                  </p>
+              <form onSubmit={handleCreatePackage} className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nama Paket (e.g., Paket Lengkap, Paket Express)"
+                    value={packageForm.name}
+                    onChange={(e) => setPackageForm({...packageForm, name: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deskripsi paket"
+                    value={packageForm.description}
+                    onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
                 </div>
-              </div>
+                
+                {/* Services in Package */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-gray-700">Layanan dalam Paket:</label>
+                    <button
+                      type="button"
+                      onClick={addServiceToPackage}
+                      disabled={services.length === 0}
+                      className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                    >
+                      ➕ Tambah Layanan
+                    </button>
+                  </div>
+                  
+                  {packageForm.services.length === 0 ? (
+                    <div className="text-center text-gray-500 py-4 border-2 border-dashed border-gray-200 rounded">
+                      Belum ada layanan dalam paket. Klik "Tambah Layanan" untuk menambah.
+                    </div>
+                  ) : (
+                    packageForm.services.map((serviceItem, index) => (
+                      <div key={index} className="flex items-center space-x-3 bg-white p-3 rounded border">
+                        <select
+                          value={serviceItem.service_id}
+                          onChange={(e) => updatePackageService(index, 'service_id', e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                          required
+                        >
+                          {services.map((service) => (
+                            <option key={service.id} value={service.id}>
+                              {service.name} - Rp{service.base_price.toLocaleString('id-ID')}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min="1"
+                          value={serviceItem.quantity}
+                          onChange={(e) => updatePackageService(index, 'quantity', parseInt(e.target.value) || 1)}
+                          className="w-20 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-center"
+                          placeholder="Qty"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeServiceFromPackage(index)}
+                          className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Discount */}
+                <div className="flex items-center space-x-4">
+                  <label className="text-sm font-medium text-gray-700">Diskon Paket:</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={packageForm.discount_percent}
+                      onChange={(e) => setPackageForm({...packageForm, discount_percent: parseFloat(e.target.value) || 0})}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-center"
+                      placeholder="0"
+                    />
+                    <span className="text-sm text-gray-600">%</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || packageForm.services.length === 0}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  {loading ? 'Menyimpan...' : '💾 Simpan Paket'}
+                </button>
+              </form>
             )}
 
             {/* Packages List */}
