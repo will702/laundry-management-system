@@ -3258,6 +3258,413 @@ function App() {
   );
 }
 
+// Customization Manager Component
+const CustomizationManager = ({ categories, units, services, packages, employee, onDataUpdate }) => {
+  const [activeCustomTab, setActiveCustomTab] = useState('categories');
+  const [loading, setLoading] = useState(false);
+
+  // Category Management
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+
+  // Unit Management  
+  const [showUnitForm, setShowUnitForm] = useState(false);
+  const [unitForm, setUnitForm] = useState({ name: '', description: '' });
+
+  // Service Management
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [serviceForm, setServiceForm] = useState({
+    name: '',
+    category_id: '',
+    unit_id: '',
+    base_price: '',
+    duration_days: 3
+  });
+
+  // Package Management
+  const [showPackageForm, setShowPackageForm] = useState(false);
+  const [packageForm, setPackageForm] = useState({
+    name: '',
+    description: '',
+    services: [], // {service_id, quantity}
+    discount_percent: 0
+  });
+
+  // Create Category
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+    if (!categoryForm.name.trim()) return;
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/categories`, {
+        ...categoryForm,
+        created_by_employee_id: employee.id
+      });
+      setCategoryForm({ name: '', description: '' });
+      setShowCategoryForm(false);
+      onDataUpdate();
+      alert('Kategori berhasil ditambahkan!');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah kategori'));
+    }
+    setLoading(false);
+  };
+
+  // Create Unit
+  const handleCreateUnit = async (e) => {
+    e.preventDefault();
+    if (!unitForm.name.trim()) return;
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/units`, {
+        ...unitForm,
+        created_by_employee_id: employee.id
+      });
+      setUnitForm({ name: '', description: '' });
+      setShowUnitForm(false);
+      onDataUpdate();
+      alert('Satuan berhasil ditambahkan!');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah satuan'));
+    }
+    setLoading(false);
+  };
+
+  // Create Service
+  const handleCreateService = async (e) => {
+    e.preventDefault();
+    if (!serviceForm.name.trim() || !serviceForm.category_id || !serviceForm.unit_id) return;
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/services`, {
+        ...serviceForm,
+        base_price: parseFloat(serviceForm.base_price),
+        duration_days: parseInt(serviceForm.duration_days),
+        created_by_employee_id: employee.id
+      });
+      setServiceForm({ name: '', category_id: '', unit_id: '', base_price: '', duration_days: 3 });
+      setShowServiceForm(false);
+      onDataUpdate();
+      alert('Layanan berhasil ditambahkan!');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.detail || 'Gagal menambah layanan'));
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">🎨 Kustomisasi Mass Laundry</h2>
+          <div className="text-sm text-gray-600">
+            Kelola kategori, satuan, layanan, dan paket
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+          {[
+            { id: 'categories', label: '📂 Kategori', count: categories.length },
+            { id: 'units', label: '📏 Satuan', count: units.length },
+            { id: 'services', label: '🧽 Layanan', count: services.length },
+            { id: 'packages', label: '📦 Paket', count: packages.length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveCustomTab(tab.id)}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeCustomTab === tab.id
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1 text-xs bg-gray-200 px-1 rounded">{tab.count}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Categories Tab */}
+        {activeCustomTab === 'categories' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">Kategori Barang</h3>
+              <button
+                onClick={() => setShowCategoryForm(!showCategoryForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                {showCategoryForm ? '✕ Batal' : '➕ Tambah Kategori'}
+              </button>
+            </div>
+
+            {/* Category Form */}
+            {showCategoryForm && (
+              <form onSubmit={handleCreateCategory} className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nama Kategori (e.g., Pakaian, Sepatu)"
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deskripsi (optional)"
+                    value={categoryForm.description}
+                    onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  {loading ? 'Menyimpan...' : '💾 Simpan Kategori'}
+                </button>
+              </form>
+            )}
+
+            {/* Categories List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.map((category) => (
+                <div key={category.id} className="bg-gray-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-gray-800">{category.name}</h4>
+                  {category.description && (
+                    <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                  )}
+                  <div className="mt-2 text-xs text-gray-500">
+                    Dibuat oleh: {category.created_by_employee_name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Units Tab */}
+        {activeCustomTab === 'units' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">Satuan Hitung</h3>
+              <button
+                onClick={() => setShowUnitForm(!showUnitForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                {showUnitForm ? '✕ Batal' : '➕ Tambah Satuan'}
+              </button>
+            </div>
+
+            {/* Unit Form */}
+            {showUnitForm && (
+              <form onSubmit={handleCreateUnit} className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nama Satuan (e.g., pcs, kg, set)"
+                    value={unitForm.name}
+                    onChange={(e) => setUnitForm({...unitForm, name: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deskripsi (optional)"
+                    value={unitForm.description}
+                    onChange={(e) => setUnitForm({...unitForm, description: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  {loading ? 'Menyimpan...' : '💾 Simpan Satuan'}
+                </button>
+              </form>
+            )}
+
+            {/* Units List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {units.map((unit) => (
+                <div key={unit.id} className="bg-gray-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-gray-800">{unit.name}</h4>
+                  {unit.description && (
+                    <p className="text-sm text-gray-600 mt-1">{unit.description}</p>
+                  )}
+                  <div className="mt-2 text-xs text-gray-500">
+                    Dibuat oleh: {unit.created_by_employee_name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Services Tab */}
+        {activeCustomTab === 'services' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">Layanan dengan Estimasi</h3>
+              <button
+                onClick={() => setShowServiceForm(!showServiceForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                {showServiceForm ? '✕ Batal' : '➕ Tambah Layanan'}
+              </button>
+            </div>
+
+            {/* Service Form */}
+            {showServiceForm && (
+              <form onSubmit={handleCreateService} className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nama Layanan"
+                    value={serviceForm.name}
+                    onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                  <select
+                    value={serviceForm.category_id}
+                    onChange={(e) => setServiceForm({...serviceForm, category_id: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={serviceForm.unit_id}
+                    onChange={(e) => setServiceForm({...serviceForm, unit_id: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Pilih Satuan</option>
+                    {units.map((unit) => (
+                      <option key={unit.id} value={unit.id}>{unit.name}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Harga per satuan"
+                    value={serviceForm.base_price}
+                    onChange={(e) => setServiceForm({...serviceForm, base_price: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <label className="text-sm font-medium text-gray-700">Estimasi Selesai:</label>
+                  <select
+                    value={serviceForm.duration_days}
+                    onChange={(e) => setServiceForm({...serviceForm, duration_days: parseInt(e.target.value)})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    {[1,2,3,4,5,6,7].map(days => (
+                      <option key={days} value={days}>{days} hari</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  {loading ? 'Menyimpan...' : '💾 Simpan Layanan'}
+                </button>
+              </form>
+            )}
+
+            {/* Services List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {services.map((service) => (
+                <div key={service.id} className="bg-gray-50 p-4 rounded-lg border">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{service.name}</h4>
+                      <p className="text-sm text-gray-600">{service.category_name}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-indigo-600">Rp{service.base_price.toLocaleString('id-ID')}/{service.unit_name}</div>
+                      <div className="text-sm text-orange-600">⏱️ {service.duration_days} hari</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Dibuat oleh: {service.created_by_employee_name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Packages Tab */}
+        {activeCustomTab === 'packages' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">Paket Layanan</h3>
+              <button
+                onClick={() => setShowPackageForm(!showPackageForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                {showPackageForm ? '✕ Batal' : '➕ Tambah Paket'}
+              </button>
+            </div>
+
+            {/* Package Form (Coming Soon) */}
+            {showPackageForm && (
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <div className="text-center">
+                  <h4 className="text-lg font-medium text-yellow-800 mb-2">🚧 Fitur Paket Segera Hadir</h4>
+                  <p className="text-sm text-yellow-700">
+                    Fitur paket layanan sedang dalam pengembangan. Akan segera tersedia untuk mengelola bundle layanan dengan harga khusus.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Packages List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {packages.length === 0 ? (
+                <div className="col-span-2 text-center text-gray-500 py-8">
+                  📦 Belum ada paket layanan. Tambah paket pertama Anda!
+                </div>
+              ) : (
+                packages.map((pkg) => (
+                  <div key={pkg.id} className="bg-gray-50 p-4 rounded-lg border">
+                    <h4 className="font-semibold text-gray-800">{pkg.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
+                    <div className="mt-2 flex justify-between items-end">
+                      <div className="text-sm text-gray-500">
+                        {pkg.services.length} layanan • {pkg.duration_days} hari
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs text-gray-400 line-through">Rp{pkg.total_price.toLocaleString('id-ID')}</div>
+                        <div className="font-bold text-green-600">Rp{pkg.discounted_price.toLocaleString('id-ID')}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Admin Registration Component
 const AdminRegistration = ({ onCancel, onSuccess }) => {
   const [formData, setFormData] = useState({ name: '', pin: '', adminCode: '' });
