@@ -252,6 +252,9 @@ async def employee_login(login_data: EmployeeLogin):
     return Employee(**employee)
 
 # Admin registration endpoint
+# Secret admin code for security
+SECRET_ADMIN_CODE = "MASS2025"
+
 @api_router.post("/admin/register")
 async def register_admin(admin_data: dict):
     """Register admin with secret code validation"""
