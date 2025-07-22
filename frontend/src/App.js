@@ -34,15 +34,6 @@ const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration }) => {
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img 
-              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM4N0NFRUIiLz4KPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM2QkI2RkYiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMzc0MTUxIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQyIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzM3NDE1MSIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTI5M0EiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8IS0tIE1haW4gQ2lyY2xlIC0tPgo8Y2lyY2xlIGN4PSIxMDAiIGN5PSI3MCIgcj0iNDAiIGZpbGw9InVybCgjZ3JhZGllbnQyKSIvPgo8IS0tIFdhdGVyIFdhdmUgLS0+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjcwIiByPSIzMiIgZmlsbD0idXJsKCNncmFkaWVudDEpIi8+CjxwYXRoIGQ9Ik03NSA3MEM3NSA2MCA4NSA1NSAxMDAgNTVDMTE1IDU1IDEyNSA2MCAxMjUgNzBDMTI1IDgwIDExNSA4NSAxMDAgODVDODUgODUgNzUgODAgNzUgNzBaIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjQiLz4KPCEtLSBCdWJibGVzIC0tPgo8Y2lyY2xlIGN4PSI4NSIgY3k9IjU4IiByPSIzIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjciLz4KPGNpcmNsZSBjeD0iOTIiIGN5PSI2NSIgcj0iMiIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC41Ii8+CjxjaXJjbGUgY3g9IjExNSIgY3k9IjYwIiByPSIyLjUiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuNiIvPgo8Y2lyY2xlIGN4PSIxMDgiIGN5PSI3OCIgcj0iMS44IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjQiLz4KPCEtLSBUb3dlbCBTdGFjayAtLT4KPHJlY3QgeD0iMTcwIiB5PSI0NSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjEwIiByeD0iNCIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSIxNzUiIHk9IjU3IiB3aWR0aD0iMzUiIGhlaWdodD0iMTAiIHJ4PSI0IiBmaWxsPSIjNkJCNkZGIi8+CjxyZWN0IHg9IjE4MCIgeT0iNjkiIHdpZHRoPSIzMCIgaGVpZ2h0PSIxMCIgcng9IjQiIGZpbGw9IiNmZmZmZmYiLz4KPCEtLSBUZXh0ICdNQVNTJyAtLT4KPHRleHQgeD0iNDAiIHk9IjEzNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjMyIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzM3NDE1MSI+TUFTUZA8L3RleHQ+CjwhLS0gVGV4dCAnTEFVTkRSWScgLS0+Cjx0ZXh0IHg9IjE0NSIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjNkJCNkZGIj5MQVVORFJZPC90ZXh0Pgo8IS0tIEdyZWVuIFVuZGVybGluZSAtLT4KPHBhdGggZD0iTTUwIDE1MFEzMCAxNDUgNzAgMTQ4VDEzMCAxNDhUMTkwIDE0OFEyNTAgMTQ1IDI3MCAxNTAiIHN0cm9rZT0iIzZEREI3MyIgc3Ryb2tlLXdpZHRoPSI0IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg=="
-              alt="Mass Laundry Logo"
-              className="h-24 w-auto"
-              onError={(e) => {
-                console.error('Logo failed to load');
-                e.target.style.display = 'none';
-              }}
-            />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Mass Laundry</h1>
           <p className="text-gray-600">Sistem Manajemen Laundry</p>
