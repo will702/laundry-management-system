@@ -2740,6 +2740,43 @@ function App() {
     }
   };
 
+  // Load customization data
+  const loadCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Error loading categories:', err);
+    }
+  };
+
+  const loadUnits = async () => {
+    try {
+      const response = await axios.get(`${API}/units`);
+      setUnits(response.data);
+    } catch (err) {
+      console.error('Error loading units:', err);
+    }
+  };
+
+  const loadServices = async () => {
+    try {
+      const response = await axios.get(`${API}/services`);
+      setServices(response.data);
+    } catch (err) {
+      console.error('Error loading services:', err);
+    }
+  };
+
+  const loadPackages = async () => {
+    try {
+      const response = await axios.get(`${API}/packages`);
+      setPackages(response.data);
+    } catch (err) {
+      console.error('Error loading packages:', err);
+    }
+  };
+
   const handleLogin = (employee) => {
     console.log('🔐 [Login] Starting login process for:', employee.name);
     setCurrentEmployee(employee);
