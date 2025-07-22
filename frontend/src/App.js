@@ -3121,63 +3121,81 @@ function App() {
         <div className="px-1 py-2">
           {/* Show different navigation based on admin/employee role */}
           {!isAdmin ? (
-            /* Employee Navigation */
-            <div className="flex justify-around">
-              <button
-                onClick={() => handleTabChange('create')}
-                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
-                  activeTab === 'create' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-xl mb-1">📝</span>
-                <span className="text-xs font-medium">Bon Baru</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('receipts')}
-                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
-                  activeTab === 'receipts' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-xl mb-1">📋</span>
-                <span className="text-xs font-medium">Semua Bon</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('audit')}
-                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
-                  activeTab === 'audit' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-xl mb-1">🔍</span>
-                <span className="text-xs font-medium">Audit</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('services')}
-                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
-                  activeTab === 'services' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-xl mb-1">🧽</span>
-                <span className="text-xs font-medium">Layanan</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('reports')}
-                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
-                  activeTab === 'reports' 
-                    ? 'text-indigo-600' 
-                    : 'text-gray-600'
-                }`}
-              >
-                <span className="text-xl mb-1">📊</span>
-                <span className="text-xs font-medium">Laporan</span>
-              </button>
+            /* Employee Navigation - 2 rows to accommodate all buttons */
+            <div>
+              {/* First Row */}
+              <div className="flex justify-around mb-1">
+                <button
+                  onClick={() => handleTabChange('create')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'create' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📝</span>
+                  <span className="text-xs font-medium">Bon Baru</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('receipts')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'receipts' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📋</span>
+                  <span className="text-xs font-medium">Semua Bon</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('audit')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'audit' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🔍</span>
+                  <span className="text-xs font-medium">Audit</span>
+                </button>
+              </div>
+              {/* Second Row */}
+              <div className="flex justify-around">
+                <button
+                  onClick={() => handleTabChange('services')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'services' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🧽</span>
+                  <span className="text-xs font-medium">Layanan</span>
+                </button>
+                {/* Mobile: Show Kustomisasi for all users */}
+                <button
+                  onClick={() => handleTabChange('customization')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'customization'
+                      ? 'text-indigo-600'
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🎨</span>
+                  <span className="text-xs font-medium">Kustomisasi</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('reports')}
+                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
+                    activeTab === 'reports' 
+                      ? 'text-indigo-600' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <span className="text-lg mb-1">📊</span>
+                  <span className="text-xs font-medium">Laporan</span>
+                </button>
+              </div>
             </div>
           ) : (
             /* Admin Navigation - 2 rows for more space */
