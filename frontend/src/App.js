@@ -3753,7 +3753,10 @@ const CustomizationManager = ({ categories, units, services, packages, employee,
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-indigo-600">Rp{service.base_price.toLocaleString('id-ID')}/{service.unit_name}</div>
-                      <div className="text-sm text-orange-600">⏱️ {service.duration_days} hari</div>
+                      <div className="text-sm text-orange-600">
+                        ⏱️ {service.duration_days > 0 ? `${service.duration_days}h ` : ''}{service.duration_hours > 0 ? `${service.duration_hours}j ` : ''}{service.duration_minutes > 0 ? `${service.duration_minutes}m` : ''}
+                        {service.duration_days === 0 && service.duration_hours === 0 && service.duration_minutes === 0 ? 'Instan' : ''}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
