@@ -563,7 +563,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
     // Find the maximum duration from all selected services
     let maxDuration = 0;
     items.forEach(item => {
-      const service = serviceItems.find(s => s.name === item.service);
+      const service = serviceItems.find(s => s.id === item.service_item_id);
       if (service && service.duration_days > maxDuration) {
         maxDuration = service.duration_days;
       }
