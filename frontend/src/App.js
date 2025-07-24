@@ -3356,9 +3356,7 @@ function App() {
           <AuditDashboard employee={currentEmployee} />
         )}
 
-        {activeTab === 'services' && (
-          <ServiceItemsManagement employee={currentEmployee} />
-        )}
+        {/* Removed Services Tab - moved functionality to Customization */}
 
         {activeTab === 'clients' && isAdmin && (
           <ClientManagement employee={currentEmployee} />
