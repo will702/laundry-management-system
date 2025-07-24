@@ -3197,20 +3197,6 @@ function App() {
                   <span className="text-xs font-medium">Semua Bon</span>
                 </button>
                 <button
-                  onClick={() => handleTabChange('services')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'services' 
-                      ? 'text-indigo-600' 
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <span className="text-lg mb-1">🧽</span>
-                  <span className="text-xs font-medium">Layanan</span>
-                </button>
-              </div>
-              {/* Second Row - Employee gets limited options */}
-              <div className="flex justify-around">
-                <button
                   onClick={() => handleTabChange('reports')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
                     activeTab === 'reports' 
@@ -3221,7 +3207,14 @@ function App() {
                   <span className="text-lg mb-1">📊</span>
                   <span className="text-xs font-medium">Laporan</span>
                 </button>
+              </div>
+              {/* Second Row - Only for visual balance */}
+              <div className="flex justify-around">
                 {/* Empty slots for balanced layout */}
+                <div className="flex flex-col items-center py-1 px-2 opacity-0">
+                  <span className="text-lg mb-1">⚪</span>
+                  <span className="text-xs font-medium">-</span>
+                </div>
                 <div className="flex flex-col items-center py-1 px-2 opacity-0">
                   <span className="text-lg mb-1">⚪</span>
                   <span className="text-xs font-medium">-</span>
