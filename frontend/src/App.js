@@ -3130,7 +3130,8 @@ function App() {
                   </button>
                 )}
 
-                {isAdmin && (
+                {/* Show Customization for admin OR user named "user" */}
+                {(isAdmin || (currentEmployee && currentEmployee.name === 'user')) && (
                   <button
                     onClick={() => handleTabChange('customization')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
