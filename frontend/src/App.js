@@ -3171,60 +3171,55 @@ function App() {
         <div className="px-1 py-2">
           {/* Show different navigation based on admin/employee role */}
           {!isAdmin ? (
-            /* Employee Navigation - 2 rows to accommodate all buttons */
-            <div>
-              {/* First Row */}
-              <div className="flex justify-around mb-1">
+            /* Regular Employee Navigation - 1 row only */
+            <div className="flex justify-around">
+              <button
+                onClick={() => handleTabChange('create')}
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                  activeTab === 'create'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600'
+                }`}
+              >
+                <span className="text-lg mb-1">📝</span>
+                <span className="text-xs font-medium">Bon Baru</span>
+              </button>
+              <button
+                onClick={() => handleTabChange('receipts')}
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                  activeTab === 'receipts'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600'
+                }`}
+              >
+                <span className="text-lg mb-1">📋</span>
+                <span className="text-xs font-medium">Semua Bon</span>
+              </button>
+              {/* Show Kustomisasi for user named "user" */}
+              {currentEmployee && currentEmployee.name === 'user' && (
                 <button
-                  onClick={() => handleTabChange('create')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'create' 
-                      ? 'text-indigo-600' 
+                  onClick={() => handleTabChange('customization')}
+                  className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                    activeTab === 'customization'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
-                  <span className="text-lg mb-1">📝</span>
-                  <span className="text-xs font-medium">Bon Baru</span>
+                  <span className="text-lg mb-1">🎨</span>
+                  <span className="text-xs font-medium">Kustomisasi</span>
                 </button>
-                <button
-                  onClick={() => handleTabChange('receipts')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'receipts' 
-                      ? 'text-indigo-600' 
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <span className="text-lg mb-1">📋</span>
-                  <span className="text-xs font-medium">Semua Bon</span>
-                </button>
-                <button
-                  onClick={() => handleTabChange('reports')}
-                  className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'reports' 
-                      ? 'text-indigo-600' 
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <span className="text-lg mb-1">📊</span>
-                  <span className="text-xs font-medium">Laporan</span>
-                </button>
-              </div>
-              {/* Second Row - Only for visual balance */}
-              <div className="flex justify-around">
-                {/* Empty slots for balanced layout */}
-                <div className="flex flex-col items-center py-1 px-2 opacity-0">
-                  <span className="text-lg mb-1">⚪</span>
-                  <span className="text-xs font-medium">-</span>
-                </div>
-                <div className="flex flex-col items-center py-1 px-2 opacity-0">
-                  <span className="text-lg mb-1">⚪</span>
-                  <span className="text-xs font-medium">-</span>
-                </div>
-                <div className="flex flex-col items-center py-1 px-2 opacity-0">
-                  <span className="text-lg mb-1">⚪</span>
-                  <span className="text-xs font-medium">-</span>
-                </div>
-              </div>
+              )}
+              <button
+                onClick={() => handleTabChange('reports')}
+                className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
+                  activeTab === 'reports'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600'
+                }`}
+              >
+                <span className="text-lg mb-1">📊</span>
+                <span className="text-xs font-medium">Laporan</span>
+              </button>
             </div>
           ) : (
             /* Admin Navigation - 2 rows for more space */
