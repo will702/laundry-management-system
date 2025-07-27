@@ -241,7 +241,7 @@ backend:
         comment: "✅ TESTED: Default data initialization working perfectly. POST /api/initialize created expected categories (Pakaian, Sepatu, Tas, Selimut, Karpet, Boneka), units (pcs, kg, set, pasang, lembar, buah), and services with proper pricing and duration_days. Second run correctly avoided duplicates. All default data properly structured for new installations."
 
   - task: "Employee registration endpoint (non-admin)"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "/app/backend/server.py"
     stuck_count: 0
@@ -251,6 +251,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Need to implement POST /api/employees endpoint for regular employee registration. Frontend EmployeeRegistration component already exists and tries to call this endpoint, but it's missing from backend."
+      - working: "NA"
+        agent: "main"
+        comment: "✅ COMPLETED: Found existing POST /api/employees endpoint already implements employee registration. Updated EmployeeCreate model to include created_by field to support frontend's 'self-registration' value. Endpoint already has PIN validation and duplicate checking. Ready for testing."
 
 frontend:
   - task: "PIN-based employee authentication"
