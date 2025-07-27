@@ -1446,6 +1446,9 @@ class LaundryProTester:
             print("❌ Backend is not accessible. Stopping tests.")
             return False
 
+        print("\n🔐 Testing Employee Registration Endpoint (Review Request)...")
+        self.test_employee_registration_endpoint()
+
         print("\n🔧 Testing Employee Management & PIN Authentication...")
         self.test_employee_creation()
         self.test_employee_login()
