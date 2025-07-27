@@ -89,12 +89,21 @@ const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration }) => {
         
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500 mb-3">Belum punya akses admin?</p>
-          <button 
-            onClick={onShowAdminRegistration}
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline transition-colors"
-          >
-            Daftar sebagai Admin
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={onShowAdminRegistration}
+              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline transition-colors"
+            >
+              🔐 Daftar sebagai Admin
+            </button>
+            <div className="text-gray-400 text-xs">atau</div>
+            <button
+              onClick={() => setShowEmployeeRegistration(true)}
+              className="text-green-600 hover:text-green-800 text-sm font-medium underline transition-colors"
+            >
+              👷 Daftar sebagai Pegawai
+            </button>
+          </div>
         </div>
       </div>
     </div>
