@@ -3033,6 +3033,19 @@ function App() {
           onShowAdminRegistration={handleShowAdminRegistration}
           onShowEmployeeRegistration={setShowEmployeeRegistration}
         />
+        {/* Employee Registration Modal */}
+        {showEmployeeRegistration && (
+          <EmployeeRegistration
+            onBack={() => setShowEmployeeRegistration(false)}
+            onEmployeeCreated={(employee) => {
+              setShowEmployeeRegistration(false);
+              // Auto-login the new employee
+              handleLogin(null, employee);
+            }}
+          />
+        )}
+
+        {/* Admin Registration Modal */}
         {showAdminRegistration && (
           <AdminRegistration
             onCancel={() => setShowAdminRegistration(false)}
