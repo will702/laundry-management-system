@@ -3031,6 +3031,7 @@ function App() {
           onLogin={handleLogin} 
           employees={employees} 
           onShowAdminRegistration={handleShowAdminRegistration}
+          onShowEmployeeRegistration={setShowEmployeeRegistration}
         />
         {showAdminRegistration && (
           <AdminRegistration
