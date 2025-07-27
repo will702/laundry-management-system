@@ -299,6 +299,48 @@ async def register_admin(admin_data: dict):
         }
     }
 
+@api_router.post("/employees")
+async def register_employee(employee_data: dict):
+    """Register regular employee without secret code"""
+    
+    # Validate required fields
+    if not employee_data.get("name") or not employee_data.get("pin"):
+        raise HTTPException(status_code=400, detail="Nama dan PIN harus diisi")
+    
+    if len(employee_data.get("pin", "")) < 4:
+        raise HTTPException(status_code=400, detail="PIN minimal 4 karakter")
+    
+    # Check if PIN already exists
+    existing_employee = await db.employees.find_one({"pin": employee_data["pin"]})
+    if existing_employee:
+        raise HTTPException(status_code=400, detail="PIN sudah digunakan")
+    
+    # Create regular employee
+    employee = Employee(
+        id=str(uuid.uuid4()),
+        name=employee_data["name"],
+        pin=employee_data["pin"],
+        role="employee",
+        phone=employee_data.get("phone", ""),
+        address=employee_data.get("address", ""),
+        is_active=True,
+        created_by="self-registration",
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    await db.employees.insert_one(employee.dict())
+    
+    return {
+        "message": "Pegawai berhasil didaftarkan",
+        "employee": {
+            "id": employee.id,
+            "name": employee.name,
+            "role": employee.role,
+            "phone": employee.phone,
+            "address": employee.address
+        }
+    }
+
 @api_router.post("/create-default-user")
 async def create_default_user():
     """Create default user account for testing"""
