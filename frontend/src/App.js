@@ -98,7 +98,7 @@ const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration, onShowEmpl
             </button>
             <div className="text-gray-400 text-xs">atau</div>
             <button
-              onClick={() => setShowEmployeeRegistration(true)}
+              onClick={() => onShowEmployeeRegistration(true)}
               className="text-green-600 hover:text-green-800 text-sm font-medium underline transition-colors"
             >
               👷 Daftar sebagai Pegawai
