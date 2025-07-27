@@ -6,7 +6,7 @@ Check existing services and their duration data
 import requests
 import json
 
-BASE_URL = "https://a463ed99-dc6b-4010-8927-dcb0282194de.preview.emergentagent.com/api"
+BASE_URL = "https://860f3264-bb84-4836-a894-6429835c37ed.preview.emergentagent.com/api"
 
 def check_existing_services():
     session = requests.Session()
