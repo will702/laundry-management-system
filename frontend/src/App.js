@@ -6,7 +6,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 // Employee Login Component
-const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration }) => {
+const EmployeeLogin = ({ onLogin, employees, onShowAdminRegistration, onShowEmployeeRegistration }) => {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
