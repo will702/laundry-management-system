@@ -299,7 +299,7 @@ async def register_admin(admin_data: dict):
         }
     }
 
-@api_router.post("/employees")
+@api_router.post("/employees/register")
 async def register_employee(employee_data: dict):
     """Register regular employee without secret code"""
     
