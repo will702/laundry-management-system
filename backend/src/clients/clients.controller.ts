@@ -11,6 +11,8 @@ export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   create(@Body() dto: CreateClientDto) {
     return this.clientsService.create(dto);
   }

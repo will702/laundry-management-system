@@ -26,6 +26,7 @@ export class ClientsService {
   }
 
   async search(q: string) {
+    if (!q.trim()) return this.findAll();
     return this.prisma.client.findMany({
       where: {
         OR: [
