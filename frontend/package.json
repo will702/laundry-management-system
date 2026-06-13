@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@mass-laundry/shared-types": "*",
     "@capacitor-community/bluetooth-le": "^8.2.0",
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",

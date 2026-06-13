@@ -16,7 +16,8 @@
     "checkJs": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@mass-laundry/shared-types": ["../packages/shared-types/src/index.ts"]
     },
     "composite": true,
     "types": ["vitest/globals"]
