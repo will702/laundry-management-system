@@ -1,0 +1,182 @@
+// Mass Laundry POS - Prisma Schema
+// Swappable datasource: postgresql (Supabase) or sqlite (local)
+// Set DATABASE_PROVIDER and DATABASE_URL in .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// To switch to PostgreSQL: change provider to "postgresql" and update DATABASE_URL
+// provider = "postgresql" for Supabase/production
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums (stored as String for cross-provider compatibility) ───────────────
+// EmployeeRole: "employee" | "admin"
+// ReceiptStatus: "pending" | "ready" | "completed" | "deleted"
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model Employee {
+  id           String   @id @default(uuid())
+  name         String
+  pin          String   // bcrypt hash
+  role         String   @default("employee") // "employee" | "admin"
+  phone        String?
+  address      String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  receipts     Receipt[]
+  deletedReceipts Receipt[] @relation("DeletedByEmployee")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  receipts  Receipt[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+}
+
+model Unit {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  name            String
+  categoryId      String?
+  unitId          String?
+  basePriceCents  Int      // price in cents (integer) — no Decimal for cross-provider compat
+  durationDays    Int      @default(0)
+  durationHours   Int      @default(0)
+  durationMinutes Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category        Category?        @relation(fields: [categoryId], references: [id])
+  unit            Unit?            @relation(fields: [unitId], references: [id])
+  receiptItems    ReceiptItem[]
+  packageServices PackageService[]
+
+  @@index([categoryId])
+}
+
+model Package {
+  id                     String   @id @default(uuid())
+  name                   String
+  description            String?
+  totalPriceCents        Int      // original total price in cents
+  discountedPriceCents   Int      // discounted price in cents
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  packageServices        PackageService[]
+}
+
+model PackageService {
+  id        String  @id @default(uuid())
+  packageId String
+  serviceId String
+
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([packageId, serviceId])
+}
+
+model Receipt {
+  id               String   @id @default(uuid())
+  clientId         String?
+  employeeId       String
+  clientName       String   // denormalized for historical accuracy
+  employeeName     String   // denormalized for historical accuracy
+  subtotalCents    Int
+  discountPercent  Int      @default(0) // 0-100
+  totalAmountCents Int
+  status           String   @default("pending") // "pending"|"ready"|"completed"|"deleted"
+  notes            String?
+  isDeleted        Boolean  @default(false)
+  deletedAt        DateTime?
+  deletedById      String?
+  deleteReason     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  client           Client?   @relation(fields: [clientId], references: [id])
+  employee         Employee  @relation(fields: [employeeId], references: [id])
+  deletedBy        Employee? @relation("DeletedByEmployee", fields: [deletedById], references: [id])
+  items            ReceiptItem[]
+
+  @@index([isDeleted, createdAt])
+  @@index([employeeId, createdAt])
+  @@index([status, createdAt])
+  @@index([clientId])
+}
+
+model ReceiptItem {
+  id              String  @id @default(uuid())
+  receiptId       String
+  serviceId       String?
+  serviceName     String  // denormalized
+  itemType        String?
+  quantity        Int
+  pricePerItem    Int     // price in cents at time of purchase
+  lineTotal       Int     // quantity * pricePerItem, computed server-side
+
+  receipt         Receipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  service         Service? @relation(fields: [serviceId], references: [id])
+}
+
+model Settings {
+  id              String  @id @default("singleton")
+  businessName    String  @default("Mass Laundry")
+  businessAddress String  @default("")
+  businessPhone   String  @default("")
+  businessEmail   String  @default("")
+  logoUrl         String  @default("")
+  footerNotes     String  @default("Terima kasih atas kepercayaan Anda\nJam operasional: 07:00-21:00\nKomplain maks 1x24 jam")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ScheduledReport {
+  id          String   @id @default(uuid())
+  reportType  String   // "daily" | "weekly" | "monthly"
+  periodStart DateTime
+  periodEnd   DateTime
+  filePath    String
+  filename    String   @default("")
+  fileSize    Int?
+  status      String   @default("completed") // "completed" | "failed"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reportType, createdAt])
+}
