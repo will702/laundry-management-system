@@ -21,6 +21,8 @@ export class AuthService {
     });
 
     if (!employee) {
+      // Constant-time dummy compare to prevent timing-based username enumeration
+      await bcrypt.compare(dto.pin, '$2b$12$invalidhashpadding000000000000000000000000000000000000000');
       throw new UnauthorizedException('Invalid name or PIN');
     }
 
@@ -68,7 +70,7 @@ export class AuthService {
         role: 'admin',
         phone: dto.phone,
       },
-      select: { id: true, name: true, role: true },
+      select: { id: true, name: true, role: true, phone: true },
     });
 
     const payload: JwtPayload = {

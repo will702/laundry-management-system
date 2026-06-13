@@ -15,7 +15,7 @@ import { PrismaModule } from '../prisma/prisma.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET', 'fallback-dev-secret'),
+        secret: config.getOrThrow<string>('JWT_SECRET'),
         signOptions: { expiresIn: (config.get<string>('JWT_EXPIRES_IN', '7d') as string) as `${number}${'d' | 'h' | 'm' | 's'}` },
       }),
     }),

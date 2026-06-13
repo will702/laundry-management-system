@@ -11,7 +11,10 @@ async function bootstrap() {
   app.use(helmet());
 
   // CORS — explicit allowlist from env
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  const allowedOrigins = (
+    process.env.ALLOWED_ORIGINS ||
+    'http://localhost:5173,http://localhost:3000,capacitor://localhost,https://localhost'
+  )
     .split(',')
     .map((o) => o.trim());
   app.enableCors({
