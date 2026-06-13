@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
+import { ReportsSchedulerService } from './reports-scheduler.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [ReportsService],
+  imports: [PrismaModule, ScheduleModule.forRoot()],
+  providers: [ReportsService, ReportsSchedulerService],
   controllers: [ReportsController],
   exports: [ReportsService],
 })

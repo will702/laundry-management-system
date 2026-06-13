@@ -172,7 +172,9 @@ model ScheduledReport {
   periodStart DateTime
   periodEnd   DateTime
   filePath    String
+  filename    String   @default("")
   fileSize    Int?
+  status      String   @default("completed") // "completed" | "failed"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

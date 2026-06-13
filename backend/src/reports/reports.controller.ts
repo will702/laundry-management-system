@@ -1,6 +1,7 @@
 import {
-  Controller, Get, Query, Res, UseGuards, BadRequestException,
+  Controller, Get, Param, Query, Res, UseGuards, BadRequestException,
 } from '@nestjs/common';
+import { createReadStream } from 'fs';
 import { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -32,6 +33,25 @@ export class ReportsController {
     }
     return this.reportsService.getMonthlySales(y, m);
   }
+
+  // ── Scheduled reports ───────────────────────────────────────────────────
+
+  /** GET /reports/scheduled — list saved scheduled reports (most recent first) */
+  @Get('scheduled')
+  listScheduled() {
+    return this.reportsService.listScheduledReports();
+  }
+
+  /** GET /reports/scheduled/:id/download — stream the saved .xlsx file */
+  @Get('scheduled/:id/download')
+  async downloadScheduled(@Param('id') id: string, @Res() res: Response) {
+    const { filePath, filename } = await this.reportsService.getScheduledReportFile(id);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    createReadStream(filePath).pipe(res);
+  }
+
+  // ── On-demand Excel export ───────────────────────────────────────────────
 
   @Get('excel-export')
   async excelExport(

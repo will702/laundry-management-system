@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as ExcelJS from 'exceljs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ReportsService {
@@ -235,5 +237,53 @@ export class ReportsService {
     sumSheet.getColumn(3).width = 20;
 
     return workbook.xlsx.writeBuffer();
+  }
+
+  // ── Scheduled report storage ──────────────────────────────────────────────
+
+  private getStorageDir(): string {
+    const dir = path.join(process.cwd(), 'storage', 'reports');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    return dir;
+  }
+
+  async generateAndSaveReport(
+    reportType: 'daily' | 'weekly' | 'monthly',
+    startDateStr: string,
+    endDateStr: string,
+  ): Promise<{ id: string; filePath: string; filename: string; reportType: string; createdAt: Date }> {
+    const buffer = await this.generateExcel(startDateStr, endDateStr, false);
+    const filename = `${reportType}_${startDateStr}_to_${endDateStr}_${Date.now()}.xlsx`;
+    const dir = this.getStorageDir();
+    const filePath = path.join(dir, filename);
+    fs.writeFileSync(filePath, Buffer.from(buffer as ArrayBuffer));
+
+    const record = await this.prisma.scheduledReport.create({
+      data: {
+        reportType,
+        periodStart: new Date(startDateStr + 'T00:00:00Z'),
+        periodEnd: new Date(endDateStr + 'T23:59:59Z'),
+        filePath,
+        filename,
+        fileSize: (buffer as ArrayBuffer).byteLength,
+        status: 'completed',
+      },
+    });
+
+    return record;
+  }
+
+  async listScheduledReports(limit = 20) {
+    return this.prisma.scheduledReport.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
+  async getScheduledReportFile(id: string): Promise<{ filePath: string; filename: string }> {
+    const record = await this.prisma.scheduledReport.findUnique({ where: { id } });
+    if (!record) throw new NotFoundException(`Report ${id} not found`);
+    if (!fs.existsSync(record.filePath)) throw new NotFoundException('Report file not found on disk');
+    return { filePath: record.filePath, filename: record.filename };
   }
 }
