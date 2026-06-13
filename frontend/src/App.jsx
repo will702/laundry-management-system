@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 import { parseFooterNotes, renderFooterNotesText, renderFooterNotesHtml } from './services/receipt/footerNotes';
+import { PrinterProvider } from './contexts/PrinterContext';
+import { PrinterSettings } from './features/settings/PrinterSettings';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -1404,12 +1406,22 @@ const LaundrySettings = ({ employee }) => {
         <button
           onClick={() => setActiveTab('receipt')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'receipt' 
-              ? 'bg-white text-indigo-600 shadow-sm' 
+            activeTab === 'receipt'
+              ? 'bg-white text-indigo-600 shadow-sm'
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
           Pengaturan Struk
+        </button>
+        <button
+          onClick={() => setActiveTab('printer')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'printer'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Printer
         </button>
       </div>
 
@@ -1514,6 +1526,10 @@ const LaundrySettings = ({ employee }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === 'printer' && (
+        <PrinterSettings />
       )}
 
       <div className="flex justify-end pt-6 border-t">
@@ -3027,39 +3043,42 @@ function App() {
 
   if (!currentEmployee) {
     return (
-      <>
-        <EmployeeLogin 
-          onLogin={handleLogin} 
-          employees={employees} 
-          onShowAdminRegistration={handleShowAdminRegistration}
-          onShowEmployeeRegistration={setShowEmployeeRegistration}
-        />
-        {/* Employee Registration Modal */}
-        {showEmployeeRegistration && (
-          <EmployeeRegistration
-            onBack={() => setShowEmployeeRegistration(false)}
-            onEmployeeCreated={(employee) => {
-              setShowEmployeeRegistration(false);
-              // Auto-login the new employee
-              handleLogin(null, employee);
-            }}
+      <PrinterProvider>
+        <>
+          <EmployeeLogin
+            onLogin={handleLogin}
+            employees={employees}
+            onShowAdminRegistration={handleShowAdminRegistration}
+            onShowEmployeeRegistration={setShowEmployeeRegistration}
           />
-        )}
+          {/* Employee Registration Modal */}
+          {showEmployeeRegistration && (
+            <EmployeeRegistration
+              onBack={() => setShowEmployeeRegistration(false)}
+              onEmployeeCreated={(employee) => {
+                setShowEmployeeRegistration(false);
+                // Auto-login the new employee
+                handleLogin(null, employee);
+              }}
+            />
+          )}
 
-        {/* Admin Registration Modal */}
-        {showAdminRegistration && (
-          <AdminRegistration
-            onCancel={() => setShowAdminRegistration(false)}
-            onSuccess={handleAdminRegistrationSuccess}
-          />
-        )}
-      </>
+          {/* Admin Registration Modal */}
+          {showAdminRegistration && (
+            <AdminRegistration
+              onCancel={() => setShowAdminRegistration(false)}
+              onSuccess={handleAdminRegistrationSuccess}
+            />
+          )}
+        </>
+      </PrinterProvider>
     );
   }
 
   const isAdmin = currentEmployee.role === 'admin';
 
   return (
+    <PrinterProvider>
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8">
@@ -3410,6 +3429,7 @@ function App() {
         </div>
       </main>
     </div>
+    </PrinterProvider>
   );
 }
 
