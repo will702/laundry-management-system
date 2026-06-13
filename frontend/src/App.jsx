@@ -6,6 +6,7 @@ import { EmployeeLogin } from './features/auth/EmployeeLogin';
 import { EmployeeRegistration } from './features/auth/EmployeeRegistration';
 import { AdminRegistration } from './features/auth/AdminRegistration';
 import { ExcelReportExport } from './features/reports/ExcelReportExport';
+import { AnalyticsDashboard } from './features/reports/AnalyticsDashboard';
 import { AuditDashboard } from './features/audit/AuditDashboard';
 import { ClientManagement } from './features/clients/ClientManagement';
 // ServiceItemsManagement extracted to features/catalog/ServiceItemsManagement.tsx (not currently in use in routing — tab was removed)
@@ -731,7 +732,7 @@ function App() {
         )}
 
         {activeTab === 'reports' && (
-          <ExcelReportExport employee={currentEmployee} />
+          <AnalyticsDashboard />
         )}
         </div>
       </main>
