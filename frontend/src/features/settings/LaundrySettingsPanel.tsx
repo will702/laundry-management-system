@@ -97,8 +97,11 @@ export const LaundrySettingsPanel: React.FC = () => {
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">⚙️ Pengaturan Laundry</h2>
 
-      <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6">
+      <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6" role="tablist" aria-label="Tab pengaturan">
         <button
+          role="tab"
+          aria-selected={activeTab === 'business'}
+          aria-controls="settings-tab-panel"
           onClick={() => setActiveTab('business')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'business'
@@ -109,6 +112,9 @@ export const LaundrySettingsPanel: React.FC = () => {
           Info Bisnis
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'receipt'}
+          aria-controls="settings-tab-panel"
           onClick={() => setActiveTab('receipt')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'receipt'
@@ -119,6 +125,9 @@ export const LaundrySettingsPanel: React.FC = () => {
           Pengaturan Struk
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'printer'}
+          aria-controls="settings-tab-panel"
           onClick={() => setActiveTab('printer')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'printer'
@@ -130,6 +139,7 @@ export const LaundrySettingsPanel: React.FC = () => {
         </button>
       </div>
 
+      <div id="settings-tab-panel" role="tabpanel" aria-live="polite">
       {activeTab === 'business' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -248,6 +258,7 @@ export const LaundrySettingsPanel: React.FC = () => {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };

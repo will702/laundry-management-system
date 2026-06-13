@@ -79,6 +79,7 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
           <input
             type="text"
             placeholder="Nama Lengkap"
+            aria-label="Nama Lengkap"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -88,6 +89,8 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
           <input
             type="password"
             placeholder="PIN Login (minimal 4 karakter)"
+            aria-label="PIN Login"
+            inputMode="numeric"
             value={formData.pin}
             onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -97,6 +100,7 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
           <input
             type="tel"
             placeholder="Nomor Telepon (opsional)"
+            aria-label="Nomor Telepon"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -104,6 +108,7 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
 
           <textarea
             placeholder="Alamat (opsional)"
+            aria-label="Alamat"
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"

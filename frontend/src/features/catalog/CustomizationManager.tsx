@@ -262,10 +262,13 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg" role="tablist" aria-label="Tab kustomisasi">
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeCustomTab === tab.id}
+              aria-controls="custom-tab-panel"
               onClick={() => setActiveCustomTab(tab.id)}
               className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeCustomTab === tab.id
@@ -279,6 +282,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
           ))}
         </div>
 
+        <div id="custom-tab-panel" role="tabpanel" aria-live="polite">
         {/* Categories Tab */}
         {activeCustomTab === 'categories' && (
           <div className="space-y-4">
@@ -301,6 +305,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Nama Kategori (e.g., Pakaian, Sepatu)"
+                    aria-label="Nama kategori"
                     value={categoryForm.name}
                     onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -309,6 +314,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Deskripsi (optional)"
+                    aria-label="Deskripsi kategori"
                     value={categoryForm.description}
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, description: e.target.value })
@@ -356,6 +362,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Nama Satuan (e.g., pcs, kg, set)"
+                    aria-label="Nama satuan"
                     value={unitForm.name}
                     onChange={(e) => setUnitForm({ ...unitForm, name: e.target.value })}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -364,6 +371,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Deskripsi (optional)"
+                    aria-label="Deskripsi satuan"
                     value={unitForm.description}
                     onChange={(e) => setUnitForm({ ...unitForm, description: e.target.value })}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -440,12 +448,14 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                     <input
                       type="text"
                       placeholder="Nama Layanan"
+                      aria-label="Nama layanan"
                       value={serviceForm.name}
                       onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       required
                     />
                     <select
+                      aria-label="Pilih kategori layanan"
                       value={serviceForm.category_id}
                       onChange={(e) =>
                         setServiceForm({ ...serviceForm, category_id: e.target.value })
@@ -461,6 +471,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                       ))}
                     </select>
                     <select
+                      aria-label="Pilih satuan layanan"
                       value={serviceForm.unit_id}
                       onChange={(e) =>
                         setServiceForm({ ...serviceForm, unit_id: e.target.value })
@@ -478,6 +489,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                     <input
                       type="number"
                       placeholder="Harga per satuan"
+                      aria-label="Harga per satuan"
                       value={serviceForm.base_price}
                       onChange={(e) =>
                         setServiceForm({ ...serviceForm, base_price: e.target.value })
@@ -697,6 +709,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Nama Paket (e.g., Paket Lengkap, Paket Express)"
+                    aria-label="Nama paket"
                     value={packageForm.name}
                     onChange={(e) => setPackageForm({ ...packageForm, name: e.target.value })}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -705,6 +718,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                   <input
                     type="text"
                     placeholder="Deskripsi paket"
+                    aria-label="Deskripsi paket"
                     value={packageForm.description}
                     onChange={(e) =>
                       setPackageForm({ ...packageForm, description: e.target.value })
@@ -740,6 +754,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                         className="flex items-center space-x-3 bg-white p-3 rounded border"
                       >
                         <select
+                          aria-label={`Pilih layanan ke-${index + 1} dalam paket`}
                           value={serviceItem.service_id}
                           onChange={(e) =>
                             updatePackageService(index, 'service_id', e.target.value)
@@ -757,6 +772,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                         <input
                           type="number"
                           min="1"
+                          aria-label={`Jumlah layanan ke-${index + 1}`}
                           value={serviceItem.quantity}
                           onChange={(e) =>
                             updatePackageService(
@@ -770,6 +786,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                         />
                         <button
                           type="button"
+                          aria-label={`Hapus layanan ke-${index + 1} dari paket`}
                           onClick={() => removeServiceFromPackage(index)}
                           className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
                         >
@@ -788,6 +805,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
                       type="number"
                       min="0"
                       max="100"
+                      aria-label="Diskon paket persen"
                       value={packageForm.discount_percent}
                       onChange={(e) =>
                         setPackageForm({
@@ -842,6 +860,7 @@ export const CustomizationManager: React.FC<CustomizationManagerProps> = ({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

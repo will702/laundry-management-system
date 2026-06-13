@@ -139,6 +139,7 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
               </label>
               <input
                 type="text"
+                aria-label="Nama layanan"
                 value={newItem.name}
                 onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -149,6 +150,7 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
               <select
+                aria-label="Kategori layanan"
                 value={newItem.category}
                 onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -167,6 +169,7 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
               </label>
               <input
                 type="number"
+                aria-label="Harga layanan"
                 value={newItem.price}
                 onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -179,6 +182,7 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
               <select
+                aria-label="Satuan layanan"
                 value={newItem.unit}
                 onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -197,6 +201,7 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
               Deskripsi (Opsional)
             </label>
             <textarea
+              aria-label="Deskripsi layanan"
               value={newItem.description}
               onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"

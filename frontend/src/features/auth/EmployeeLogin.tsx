@@ -71,6 +71,8 @@ export const EmployeeLogin: React.FC<EmployeeLoginProps> = ({
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-xl font-mono"
               placeholder="••••"
               maxLength={4}
+              inputMode="numeric"
+              aria-label="PIN"
             />
           </div>
 

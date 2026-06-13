@@ -381,22 +381,28 @@ function App() {
               </div>
               
               {/* Desktop Navigation - Hidden on mobile */}
-              <div className="hidden sm:flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <nav aria-label="Menu utama" className="hidden sm:flex space-x-1 bg-gray-100 rounded-lg p-1" role="tablist">
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'create'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('create')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                    activeTab === 'create' 
-                      ? 'bg-white text-indigo-600 shadow-sm' 
+                    activeTab === 'create'
+                      ? 'bg-white text-indigo-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   Bon Baru
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'receipts'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('receipts')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                    activeTab === 'receipts' 
-                      ? 'bg-white text-indigo-600 shadow-sm' 
+                    activeTab === 'receipts'
+                      ? 'bg-white text-indigo-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
@@ -405,10 +411,13 @@ function App() {
                 {/* Hide Settings, Audit, Customization from regular employees - Admin only */}
                 {isAdmin && (
                   <button
+                    role="tab"
+                    aria-selected={activeTab === 'audit'}
+                    aria-controls="tab-panel"
                     onClick={() => handleTabChange('audit')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                      activeTab === 'audit' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
+                      activeTab === 'audit'
+                        ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
@@ -417,10 +426,13 @@ function App() {
                 )}
                 {isAdmin && (
                   <button
+                    role="tab"
+                    aria-selected={activeTab === 'clients'}
+                    aria-controls="tab-panel"
                     onClick={() => handleTabChange('clients')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                      activeTab === 'clients' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
+                      activeTab === 'clients'
+                        ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
@@ -429,10 +441,13 @@ function App() {
                 )}
                 {isAdmin && (
                   <button
+                    role="tab"
+                    aria-selected={activeTab === 'settings'}
+                    aria-controls="tab-panel"
                     onClick={() => handleTabChange('settings')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                      activeTab === 'settings' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
+                      activeTab === 'settings'
+                        ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
@@ -443,10 +458,13 @@ function App() {
                 {/* Show Customization for admin OR user named "user" */}
                 {(isAdmin || (currentEmployee && currentEmployee.name === 'user')) && (
                   <button
+                    role="tab"
+                    aria-selected={activeTab === 'customization'}
+                    aria-controls="tab-panel"
                     onClick={() => handleTabChange('customization')}
                     className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                      activeTab === 'customization' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
+                      activeTab === 'customization'
+                        ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
@@ -454,16 +472,19 @@ function App() {
                   </button>
                 )}
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'reports'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('reports')}
                   className={`px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
-                    activeTab === 'reports' 
-                      ? 'bg-white text-indigo-600 shadow-sm' 
+                    activeTab === 'reports'
+                      ? 'bg-white text-indigo-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   📊 Laporan
                 </button>
-              </div>
+              </nav>
               
               <button
                 onClick={handleLogout}
@@ -477,13 +498,16 @@ function App() {
       </header>
 
       {/* Mobile Bottom Navigation - Optimized */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
+      <nav aria-label="Navigasi mobile" className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20" role="tablist">
         <div className="px-1 py-2">
           {/* Show different navigation based on admin/employee role */}
           {!isAdmin ? (
             /* Regular Employee Navigation - 1 row only */
             <div className="flex justify-around">
               <button
+                role="tab"
+                aria-selected={activeTab === 'create'}
+                aria-controls="tab-panel"
                 onClick={() => handleTabChange('create')}
                 className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'create'
@@ -495,6 +519,9 @@ function App() {
                 <span className="text-xs font-medium">Bon Baru</span>
               </button>
               <button
+                role="tab"
+                aria-selected={activeTab === 'receipts'}
+                aria-controls="tab-panel"
                 onClick={() => handleTabChange('receipts')}
                 className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'receipts'
@@ -508,6 +535,9 @@ function App() {
               {/* Show Kustomisasi for user named "user" */}
               {currentEmployee && currentEmployee.name === 'user' && (
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'customization'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('customization')}
                   className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                     activeTab === 'customization'
@@ -520,6 +550,9 @@ function App() {
                 </button>
               )}
               <button
+                role="tab"
+                aria-selected={activeTab === 'reports'}
+                aria-controls="tab-panel"
                 onClick={() => handleTabChange('reports')}
                 className={`flex flex-col items-center py-2 px-2 text-xs transition-colors ${
                   activeTab === 'reports'
@@ -537,10 +570,13 @@ function App() {
               {/* First Row */}
               <div className="flex justify-around mb-1">
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'create'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('create')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'create' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'create'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -548,10 +584,13 @@ function App() {
                   <span className="text-xs font-medium">Bon Baru</span>
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'receipts'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('receipts')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'receipts' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'receipts'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -559,10 +598,13 @@ function App() {
                   <span className="text-xs font-medium">Semua Bon</span>
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'clients'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('clients')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'clients' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'clients'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -573,10 +615,13 @@ function App() {
               {/* Second Row */}
               <div className="flex justify-around">
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'audit'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('audit')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'audit' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'audit'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -584,10 +629,13 @@ function App() {
                   <span className="text-xs font-medium">Audit</span>
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'customization'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('customization')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'customization' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'customization'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -595,10 +643,13 @@ function App() {
                   <span className="text-xs font-medium">Kustomisasi</span>
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'reports'}
+                  aria-controls="tab-panel"
                   onClick={() => handleTabChange('reports')}
                   className={`flex flex-col items-center py-1 px-2 text-xs transition-colors ${
-                    activeTab === 'reports' 
-                      ? 'text-indigo-600' 
+                    activeTab === 'reports'
+                      ? 'text-indigo-600'
                       : 'text-gray-600'
                   }`}
                 >
@@ -612,7 +663,7 @@ function App() {
       </nav>
 
       <main className="px-2 sm:px-6 lg:px-8 py-3 sm:py-8 pb-24 sm:pb-8">
-        <div className="max-w-7xl mx-auto">
+        <div id="tab-panel" role="tabpanel" aria-live="polite" className="max-w-7xl mx-auto">
           {activeTab === 'create' && (
             <div className="space-y-3 sm:space-y-8">
               {!selectedClient ? (

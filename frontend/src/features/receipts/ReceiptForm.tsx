@@ -482,6 +482,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
                   <input
                     type="number"
                     min="1"
+                    aria-label={`Jumlah ${item.service_name || 'layanan'}`}
                     value={item.quantity}
                     onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
@@ -497,6 +498,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
                     type="number"
                     min="0"
                     step="500"
+                    aria-label={`Harga per item ${item.service_name || 'layanan'}`}
                     value={item.price_per_item}
                     onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
@@ -556,6 +558,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
                 type="number"
                 min="0"
                 max="100"
+                aria-label="Diskon persen"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"

@@ -78,8 +78,11 @@ export const AuditDashboard: React.FC = () => {
           🔍 Fraud Prevention Audit Dashboard
         </h2>
 
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6">
+        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6" role="tablist" aria-label="Audit tabs">
           <button
+            role="tab"
+            aria-selected={activeAuditTab === 'summary'}
+            aria-controls="audit-tab-panel"
             onClick={() => setActiveAuditTab('summary')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeAuditTab === 'summary'
@@ -90,6 +93,9 @@ export const AuditDashboard: React.FC = () => {
             Employee Summary
           </button>
           <button
+            role="tab"
+            aria-selected={activeAuditTab === 'deleted'}
+            aria-controls="audit-tab-panel"
             onClick={() => setActiveAuditTab('deleted')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeAuditTab === 'deleted'
@@ -100,6 +106,7 @@ export const AuditDashboard: React.FC = () => {
             Deleted Receipts
           </button>
         </div>
+        <div id="audit-tab-panel" role="tabpanel" aria-live="polite">
 
         {activeAuditTab === 'summary' && (
           <div className="space-y-4">
@@ -236,6 +243,7 @@ export const AuditDashboard: React.FC = () => {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
