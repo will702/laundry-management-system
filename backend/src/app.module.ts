@@ -3,6 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { EmployeesModule } from './employees/employees.module';
+import { ClientsModule } from './clients/clients.module';
+import { SettingsModule } from './settings/settings.module';
+import { CatalogModule } from './services/catalog.module';
 
 @Module({
   imports: [
@@ -19,6 +23,10 @@ import { AuthModule } from './auth/auth.module';
     }),
     PrismaModule,
     AuthModule,
+    EmployeesModule,
+    ClientsModule,
+    SettingsModule,
+    CatalogModule,
   ],
 })
 export class AppModule {}
