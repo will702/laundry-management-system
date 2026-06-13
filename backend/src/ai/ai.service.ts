@@ -1,8 +1,10 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
+import type { MessageParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages/messages';
 import { ReportsService } from '../reports/reports.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { CHAT_TOOLS, executeTool } from './tools';
 
 @Injectable()
 export class AiService {
@@ -173,5 +175,79 @@ Format: JSON {"forecast": "...", "staffingNote": "..."}`;
     } catch {
       return { forecast: text, staffingNote: '' };
     }
+  }
+
+  // ── (c) Chat-over-data ────────────────────────────────────────────────────
+
+  async chat(
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ): Promise<{ reply: string; toolsUsed: string[] }> {
+    const anthropic = this.requireClient();
+    const toolsUsed: string[] = [];
+
+    const systemPrompt = `Kamu adalah asisten analitik bisnis laundry bernama "Laundry AI".
+Bantu pemilik bisnis memahami data penjualan mereka melalui pertanyaan bahasa alami dalam bahasa Indonesia.
+Gunakan tools yang tersedia untuk mengambil data yang relevan sebelum menjawab.
+Selalu jawab dalam bahasa Indonesia yang ramah dan profesional.
+Semua nilai uang dalam satuan sen (cents) — tampilkan ke user sebagai Rupiah (bagi 100, format ribuan).`;
+
+    // Build initial message array
+    const apiMessages: MessageParam[] = messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    let response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 1024,
+      system: systemPrompt,
+      tools: CHAT_TOOLS,
+      messages: apiMessages,
+    });
+
+    // Agentic loop: keep going while Claude wants to use tools
+    while (response.stop_reason === 'tool_use') {
+      const assistantMessage: MessageParam = {
+        role: 'assistant',
+        content: response.content,
+      };
+
+      const toolResults: ToolResultBlockParam[] = [];
+      for (const block of response.content) {
+        if (block.type !== 'tool_use') continue;
+        toolsUsed.push(block.name);
+        let result: unknown;
+        try {
+          result = await executeTool(block.name, block.input as Record<string, unknown>, this.prisma);
+        } catch (err) {
+          result = { error: String(err) };
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: JSON.stringify(result),
+        });
+      }
+
+      const toolResultMessage: MessageParam = {
+        role: 'user',
+        content: toolResults,
+      };
+
+      response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 1024,
+        system: systemPrompt,
+        tools: CHAT_TOOLS,
+        messages: [...apiMessages, assistantMessage, toolResultMessage],
+      });
+    }
+
+    const reply = response.content
+      .filter((b) => b.type === 'text')
+      .map((b) => (b as { type: 'text'; text: string }).text)
+      .join('\n');
+
+    return { reply, toolsUsed };
   }
 }

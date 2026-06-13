@@ -3,7 +3,8 @@ import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { IsString, IsOptional, Length } from 'class-validator';
+import { IsString, IsOptional, Length, IsArray, IsIn, ValidateNested, ArrayMinSize, ArrayMaxSize } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class InsightsDto {
   @IsString()
@@ -21,6 +22,23 @@ class FooterNotesDto {
   @IsString()
   @IsOptional()
   context?: string;
+}
+
+class ChatMessageDto {
+  @IsIn(['user', 'assistant'])
+  role: 'user' | 'assistant';
+
+  @IsString()
+  content: string;
+}
+
+class ChatDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => ChatMessageDto)
+  messages: ChatMessageDto[];
 }
 
 @Controller('ai')
@@ -42,5 +60,10 @@ export class AiController {
   @Get('forecast')
   getDemandForecast() {
     return this.aiService.getDemandForecast();
+  }
+
+  @Post('chat')
+  chat(@Body() dto: ChatDto) {
+    return this.aiService.chat(dto.messages);
   }
 }
