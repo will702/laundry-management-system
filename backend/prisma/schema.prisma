@@ -83,6 +83,8 @@ model Service {
   unit            Unit?            @relation(fields: [unitId], references: [id])
   receiptItems    ReceiptItem[]
   packageServices PackageService[]
+
+  @@index([categoryId])
 }
 
 model Package {
@@ -131,6 +133,11 @@ model Receipt {
   employee         Employee  @relation(fields: [employeeId], references: [id])
   deletedBy        Employee? @relation("DeletedByEmployee", fields: [deletedById], references: [id])
   items            ReceiptItem[]
+
+  @@index([isDeleted, createdAt])
+  @@index([employeeId, createdAt])
+  @@index([status, createdAt])
+  @@index([clientId])
 }
 
 model ReceiptItem {
@@ -167,4 +174,7 @@ model ScheduledReport {
   filePath    String
   fileSize    Int?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reportType, createdAt])
 }
