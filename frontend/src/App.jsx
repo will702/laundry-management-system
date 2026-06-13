@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
+import { parseFooterNotes, renderFooterNotesText, renderFooterNotesHtml } from './services/receipt/footerNotes';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -472,7 +473,7 @@ const ReceiptForm = ({ employee, client, onReceiptCreated }) => {
                 ` : ''}
                 
                 <div class="footer">
-                  ${printResponse.data.footer_notes.split('•').map(note => `<p>${note.trim()}</p>`).join('')}
+                  ${renderFooterNotesHtml(parseFooterNotes(printResponse.data.footer_notes))}
                   <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
                 </div>
               </body>
@@ -1064,7 +1065,7 @@ const PrintReceipt = ({ receiptData, onClose }) => {
         <div class="footer">
           ${receiptData.footer_notes ? `
             <div style="margin-bottom: 15px;">
-              ${receiptData.footer_notes.split('\n').map(line => `<div>${line.trim()}</div>`).join('')}
+              ${renderFooterNotesHtml(parseFooterNotes(receiptData.footer_notes))}
             </div>
           ` : ''}
           <div>Terima kasih atas kepercayaan Anda</div>
@@ -1293,8 +1294,8 @@ const PrintReceipt = ({ receiptData, onClose }) => {
             {/* Footer */}
             <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {receiptData.footer_notes.split('•').map((note, index) => (
-                  <p key={index} className="bg-gray-50 p-2 rounded">{note.trim()}</p>
+                {parseFooterNotes(receiptData.footer_notes).map((note, index) => (
+                  <p key={index} className="bg-gray-50 p-2 rounded">{note}</p>
                 ))}
               </div>
               <p className="text-xs font-medium text-gray-600 mt-4">
@@ -1507,8 +1508,8 @@ const LaundrySettings = ({ employee }) => {
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium mb-3">Pratinjau Catatan Kaki:</h3>
             <div className="text-sm text-gray-600 text-center border-t border-gray-200 pt-3">
-              {settings.footer_notes.split('•').map((note, index) => (
-                <p key={index} className="mb-1">{note.trim()}</p>
+              {parseFooterNotes(settings.footer_notes).map((note, index) => (
+                <p key={index} className="mb-1">{note}</p>
               ))}
             </div>
           </div>
