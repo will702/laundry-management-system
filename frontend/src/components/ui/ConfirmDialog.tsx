@@ -21,10 +21,10 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Modal open={open} onClose={onCancel} title={title} size="sm">
-      <p className="text-sm text-gray-600 mb-5">{message}</p>
-      <div className="flex gap-3 justify-end">
-        <Button variant="secondary" onClick={onCancel}>{cancelLabel}</Button>
-        <Button variant={variant} onClick={onConfirm}>{confirmLabel}</Button>
+      <p className="text-sm text-ink-muted mb-5 leading-relaxed">{message}</p>
+      <div className="flex gap-2.5 justify-end">
+        <Button variant="secondary" size="sm" onClick={onCancel}>{cancelLabel}</Button>
+        <Button variant={variant} size="sm" onClick={onConfirm}>{confirmLabel}</Button>
       </div>
     </Modal>
   );

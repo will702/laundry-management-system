@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-14T00:00:00.000Z",
+  "title": "Design System: Mass Laundry POS",
+  "extensions": {
+    "colorMeta": {
+      "brand-primary": {
+        "role": "primary",
+        "displayName": "Midnight Navy",
+        "canonical": "oklch(0.45 0.18 264)",
+        "tonalRamp": [
+          "oklch(0.22 0.10 265)",
+          "oklch(0.30 0.14 264)",
+          "oklch(0.37 0.17 264)",
+          "oklch(0.45 0.18 264)",
+          "oklch(0.53 0.18 263)",
+          "oklch(0.63 0.16 263)",
+          "oklch(0.86 0.09 261)",
+          "oklch(0.97 0.02 258)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Electric Indigo",
+        "canonical": "oklch(0.62 0.20 277)",
+        "tonalRamp": [
+          "oklch(0.28 0.11 280)",
+          "oklch(0.38 0.16 279)",
+          "oklch(0.47 0.20 279)",
+          "oklch(0.55 0.21 278)",
+          "oklch(0.62 0.20 277)",
+          "oklch(0.70 0.17 277)",
+          "oklch(0.85 0.10 277)",
+          "oklch(0.96 0.03 277)"
+        ]
+      },
+      "amount": {
+        "role": "tertiary",
+        "displayName": "Warm Rupiah",
+        "canonical": "oklch(0.60 0.15 52)",
+        "tonalRamp": [
+          "oklch(0.30 0.12 50)",
+          "oklch(0.40 0.14 51)",
+          "oklch(0.50 0.14 52)",
+          "oklch(0.60 0.15 52)",
+          "oklch(0.68 0.14 55)",
+          "oklch(0.76 0.12 60)",
+          "oklch(0.87 0.08 68)",
+          "oklch(0.95 0.06 75)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Press Black",
+        "canonical": "oklch(0.16 0.018 258)",
+        "tonalRamp": [
+          "oklch(0.08 0.012 258)",
+          "oklch(0.16 0.018 258)",
+          "oklch(0.25 0.020 257)",
+          "oklch(0.35 0.022 257)",
+          "oklch(0.45 0.022 257)",
+          "oklch(0.56 0.018 256)",
+          "oklch(0.65 0.014 256)",
+          "oklch(0.88 0.010 255)"
+        ]
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Page Linen",
+        "canonical": "oklch(0.965 0.007 255)",
+        "tonalRamp": [
+          "oklch(0.82 0.012 255)",
+          "oklch(0.86 0.011 255)",
+          "oklch(0.90 0.010 255)",
+          "oklch(0.93 0.008 255)",
+          "oklch(0.955 0.008 255)",
+          "oklch(0.965 0.007 255)",
+          "oklch(0.99 0.003 255)",
+          "oklch(1.00 0 0)"
+        ]
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Confirmed Green",
+        "canonical": "oklch(0.53 0.17 148)",
+        "tonalRamp": [
+          "oklch(0.25 0.12 148)",
+          "oklch(0.35 0.14 148)",
+          "oklch(0.43 0.16 148)",
+          "oklch(0.53 0.17 148)",
+          "oklch(0.62 0.15 150)",
+          "oklch(0.71 0.13 152)",
+          "oklch(0.84 0.09 152)",
+          "oklch(0.95 0.05 148)"
+        ]
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Alert Red",
+        "canonical": "oklch(0.54 0.22 27)",
+        "tonalRamp": [
+          "oklch(0.27 0.16 27)",
+          "oklch(0.36 0.18 27)",
+          "oklch(0.45 0.20 27)",
+          "oklch(0.54 0.22 27)",
+          "oklch(0.62 0.20 28)",
+          "oklch(0.70 0.17 30)",
+          "oklch(0.84 0.11 25)",
+          "oklch(0.96 0.05 20)"
+        ]
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(0.66 0.17 65)",
+        "tonalRamp": [
+          "oklch(0.35 0.13 60)",
+          "oklch(0.44 0.14 62)",
+          "oklch(0.55 0.15 63)",
+          "oklch(0.66 0.17 65)",
+          "oklch(0.73 0.16 68)",
+          "oklch(0.80 0.14 70)",
+          "oklch(0.89 0.09 73)",
+          "oklch(0.96 0.05 75)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Login and splash screens only. Never inside the authenticated app shell." },
+      "headline": { "displayName": "Headline", "purpose": "Major section or page headings. Used sparingly." },
+      "title": { "displayName": "Title", "purpose": "Card headings, modal titles, sub-section labels." },
+      "body": { "displayName": "Body", "purpose": "All descriptive text, form hints, data cells. Max 70ch." },
+      "label": { "displayName": "Label", "purpose": "Form field legends, column headers, UI control labels." },
+      "amount": { "displayName": "Amount (Mono)", "purpose": "Every Rupiah figure. Always amber. Always tabular-nums." }
+    },
+    "shadows": [
+      {
+        "name": "hairline",
+        "value": "0 1px 2px oklch(0.16 0.018 258 / 0.06)",
+        "purpose": "Lightest definition. Companion to a thin border — use one or the other on static cards."
+      },
+      {
+        "name": "resting",
+        "value": "0 1px 3px oklch(0.16 0.018 258 / 0.08), 0 1px 2px oklch(0.16 0.018 258 / 0.05)",
+        "purpose": "Default card shadow (shadow-sm). Barely perceptible."
+      },
+      {
+        "name": "floating",
+        "value": "0 2px 6px oklch(0.16 0.018 258 / 0.09), 0 1px 3px oklch(0.16 0.018 258 / 0.06)",
+        "purpose": "Dropdowns and floating action panels."
+      },
+      {
+        "name": "lifted",
+        "value": "0 4px 12px oklch(0.16 0.018 258 / 0.10), 0 2px 4px oklch(0.16 0.018 258 / 0.06)",
+        "purpose": "Hover state on interactive cards."
+      },
+      {
+        "name": "modal",
+        "value": "0 8px 24px oklch(0.16 0.018 258 / 0.12), 0 4px 8px oklch(0.16 0.018 258 / 0.07)",
+        "purpose": "Modals and dialogs."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 3px oklch(0.63 0.16 263 / 0.35)",
+        "purpose": "Keyboard focus on interactive elements."
+      },
+      {
+        "name": "focus-ring-danger",
+        "value": "0 0 0 3px oklch(0.54 0.22 27 / 0.30)",
+        "purpose": "Keyboard focus on error-state inputs."
+      }
+    ],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for all state transitions. Snappy and decisive." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.45, 0, 0.55, 1)", "purpose": "Entering and exiting overlays." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Color, border, and shadow transitions on interactive elements." },
+      { "name": "duration-normal", "value": "220ms", "purpose": "Enter animations (fade-up, scale-in) and panel transitions." },
+      { "name": "duration-slow", "value": "350ms", "purpose": "Complex motion: slide-up sheets, modal entrances." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px", "note": "Primary tablet breakpoint — sidebar activates, padding increases." },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single action-color button. Used for submit, save, confirm, and new-order CTAs.",
+      "html": "<button class=\"ds-btn-primary\">Simpan</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; font-size: 0.8125rem; font-weight: 600; color: #ffffff; background-color: oklch(0.45 0.18 264); border: none; border-radius: 8px; height: 40px; padding: 0 16px; cursor: pointer; user-select: none; touch-action: manipulation; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1); outline: none; } .ds-btn-primary:hover { background-color: oklch(0.37 0.17 264); } .ds-btn-primary:active { background-color: oklch(0.30 0.14 264); } .ds-btn-primary:focus-visible { box-shadow: 0 0 0 3px oklch(0.63 0.16 263 / 0.35); } .ds-btn-primary:disabled { background-color: oklch(0.75 0.13 262); opacity: 0.7; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral outlined button for cancel, back, and secondary actions alongside a primary.",
+      "html": "<button class=\"ds-btn-secondary\">Batal</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; font-size: 0.8125rem; font-weight: 600; color: oklch(0.16 0.018 258); background-color: #ffffff; border: 1px solid oklch(0.88 0.010 255); border-radius: 8px; height: 40px; padding: 0 16px; cursor: pointer; user-select: none; touch-action: manipulation; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); outline: none; } .ds-btn-secondary:hover { background-color: oklch(0.93 0.008 255); border-color: oklch(0.78 0.016 258); } .ds-btn-secondary:focus-visible { box-shadow: 0 0 0 3px oklch(0.63 0.16 263 / 0.35); } .ds-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Red fill button. Destructive actions only: delete, void, override.",
+      "html": "<button class=\"ds-btn-danger\">Hapus</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; font-size: 0.8125rem; font-weight: 600; color: #ffffff; background-color: oklch(0.54 0.22 27); border: none; border-radius: 8px; height: 40px; padding: 0 16px; cursor: pointer; touch-action: manipulation; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1); outline: none; } .ds-btn-danger:hover { background-color: oklch(0.40 0.19 27); } .ds-btn-danger:focus-visible { box-shadow: 0 0 0 3px oklch(0.54 0.22 27 / 0.30); } .ds-btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text input with label. The base form control for all POS data entry.",
+      "html": "<div class=\"ds-input-field\"><label class=\"ds-input-label\" for=\"ds-ex\">Nama Pelanggan</label><input class=\"ds-input\" id=\"ds-ex\" type=\"text\" placeholder=\"Cari nama...\" /></div>",
+      "css": ".ds-input-field { display: flex; flex-direction: column; gap: 6px; } .ds-input-label { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; font-size: 0.8125rem; font-weight: 600; color: oklch(0.45 0.022 257); } .ds-input { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; font-size: 0.8125rem; color: oklch(0.16 0.018 258); background: #ffffff; border: 1px solid oklch(0.88 0.010 255); border-radius: 12px; height: 40px; padding: 0 12px; width: 100%; box-sizing: border-box; transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); outline: none; } .ds-input::placeholder { color: oklch(0.65 0.014 256); } .ds-input:hover { border-color: oklch(0.78 0.016 258); } .ds-input:focus { border-color: oklch(0.53 0.18 263); box-shadow: 0 0 0 3px oklch(0.63 0.16 263 / 0.35); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The base container. Counter White surface, subtle shadow, thin border. Interactive variant escalates on hover.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Detail Pesanan</h3></div><p class=\"ds-card-body\">Konten kartu di sini.</p></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid oklch(0.88 0.010 255); border-radius: 16px; box-shadow: 0 1px 3px oklch(0.16 0.018 258 / 0.08), 0 1px 2px oklch(0.16 0.018 258 / 0.05); padding: 16px; } .ds-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; } .ds-card-title { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; font-size: 1.0625rem; font-weight: 700; color: oklch(0.16 0.018 258); letter-spacing: -0.01em; margin: 0; } .ds-card-body { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; font-size: 0.9375rem; color: oklch(0.45 0.022 257); margin: 0; }"
+    },
+    {
+      "name": "Badge — Amount",
+      "kind": "chip",
+      "refersTo": "badge-amount",
+      "description": "Compact Rupiah figure in a pill. JetBrains Mono, amber ink on amber wash. Tabular numerics.",
+      "html": "<span class=\"ds-badge-amount\">Rp 45.000</span>",
+      "css": ".ds-badge-amount { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 0.75rem; font-weight: 500; color: oklch(0.60 0.15 52); background: oklch(0.95 0.06 75); border-radius: 9999px; padding: 2px 10px; display: inline-flex; align-items: center; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; letter-spacing: 0; white-space: nowrap; }"
+    },
+    {
+      "name": "Badge — Status",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Semantic status pill. Six variants: default, info, success, warning, danger, amount.",
+      "html": "<span class=\"ds-badge-success\">Selesai</span>",
+      "css": ".ds-badge-success { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; font-size: 0.75rem; font-weight: 600; color: oklch(0.38 0.15 148); background: oklch(0.95 0.05 148); border-radius: 9999px; padding: 2px 8px; display: inline-flex; align-items: center; letter-spacing: 0; white-space: nowrap; }"
+    },
+    {
+      "name": "Price Display",
+      "kind": "custom",
+      "refersTo": "amount",
+      "description": "The .price utility: JetBrains Mono, amber, tabular-nums. Applied to all Rupiah figures everywhere in the system.",
+      "html": "<span class=\"ds-price\">Rp 125.000</span>",
+      "css": ".ds-price { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-weight: 600; color: oklch(0.60 0.15 52); font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; letter-spacing: -0.01em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Midnight Counter",
+    "overview": "A point-of-sale is not a screen you admire — it's equipment you trust. Mass Laundry POS is built for counter staff who work under bright fluorescent light, tablet in hand, with a customer standing across from them. Every pixel earns its place by reducing decision time and eliminating doubt. The aesthetic is the visual equivalent of well-pressed linen: crisp, light, free of wrinkle.\n\nThe system's restraint is its confidence. One deep navy carries all primary actions. One warm amber singles out every price — you always know where the money is. Surfaces stay near-white with just enough tonal layering to establish hierarchy without contrast shock. JetBrains Mono for Rupiah figures makes amounts read like precision instruments.\n\nWhat this system explicitly rejects: the dense gray chrome of legacy POS terminals; the gradients and mascots of consumer apps designed to entertain; the hero-metric templates and tracked-uppercase eyebrows of the SaaS dashboard monoculture; decorative animation or glassmorphism of any kind.",
+    "keyCharacteristics": [
+      "Light theme, high contrast — legible under glare on any tablet display",
+      "Single-brand-color discipline: navy for action, amber for money, neutral for everything else",
+      "Touch-first: 44px minimum tap target, reachable from any hand position",
+      "Fast motion (150–220ms) that never blocks input; full reduced-motion support",
+      "Indonesian-first copy and Rupiah formatting as the default, not a translation layer"
+    ],
+    "rules": [
+      { "name": "The Gradient-for-Action Rule", "body": "The navy→indigo gradient and indigo accent are reserved for action and emphasis: primary buttons, active nav, focus/selected states, hero headers, and headline metric tiles. Never as decoration on neutral content.", "section": "colors" },
+      { "name": "The Amber-for-Money Rule", "body": "The warm amber (--amount) is reserved exclusively for Rupiah amounts. The indigo accent never touches money. Using amber for non-financial emphasis is prohibited.", "section": "colors" },
+      { "name": "The Light-Workspace Rule", "body": "Data-entry surfaces (forms, tables, working cards) stay light and high-contrast. The dark navy chrome frames navigation and hero headers; it does not invade the workspace.", "section": "colors" },
+      { "name": "The Cool-Neutral Rule", "body": "All neutral surfaces and borders are tinted toward the brand's cool-blue hue. No cream, beige, or warm backgrounds.", "section": "colors" },
+      { "name": "The Mono-for-Money Rule", "body": "All Rupiah amounts render in JetBrains Mono with font-variant-numeric: tabular-nums. No exceptions.", "section": "typography" },
+      { "name": "The Scale Ceiling Rule", "body": "No heading inside the authenticated app shell exceeds 1.875rem. Display sizes are for login/splash only.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Any quantity, financial figure, order ID, or date column in a table uses font-variant-numeric: tabular-nums.", "section": "typography" },
+      { "name": "The Flat-by-Default Rule", "body": "Cards rest at Resting shadow. Shadow escalates only in response to interactive state. Decorative shadows on static elements are prohibited.", "section": "elevation" },
+      { "name": "The No-Ghost-Card Rule", "body": "A 1px border and a box-shadow with blur ≥ 16px are never used together on the same element.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use JetBrains Mono with font-variant-numeric: tabular-nums and the amber --amount token for every Rupiah figure.",
+      "Do keep motion to 150–220ms with cubic-bezier(0.16, 1, 0.3, 1). Slower motion blocks perceived responsiveness.",
+      "Do include prefers-reduced-motion fallbacks for every animation and transition.",
+      "Do use min-height: 44px (touch spacing token) for all tappable elements.",
+      "Do apply env(safe-area-inset-*) padding to full-bleed mobile surfaces.",
+      "Do use text-ink (not text-ink-muted) for paragraph-length body copy.",
+      "Do use font-variant-numeric: tabular-nums on quantity, date, and ID columns in tables.",
+      "Do use the semantic z-index scale: base(0) raised(10) dropdown(200) sticky(300) overlay(400) modal(500) toast(600) tooltip(700)."
+    ],
+    "donts": [
+      "Don't use clunky legacy POS aesthetics: dense gray screens, tiny fonts, beveled buttons, Windows-era chrome.",
+      "Don't spray the navy→indigo gradient or indigo accent on neutral content (plain cards, body text, table rows, page backgrounds). It belongs on action and emphasis only.",
+      "Don't let dark chrome invade the workspace: forms, data tables, and working cards stay light. Dark is for navigation and hero framing.",
+      "Don't use the generic AI-dashboard template: identical icon-grid cards, gradient body text, or tracked-uppercase eyebrow kickers above every section.",
+      "Don't add overdesigned elements that slow data entry: glassmorphism, decorative backdrop-filter, heavy entrance choreography.",
+      "Don't pair a 1px border with a box-shadow of blur ≥ 16px on the same element.",
+      "Don't round cards beyond rounded-xl (16px) inside the app shell.",
+      "Don't use a warm, cream, or sand page background.",
+      "Don't use border-left greater than 1px as a colored accent stripe on cards or list items.",
+      "Don't introduce a third hue. The palette is navy + indigo (action/emphasis, as a gradient pair) and amber (money).",
+      "Don't use decorative shadows on static, non-interactive elements.",
+      "Don't exceed 1.875rem for headings inside the authenticated shell."
+    ]
+  }
+}

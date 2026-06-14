@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Plus, Trash2, Lock, Clock } from 'lucide-react';
 import type { Employee, Client } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
 import { parseFooterNotes, renderFooterNotesHtml } from '../../services/receipt/footerNotes';
+import {
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Card,
+  SkeletonCard,
+  EmptyState,
+} from '../../components/ui';
 
 export interface ReceiptFormProps {
   employee: Employee;
@@ -42,6 +52,15 @@ const ITEM_TYPES = [
   { value: 'bedsheet', label: 'Seprai' },
   { value: 'other', label: 'Lainnya' },
 ];
+
+const makeInitialItem = (service?: ServiceItem): LineItem => ({
+  service_item_id: service?.id ?? '',
+  service_name: service?.name ?? '',
+  item_type: 'shirt',
+  quantity: 1,
+  price_per_item: service?.price ?? 10,
+  total_price: service?.price ?? 10,
+});
 
 export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onReceiptCreated }) => {
   const [items, setItems] = useState<LineItem[]>([
@@ -107,7 +126,8 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
 
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     const newItems = [...items];
-    (newItems[index] as Record<string, unknown>)[field] = value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (newItems[index] as any)[field] = value;
 
     // If service changed, update price and service name
     if (field === 'service_item_id') {
@@ -145,6 +165,13 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
     }
+  };
+
+  const resetForm = () => {
+    const firstService = serviceItems[0];
+    setItems([makeInitialItem(firstService)]);
+    setNotes('');
+    setDiscount(0);
   };
 
   const subtotal = items.reduce((total, item) => total + item.total_price, 0);
@@ -402,208 +429,228 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
   };
 
   if (loadingServices) {
-    return <div className="text-center py-8">Memuat layanan...</div>;
-  }
-
-  if (serviceItems.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-center py-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Belum Ada Layanan</h3>
-          <p className="text-gray-600 mb-6">
-            Anda perlu menambahkan layanan laundry terlebih dahulu sebelum membuat bon.
-          </p>
-          <p className="text-sm text-gray-500 mb-4">
-            Pergi ke menu "🧽 Kelola Layanan" untuk menambahkan layanan seperti:
-            <br />• Cuci Kemeja - Rp 8.000
-            <br />• Setrika Celana - Rp 5.000
-            <br />• Dry Clean Jas - Rp 25.000
-          </p>
-        </div>
+      <div className="space-y-3">
+        <SkeletonCard lines={4} />
+        <SkeletonCard lines={2} />
       </div>
     );
   }
 
+  if (serviceItems.length === 0) {
+    return (
+      <Card>
+        <EmptyState
+          title="Belum Ada Layanan"
+          description={
+            `Anda perlu menambahkan layanan laundry terlebih dahulu sebelum membuat bon. ` +
+            `Pergi ke menu "Kelola Layanan" untuk menambahkan layanan seperti Cuci Kemeja, Setrika Celana, atau Dry Clean Jas.`
+          }
+        />
+      </Card>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
-      {/* Mobile-optimized header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Bon Baru</h2>
-        <div className="text-left sm:text-right text-sm text-gray-600">
-          <div>Karyawan: {employee.name}</div>
-          <div>Pelanggan: {client.name}</div>
-          {items.length > 0 && (
-            <div className="mt-1 text-indigo-600 font-medium">
-              ⏰ Estimasi selesai: {calculateEstimatedCompletion()}
-            </div>
-          )}
+    <Card noPadding>
+      <div className="p-3 sm:p-6">
+        {/* Mobile-optimized header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-2xl font-bold text-ink mb-2 sm:mb-0">Bon Baru</h2>
+          <div className="text-left sm:text-right text-sm text-ink-muted">
+            <div>Karyawan: {employee.name}</div>
+            <div>Pelanggan: {client.name}</div>
+            {items.length > 0 && (
+              <div className="mt-1 text-brand-600 font-medium flex items-center gap-1 sm:justify-end">
+                <Clock size={14} className="shrink-0" />
+                Estimasi selesai: {calculateEstimatedCompletion()}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-3 sm:space-y-4">
-        {items.map((item, index) => (
-          <div key={index} className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-            {/* Mobile: Stack vertically, Desktop: Grid layout */}
-            <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-3">
+        <div className="space-y-3 sm:space-y-4">
+          {items.map((item, index) => (
+            <div key={index} className="bg-surface-sunken rounded-lg p-3 sm:p-4">
+              {/* Mobile: Stack vertically, Desktop: Grid layout */}
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-3">
 
-              {/* Service Selection - Full width on mobile */}
-              <div className="sm:col-span-5">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Layanan</label>
-                <select
-                  value={item.service_item_id}
-                  onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                >
-                  {serviceItems.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} - Rp{service.price.toLocaleString('id-ID')}/{service.unit}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Item Type and Quantity - Side by side on mobile */}
-              <div className="grid grid-cols-2 gap-2 sm:contents">
-                <div className="sm:col-span-3">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Barang</label>
-                  <select
-                    value={item.item_type}
-                    onChange={(e) => updateItem(index, 'item_type', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {ITEM_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="sm:col-span-1">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Qty</label>
-                  <input
-                    type="number"
-                    min="1"
-                    aria-label={`Jumlah ${item.service_name || 'layanan'}`}
-                    value={item.quantity}
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              {/* Price and Total - Side by side on mobile */}
-              <div className="grid grid-cols-2 gap-2 sm:contents">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Harga</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="500"
-                    aria-label={`Harga per item ${item.service_name || 'layanan'}`}
-                    value={item.price_per_item}
-                    onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                {/* Service Selection - Full width on mobile */}
+                <div className="sm:col-span-5">
+                  <Select
+                    label="Layanan"
+                    value={item.service_item_id}
+                    onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
+                    options={serviceItems.map((service) => ({
+                      value: service.id,
+                      label: `${service.name} - Rp${service.price.toLocaleString('id-ID')}/${service.unit}`,
+                    }))}
                   />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Total</label>
-                  <div className="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm font-bold text-green-700">
-                    Rp{item.total_price.toLocaleString('id-ID')}
+                {/* Item Type and Quantity - Side by side on mobile */}
+                <div className="grid grid-cols-2 gap-2 sm:contents">
+                  <div className="sm:col-span-3">
+                    <Select
+                      label="Barang"
+                      value={item.item_type}
+                      onChange={(e) => updateItem(index, 'item_type', e.target.value)}
+                      options={ITEM_TYPES}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <Input
+                      label="Qty"
+                      type="number"
+                      min="1"
+                      aria-label={`Jumlah ${item.service_name || 'layanan'}`}
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                    />
                   </div>
                 </div>
-              </div>
 
-              {/* Remove Button - Full width on mobile */}
-              <div className="sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-700 mb-1 sm:invisible">Hapus</label>
-                <button
-                  onClick={() => removeItem(index)}
-                  disabled={items.length === 1}
-                  className="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
-                >
-                  {items.length === 1 ? '🔒 Minimal 1' : '🗑️ Hapus'}
-                </button>
+                {/* Price and Total - Side by side on mobile */}
+                <div className="grid grid-cols-2 gap-2 sm:contents">
+                  <div className="sm:col-span-2">
+                    <Input
+                      label="Harga"
+                      type="number"
+                      min="0"
+                      step="500"
+                      aria-label={`Harga per item ${item.service_name || 'layanan'}`}
+                      value={item.price_per_item}
+                      onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-ink-muted mb-1.5">Total</label>
+                    <div className="w-full h-10 px-3 flex items-center bg-surface-raised border border-border rounded-lg text-sm">
+                      <span className="price">Rp{item.total_price.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Remove Button - Full width on mobile */}
+                <div className="sm:col-span-1">
+                  <label className="block text-sm font-semibold text-ink-muted mb-1.5 sm:invisible">Hapus</label>
+                  {items.length === 1 ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled
+                      className="w-full"
+                      icon={<Lock size={14} />}
+                    >
+                      Minimal 1
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => removeItem(index)}
+                      className="w-full"
+                      icon={<Trash2 size={14} />}
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {/* Add Item Button - More prominent on mobile */}
-        <button
-          onClick={addItem}
-          className="w-full py-4 sm:py-3 border-2 border-dashed border-indigo-300 text-indigo-600 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-colors font-medium text-base sm:text-sm"
-        >
-          ➕ Tambah Item Baru
-        </button>
+          {/* Add Item Button - More prominent on mobile */}
+          <Button
+            variant="outline"
+            onClick={addItem}
+            className="w-full py-4 sm:py-3 border-dashed"
+            icon={<Plus size={16} />}
+          >
+            Tambah Item Baru
+          </Button>
 
-        {/* Notes - Mobile optimized */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
-          <textarea
+          {/* Notes - Mobile optimized */}
+          <Textarea
+            label="Catatan (Opsional)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Instruksi khusus, tanggal ambil, dll."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
             rows={2}
           />
-        </div>
 
-        {/* Discount Section - Mobile optimized layout */}
-        <div className="bg-yellow-50 border border-yellow-200 p-3 sm:p-4 rounded-lg">
-          <h4 className="font-medium text-yellow-800 mb-3 text-sm">💰 Diskon (Opsional)</h4>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <label className="block text-xs font-medium text-yellow-700 mb-1">Diskon (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                aria-label="Diskon persen"
-                value={discount}
-                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-yellow-700 mb-1">Nilai Diskon</label>
-              <div className="w-full px-3 py-2 bg-yellow-100 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-800">
-                -Rp{discountAmount.toLocaleString('id-ID')}
+          {/* Discount Section - Mobile optimized layout */}
+          <div className="bg-surface-sunken border border-border p-3 sm:p-4 rounded-lg">
+            <h4 className="text-sm font-semibold text-ink mb-3">Diskon (Opsional)</h4>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <Input
+                  label="Diskon (%)"
+                  type="number"
+                  min="0"
+                  max="100"
+                  aria-label="Diskon persen"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ink-muted mb-1.5">Nilai Diskon</label>
+                <div className="w-full h-10 px-3 flex items-center bg-surface-raised border border-border rounded-lg text-sm">
+                  <span className="price">-Rp{discountAmount.toLocaleString('id-ID')}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Total Section - Prominent on mobile */}
-        <div className="bg-green-50 border-2 border-green-200 p-4 rounded-xl">
-          <div className="text-center sm:text-left">
-            <div className="text-sm text-green-700 mb-1">Subtotal: Rp{subtotal.toLocaleString('id-ID')}</div>
-            {discount > 0 && (
-              <div className="text-sm text-yellow-700 mb-1">Diskon ({discount}%): -Rp{discountAmount.toLocaleString('id-ID')}</div>
-            )}
-            <div className="text-xl sm:text-2xl font-bold text-green-800 border-t border-green-200 pt-2">
-              TOTAL: Rp{totalAmount.toLocaleString('id-ID')}
+          {/* Total Section — signature hero tile */}
+          <div className="metric-tile p-5">
+            <div className="text-center sm:text-left">
+              <div className="flex justify-between items-center text-sm text-on-dark-muted mb-1">
+                <span>Subtotal</span>
+                <span className="font-mono tabular-nums">Rp{subtotal.toLocaleString('id-ID')}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between items-center text-sm text-on-dark-muted mb-1">
+                  <span>Diskon ({discount}%)</span>
+                  <span className="font-mono tabular-nums">-Rp{discountAmount.toLocaleString('id-ID')}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-baseline border-t border-white/15 pt-2 mt-2">
+                <span className="text-sm font-semibold uppercase tracking-wider text-on-dark-muted">Total</span>
+                <span className="font-mono tabular-nums font-extrabold text-2xl sm:text-3xl text-on-dark">
+                  Rp{totalAmount.toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons - Mobile optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          <button
-            onClick={createReceipt}
-            disabled={loading || items.some((item) => !item.service_item_id)}
-            className="w-full bg-indigo-600 text-white py-4 sm:py-3 px-6 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium text-base sm:text-sm transition-colors"
-          >
-            {loading ? '🔄 Membuat Bon...' : '✅ Buat Bon'}
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full bg-gray-300 text-gray-700 py-4 sm:py-3 px-6 rounded-lg hover:bg-gray-400 font-medium text-base sm:text-sm transition-colors"
-          >
-            🔄 Reset Form
-          </button>
+          {/* Action Buttons - Mobile optimized */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={createReceipt}
+              disabled={items.some((item) => !item.service_item_id)}
+              loading={loading}
+              className="w-full"
+            >
+              Buat Bon
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={resetForm}
+              className="w-full"
+            >
+              Reset Form
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

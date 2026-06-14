@@ -1,7 +1,9 @@
 import React from 'react';
 import { toast } from 'sonner';
+import { Printer, X } from 'lucide-react';
 import { parseFooterNotes, renderFooterNotesHtml } from '../../services/receipt/footerNotes';
 import { formatDateTime } from '../../lib/format';
+import { Button, Badge } from '../../components/ui';
 
 export interface PrintReceiptProps {
   receiptData: Record<string, unknown>;
@@ -337,109 +339,96 @@ export const PrintReceipt: React.FC<PrintReceiptProps> = ({ receiptData, onClose
     total_price: number;
   }>;
 
-  return (
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Cetak bon">
-      {/* Full Screen Overlay - Only show the selected receipt */}
-      <div className="min-h-screen bg-white">
+  const statusVariant =
+    receiptData.status === 'completed' ? 'success' :
+    receiptData.status === 'ready' ? 'info' :
+    receiptData.status === 'pending' ? 'warning' : 'default';
+  const statusLabel =
+    receiptData.status === 'pending' ? 'Menunggu' :
+    receiptData.status === 'ready' ? 'Siap' :
+    receiptData.status === 'completed' ? 'Selesai' : receiptData.status as string;
 
-        {/* Print Header - Only show on screen */}
-        <div className="bg-gray-50 border-b px-6 py-4 sticky top-0 z-10">
-          <div className="flex justify-between items-center max-w-4xl mx-auto">
+  return (
+    <div className="fixed inset-0 bg-surface-sunken z-modal overflow-y-auto" role="dialog" aria-modal="true" aria-label="Cetak bon">
+      <div className="min-h-screen">
+
+        {/* Print Header — on-screen toolbar (dark chrome) */}
+        <div className="gradient-chrome border-b border-surface-inverse-overlay px-6 py-4 sticky top-0 z-raised">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 max-w-4xl mx-auto">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">🖨️ Print Receipt</h2>
-              <p className="text-sm text-gray-600">
-                Receipt for: <span className="font-semibold text-indigo-600">{receiptData.client_name as string}</span> •{' '}
-                Total: <span className="font-semibold text-green-600">Rp{(receiptData.total_amount as number).toLocaleString('id-ID')}</span> •
-                Date: <span className="font-semibold text-gray-700">{formatDateTime(receiptData.created_at as string)}</span>
+              <h2 className="text-xl font-extrabold text-on-dark">Cetak Bon</h2>
+              <p className="text-sm text-on-dark-muted">
+                {receiptData.client_name as string} ·{' '}
+                <span className="price">Rp{(receiptData.total_amount as number).toLocaleString('id-ID')}</span> ·{' '}
+                {formatDateTime(receiptData.created_at as string)}
               </p>
             </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handlePrint}
-                className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 flex items-center space-x-2 transition-colors text-lg font-medium"
-              >
-                <span>🖨️</span>
-                <span>Print Receipt</span>
-              </button>
-              <button
-                onClick={onClose}
-                className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 flex items-center space-x-2 transition-colors text-lg font-medium"
-              >
-                <span>✕</span>
-                <span>Close</span>
-              </button>
+            <div className="flex items-center gap-3">
+              <Button onClick={handlePrint} size="lg" icon={<Printer size={18} />}>Cetak Bon</Button>
+              <Button onClick={onClose} variant="secondary" size="lg" icon={<X size={18} />}>Tutup</Button>
             </div>
           </div>
         </div>
 
-        {/* Receipt Content - Centered and Focused */}
-        <div className="max-w-4xl mx-auto p-8">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
+        {/* Receipt Content — paper preview */}
+        <div className="max-w-4xl mx-auto p-4 sm:p-8">
+          <div className="bg-surface border border-border rounded-2xl shadow-lg p-6 sm:p-8">
 
             {/* Business Header */}
-            <div className="text-center border-b-2 border-gray-300 pb-6 mb-8">
-              {receiptData.logo_url && (
+            <div className="text-center border-b border-border pb-6 mb-8">
+              {Boolean(receiptData.logo_url) && (
                 <img src={receiptData.logo_url as string} alt="Logo" className="h-20 mx-auto mb-4" />
               )}
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">{receiptData.business_name as string}</h1>
-              <h2 className="text-xl font-semibold text-gray-600 mb-3">Layanan Laundry Profesional</h2>
-              <p className="text-gray-500">{receiptData.business_address as string}</p>
-              <p className="text-gray-500">Telepon: {receiptData.business_phone as string}</p>
-              {receiptData.business_email && (
-                <p className="text-gray-500">Email: {receiptData.business_email as string}</p>
+              <h1 className="text-3xl font-extrabold text-ink mb-2 tracking-tight">{receiptData.business_name as string}</h1>
+              <h2 className="text-lg font-semibold text-ink-muted mb-3">Layanan Laundry Profesional</h2>
+              <p className="text-ink-faint">{receiptData.business_address as string}</p>
+              <p className="text-ink-faint">Telepon: {receiptData.business_phone as string}</p>
+              {Boolean(receiptData.business_email) && (
+                <p className="text-ink-faint">Email: {receiptData.business_email as string}</p>
               )}
             </div>
 
             {/* Receipt Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-sm">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-bold text-gray-800 mb-3 uppercase tracking-wide">Receipt Information</h3>
-                <p className="mb-2"><strong>Receipt ID:</strong> #{(receiptData.receipt_id as string).slice(-8).toUpperCase()}</p>
-                <p className="mb-2"><strong>Date:</strong> {formatDateTime(receiptData.created_at as string)}</p>
-                <p className="mb-2">
-                  <strong>Status:</strong>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                    receiptData.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    receiptData.status === 'ready' ? 'bg-blue-100 text-blue-800' :
-                    receiptData.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {receiptData.status === 'pending' ? 'Menunggu' :
-                     receiptData.status === 'ready' ? 'Siap' :
-                     receiptData.status === 'completed' ? 'Selesai' : receiptData.status as string}
-                  </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-sm">
+              <div className="bg-surface-sunken p-4 rounded-xl">
+                <h3 className="font-bold text-ink-muted mb-3 uppercase tracking-wide text-xs">Informasi Bon</h3>
+                <p className="mb-2 text-ink"><strong className="text-ink-muted">ID Bon:</strong> #{(receiptData.receipt_id as string).slice(-8).toUpperCase()}</p>
+                <p className="mb-2 text-ink"><strong className="text-ink-muted">Tanggal:</strong> {formatDateTime(receiptData.created_at as string)}</p>
+                <p className="mb-2 flex items-center gap-2">
+                  <strong className="text-ink-muted">Status:</strong>
+                  <Badge variant={statusVariant}>{statusLabel}</Badge>
                 </p>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-bold text-gray-800 mb-3 uppercase tracking-wide">Customer Information</h3>
-                <p className="mb-2"><strong>Customer:</strong> {receiptData.client_name as string}</p>
-                <p className="mb-2"><strong>Phone:</strong> {receiptData.client_phone as string}</p>
-                <p className="mb-2"><strong>Served by:</strong> {receiptData.employee_name as string}</p>
+              <div className="bg-surface-sunken p-4 rounded-xl">
+                <h3 className="font-bold text-ink-muted mb-3 uppercase tracking-wide text-xs">Informasi Pelanggan</h3>
+                <p className="mb-2 text-ink"><strong className="text-ink-muted">Pelanggan:</strong> {receiptData.client_name as string}</p>
+                <p className="mb-2 text-ink"><strong className="text-ink-muted">Telepon:</strong> {receiptData.client_phone as string}</p>
+                <p className="mb-2 text-ink"><strong className="text-ink-muted">Dilayani:</strong> {receiptData.employee_name as string}</p>
               </div>
             </div>
 
             {/* Items Table */}
             <div className="mb-8">
-              <h3 className="font-bold text-gray-800 mb-4 uppercase tracking-wide">Service Items</h3>
+              <h3 className="font-bold text-ink-muted mb-4 uppercase tracking-wide text-xs">Item Layanan</h3>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-gray-100 border-b-2 border-gray-300">
-                      <th scope="col" className="text-left py-3 px-4 font-bold text-gray-800">Service</th>
-                      <th scope="col" className="text-left py-3 px-4 font-bold text-gray-800">Item Type</th>
-                      <th scope="col" className="text-center py-3 px-4 font-bold text-gray-800">Qty</th>
-                      <th scope="col" className="text-right py-3 px-4 font-bold text-gray-800">Unit Price</th>
-                      <th scope="col" className="text-right py-3 px-4 font-bold text-gray-800">Total</th>
+                    <tr className="bg-surface-sunken border-b border-border">
+                      <th scope="col" className="text-left py-3 px-4 font-semibold text-ink-muted text-xs uppercase tracking-wide">Layanan</th>
+                      <th scope="col" className="text-left py-3 px-4 font-semibold text-ink-muted text-xs uppercase tracking-wide">Barang</th>
+                      <th scope="col" className="text-center py-3 px-4 font-semibold text-ink-muted text-xs uppercase tracking-wide">Qty</th>
+                      <th scope="col" className="text-right py-3 px-4 font-semibold text-ink-muted text-xs uppercase tracking-wide">Harga</th>
+                      <th scope="col" className="text-right py-3 px-4 font-semibold text-ink-muted text-xs uppercase tracking-wide">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {receiptItems.map((item, index) => (
-                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="py-3 px-4 capitalize font-medium">{item.service.replace('_', ' ')}</td>
-                        <td className="py-3 px-4 capitalize text-gray-600">{item.item_type}</td>
-                        <td className="py-3 px-4 text-center font-medium">{item.quantity}</td>
-                        <td className="py-3 px-4 text-right text-gray-700">Rp{item.price_per_item.toLocaleString('id-ID')}</td>
-                        <td className="py-3 px-4 text-right font-bold text-green-600">Rp{item.total_price.toLocaleString('id-ID')}</td>
+                      <tr key={index} className="border-b border-border last:border-0 hover:bg-surface-sunken transition-colors">
+                        <td className="py-3 px-4 capitalize font-medium text-ink">{item.service.replace('_', ' ')}</td>
+                        <td className="py-3 px-4 capitalize text-ink-muted">{item.item_type}</td>
+                        <td className="py-3 px-4 text-center tabular-nums text-ink">{item.quantity}</td>
+                        <td className="py-3 px-4 text-right"><span className="price">Rp{item.price_per_item.toLocaleString('id-ID')}</span></td>
+                        <td className="py-3 px-4 text-right"><span className="price">Rp{item.total_price.toLocaleString('id-ID')}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -447,52 +436,53 @@ export const PrintReceipt: React.FC<PrintReceiptProps> = ({ receiptData, onClose
               </div>
             </div>
 
-            {/* Total Section */}
-            <div className="border-t-2 border-gray-300 pt-6 mb-8">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-gray-800">TOTAL AMOUNT:</span>
-                  <span className="text-4xl font-bold text-green-600">Rp{(receiptData.total_amount as number).toLocaleString('id-ID')}</span>
+            {/* Total Section — signature hero tile */}
+            <div className="mb-8">
+              <div className="metric-tile p-6">
+                <div className="flex justify-between items-baseline gap-3">
+                  <span className="text-lg font-semibold uppercase tracking-wider text-on-dark-muted">Total Bayar</span>
+                  <span className="font-mono tabular-nums font-extrabold text-3xl sm:text-4xl text-on-dark">
+                    Rp{(receiptData.total_amount as number).toLocaleString('id-ID')}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Notes */}
-            {receiptData.notes && (
-              <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-bold text-blue-900 mb-2 uppercase tracking-wide">Special Instructions:</h4>
-                <p className="text-blue-800">{receiptData.notes as string}</p>
+            {Boolean(receiptData.notes) && (
+              <div className="mb-8 p-4 bg-brand-50 rounded-xl">
+                <h4 className="font-bold text-brand-800 mb-2 uppercase tracking-wide text-xs">Instruksi Khusus</h4>
+                <p className="text-brand-700">{receiptData.notes as string}</p>
               </div>
             )}
 
             {/* Footer */}
-            <div className="text-center text-sm text-gray-500 border-t border-gray-200 pt-6">
+            <div className="text-center text-sm text-ink-muted border-t border-border pt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 {parseFooterNotes(receiptData.footer_notes as string).map((note, index) => (
-                  <p key={index} className="bg-gray-50 p-2 rounded">{note}</p>
+                  <p key={index} className="bg-surface-sunken p-2 rounded-lg">{note}</p>
                 ))}
               </div>
-              <p className="text-xs font-medium text-gray-600 mt-4">
-                🖨️ Dicetak pada: {formatDateTime(receiptData.print_timestamp as string)}
+              <p className="text-xs font-medium text-ink-faint mt-4">
+                Dicetak pada: {formatDateTime(receiptData.print_timestamp as string)}
               </p>
             </div>
 
             {/* Deleted Receipt Warning */}
-            {receiptData.is_deleted && (
-              <div className="mt-6 p-4 bg-red-100 border-2 border-red-400 rounded-lg text-center">
-                <p className="text-red-700 font-bold text-lg">⚠️ THIS RECEIPT HAS BEEN CANCELLED ⚠️</p>
-                <p className="text-red-600">This is a copy for record purposes only</p>
+            {Boolean(receiptData.is_deleted) && (
+              <div className="mt-6 p-4 bg-danger-light border border-danger/40 rounded-xl text-center">
+                <p className="text-danger-dark font-bold text-lg">BON INI TELAH DIBATALKAN</p>
+                <p className="text-danger">Salinan ini hanya untuk catatan</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Print Instructions - Only show on screen */}
-        <div className="bg-gray-100 border-t px-6 py-4">
+        {/* Print Instructions */}
+        <div className="bg-surface border-t border-border px-6 py-4">
           <div className="max-w-4xl mx-auto text-center">
-            <p className="text-sm text-gray-600">
-              💡 <strong>Tip:</strong> Click "Print Receipt" to open a dedicated print window with only this receipt.
-              The print will be clean and focused on this receipt only.
+            <p className="text-sm text-ink-muted">
+              <strong className="text-ink">Tip:</strong> Klik "Cetak Bon" untuk membuka jendela cetak khusus untuk bon ini saja.
             </p>
           </div>
         </div>

@@ -1,10 +1,7 @@
 import type { PaperWidth, Codepage, ReceiptPrintData } from '../types';
 import { COLS, labelValue, divider, formatIDR, formatReceiptDate } from './paper';
 import { renderFooterNotesText } from '../../receipt/footerNotes';
-
-// esc-pos-encoder is a CJS module; import as default
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const EscPosEncoderLib = require('esc-pos-encoder');
+import EscPosEncoderLib from 'esc-pos-encoder';
 
 export function buildReceiptBytes(
   data: ReceiptPrintData,

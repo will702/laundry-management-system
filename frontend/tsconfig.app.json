@@ -22,5 +22,5 @@
     "composite": true,
     "types": ["vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src", "../packages/shared-types/src"]
 }

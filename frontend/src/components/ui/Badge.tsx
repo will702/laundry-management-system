@@ -1,25 +1,46 @@
 import React from 'react';
-import { cn } from '../../lib/cn';
+import { cn } from '@/lib/cn';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
+type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'accent' | 'amount';
+type BadgeSize = 'sm' | 'md';
 
 const BADGE_STYLES: Record<BadgeVariant, string> = {
-  default: 'bg-gray-100 text-gray-700',
-  success: 'bg-success-light text-success',
-  warning: 'bg-warning-light text-warning',
-  danger:  'bg-danger-light text-danger',
-  info:    'bg-brand-100 text-brand-700',
+  default:  'bg-surface-overlay text-ink-muted',
+  success:  'bg-success-light text-success-dark',
+  warning:  'bg-warning-light text-warning-dark',
+  danger:   'bg-danger-light  text-danger-dark',
+  info:     'bg-brand-100 text-brand-700',
+  accent:   'bg-accent-100 text-accent-700',
+  amount:   'bg-amount-light text-amount font-mono font-medium',
+};
+
+const SIZES: Record<BadgeSize, string> = {
+  sm: 'px-2   py-0.5 text-xs',
+  md: 'px-2.5 py-0.5 text-sm',
 };
 
 interface BadgeProps {
   children: React.ReactNode;
   variant?: BadgeVariant;
+  size?: BadgeSize;
   className?: string;
 }
 
-export function Badge({ children, variant = 'default', className }: BadgeProps) {
+export function Badge({
+  children,
+  variant = 'default',
+  size = 'sm',
+  className,
+}: BadgeProps) {
   return (
-    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', BADGE_STYLES[variant], className)}>
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full font-semibold tracking-wide',
+        BADGE_STYLES[variant],
+        SIZES[size],
+        className,
+      )}
+    >
       {children}
     </span>
   );
