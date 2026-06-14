@@ -1,30 +1,79 @@
 import React from 'react';
-import { cn } from '../../lib/cn';
+import { cn } from '@/lib/cn';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  hint?: string;
+  /** Leading icon/adornment (avoids conflict with HTML `prefix` attribute) */
+  startIcon?: React.ReactNode;
+  /** Trailing icon/adornment */
+  endIcon?: React.ReactNode;
 }
 
-export function Input({ label, error, id, className, ...props }: InputProps) {
-  const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+export function Input({
+  label,
+  error,
+  hint,
+  id,
+  startIcon,
+  endIcon,
+  className,
+  ...props
+}: InputProps) {
+  const inputId = id ?? (label ? `input-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined);
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor={inputId}
+          className="text-sm font-semibold text-ink-muted"
+        >
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        {...props}
-        className={cn(
-          'border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500',
-          error ? 'border-red-400' : 'border-gray-300',
-          className,
+
+      <div className="relative flex items-center">
+        {startIcon && (
+          <span className="absolute left-3 flex items-center text-ink-faint pointer-events-none z-raised">
+            {startIcon}
+          </span>
         )}
-      />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+        <input
+          id={inputId}
+          {...props}
+          className={cn(
+            // base
+            'w-full rounded-lg border bg-surface text-ink text-sm',
+            'h-10 px-3',
+            'transition-colors duration-[150ms] ease-out',
+            'placeholder:text-ink-faint',
+            // states
+            'hover:border-border-strong',
+            'focus:outline-none focus:border-brand-500 focus:ring-brand',
+            // error state
+            error
+              ? 'border-danger focus:border-danger'
+              : 'border-border',
+            // icon padding
+            startIcon && 'pl-9',
+            endIcon   && 'pr-9',
+            className,
+          )}
+        />
+        {endIcon && (
+          <span className="absolute right-3 flex items-center text-ink-faint z-raised">
+            {endIcon}
+          </span>
+        )}
+      </div>
+
+      {(error || hint) && (
+        <p className={cn('text-xs', error ? 'text-danger' : 'text-ink-faint')}>
+          {error ?? hint}
+        </p>
+      )}
     </div>
   );
 }

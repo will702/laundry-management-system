@@ -1,5 +1,23 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Emergent.sh / AI agent scaffolding (not part of the app)
+.emergent/
+.agents/
+.claude/
+skills-lock.json
+.gitconfig
+
+# Stray nested Prisma output (accidental duplicate)
+backend/prisma/prisma/
+
+# Generated docs and test artifacts from legacy Emergent environment
+test_result.md
+DEPLOYMENT_CACHE_GUIDE.md
+PANDUAN_CATATAN_KAKI.md
+
+# CRA legacy build output
+frontend/build/
+
 # IDE and editors
 .idea/
 .vscode/

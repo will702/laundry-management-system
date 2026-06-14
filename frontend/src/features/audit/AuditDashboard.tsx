@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { ShieldCheck, Receipt, Trash2, FileText } from 'lucide-react';
 import { apiClient } from '../../services/api';
+import {
+  Card, PageHeader, Tabs, Badge, EmptyState, Money, SkeletonCard,
+} from '../../components/ui';
+import { staggerContainer, listItem } from '../../lib/motion';
 
 interface ReceiptSummary {
   client_name: string;
@@ -43,9 +49,7 @@ export const AuditDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeAuditTab, setActiveAuditTab] = useState<'summary' | 'deleted'>('summary');
 
-  useEffect(() => {
-    loadAuditData();
-  }, []);
+  useEffect(() => { loadAuditData(); }, []);
 
   const loadAuditData = async () => {
     try {
@@ -53,7 +57,6 @@ export const AuditDashboard: React.FC = () => {
         apiClient.get<EmployeeAuditData[]>('/audit/receipts-by-employee?include_deleted=true'),
         apiClient.get<DeletedReceipt[]>('/audit/deleted-receipts'),
       ]);
-
       setAuditData(summaryResponse.data);
       setDeletedReceipts(deletedResponse.data);
     } catch (err) {
@@ -63,187 +66,173 @@ export const AuditDashboard: React.FC = () => {
     }
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString('id-ID');
 
   if (loading) {
-    return <div className="text-center py-8">Loading audit data...</div>;
+    return (
+      <div className="space-y-4">
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={4} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          🔍 Fraud Prevention Audit Dashboard
-        </h2>
+      <PageHeader
+        kicker="Keamanan"
+        title="Audit & Pencegahan Fraud"
+        description="Jejak aktivitas karyawan dan riwayat bon yang dihapus."
+      />
 
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6" role="tablist" aria-label="Audit tabs">
-          <button
-            role="tab"
-            aria-selected={activeAuditTab === 'summary'}
-            aria-controls="audit-tab-panel"
-            onClick={() => setActiveAuditTab('summary')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeAuditTab === 'summary'
-                ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Employee Summary
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeAuditTab === 'deleted'}
-            aria-controls="audit-tab-panel"
-            onClick={() => setActiveAuditTab('deleted')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeAuditTab === 'deleted'
-                ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Deleted Receipts
-          </button>
-        </div>
-        <div id="audit-tab-panel" role="tabpanel" aria-live="polite">
+      <Tabs
+        id="audit"
+        value={activeAuditTab}
+        onChange={(v) => setActiveAuditTab(v as 'summary' | 'deleted')}
+        tabs={[
+          { value: 'summary', label: 'Ringkasan Karyawan' },
+          { value: 'deleted', label: 'Bon Dihapus' },
+        ]}
+      />
 
+      <div id="audit-tab-panel" role="tabpanel" aria-live="polite">
         {activeAuditTab === 'summary' && (
           <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg mb-6">
-              <h3 className="font-medium text-blue-900 mb-2">🛡️ Anti-Fraud Features Active</h3>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>✅ Every receipt creation is permanently linked to employee</li>
-                <li>✅ All deletions are tracked with reasons and timestamps</li>
-                <li>✅ Complete audit trail prevents unauthorized changes</li>
-                <li>✅ Employee activity monitoring and reporting</li>
+            <div className="rounded-xl bg-brand-50 p-4">
+              <h3 className="flex items-center gap-2 font-semibold text-brand-800 mb-2">
+                <ShieldCheck size={16} /> Fitur Anti-Fraud Aktif
+              </h3>
+              <ul className="text-sm text-brand-700 space-y-1 list-disc list-inside">
+                <li>Setiap pembuatan bon tertaut permanen ke karyawan</li>
+                <li>Semua penghapusan tercatat dengan alasan dan waktu</li>
+                <li>Jejak audit lengkap mencegah perubahan tak sah</li>
+                <li>Pemantauan dan pelaporan aktivitas karyawan</li>
               </ul>
             </div>
 
             {auditData && auditData.length > 0 ? (
-              <div className="grid gap-4">
+              <motion.div
+                className="grid gap-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
                 {auditData.map((empData) => (
-                  <div key={empData._id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">{empData.employee_name}</h3>
-                        <p className="text-sm text-gray-600">Employee ID: {empData._id}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-600">
-                          Rp{empData.total_amount.toLocaleString('id-ID')}
+                  <motion.div key={empData._id} variants={listItem}>
+                    <Card>
+                      <div className="flex justify-between items-start mb-4 gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-semibold text-ink">{empData.employee_name}</h3>
+                          <p className="text-xs text-ink-faint font-mono">ID: {empData._id}</p>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {empData.total_receipts} receipts • {empData.deleted_receipts} deleted
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <h4 className="font-medium mb-2">Recent Activity:</h4>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {empData.receipts.slice(0, 5).map((receipt, index) => (
-                          <div
-                            key={index}
-                            className={`flex justify-between text-sm ${
-                              receipt.is_deleted ? 'text-red-600' : 'text-gray-700'
-                            }`}
-                          >
-                            <span>
-                              {receipt.is_deleted ? '🗑️ ' : '📝 '}
-                              {receipt.client_name} - Rp
-                              {receipt.total_amount.toLocaleString('id-ID')}
-                            </span>
-                            <span className="text-xs">{formatDateTime(receipt.created_at)}</span>
+                        <div className="text-right shrink-0">
+                          <Money value={empData.total_amount} className="text-xl" />
+                          <div className="text-sm text-ink-muted">
+                            <span className="tabular-nums">{empData.total_receipts}</span> bon ·{' '}
+                            <span className="tabular-nums">{empData.deleted_receipts}</span> dihapus
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
-                  </div>
+
+                      <div className="rounded-lg bg-surface-sunken p-3">
+                        <h4 className="font-semibold text-ink-muted text-sm mb-2">Aktivitas Terbaru</h4>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {empData.receipts.slice(0, 5).map((receipt, index) => (
+                            <div
+                              key={index}
+                              className={`flex justify-between gap-2 text-sm ${receipt.is_deleted ? 'text-danger' : 'text-ink'}`}
+                            >
+                              <span className="flex items-center gap-1.5 min-w-0">
+                                {receipt.is_deleted ? <Trash2 size={13} className="shrink-0" /> : <Receipt size={13} className="shrink-0 text-ink-faint" />}
+                                <span className="truncate">{receipt.client_name}</span>
+                                <span className="price shrink-0">Rp {receipt.total_amount.toLocaleString('id-ID')}</span>
+                              </span>
+                              <span className="text-xs text-ink-faint shrink-0 tabular-nums">{formatDateTime(receipt.created_at)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                No audit data available yet. Create some receipts to see employee activity.
-              </div>
+              <Card>
+                <EmptyState title="Belum ada data audit" description="Buat beberapa bon untuk melihat aktivitas karyawan." />
+              </Card>
             )}
           </div>
         )}
 
         {activeAuditTab === 'deleted' && (
           <div className="space-y-4">
-            <div className="bg-red-50 p-4 rounded-lg mb-6">
-              <h3 className="font-medium text-red-900 mb-2">🗑️ Deleted Receipts Audit Trail</h3>
-              <p className="text-sm text-red-800">
-                All deleted receipts are preserved for fraud prevention. This ensures complete
-                transparency and prevents employees from hiding transactions.
+            <div className="rounded-xl bg-danger-light p-4">
+              <h3 className="flex items-center gap-2 font-semibold text-danger-dark mb-2">
+                <Trash2 size={16} /> Jejak Audit Bon Dihapus
+              </h3>
+              <p className="text-sm text-danger-dark/90">
+                Semua bon yang dihapus disimpan untuk pencegahan fraud, menjamin transparansi penuh
+                dan mencegah karyawan menyembunyikan transaksi.
               </p>
             </div>
 
             {deletedReceipts.length > 0 ? (
-              <div className="space-y-4">
+              <motion.div
+                className="space-y-4"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
                 {deletedReceipts.map((receipt) => (
-                  <div
-                    key={receipt.id}
-                    className="border border-red-200 bg-red-50 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-semibold text-lg">{receipt.client_name}</h3>
-                        <p className="text-sm text-gray-600">{receipt.client_phone}</p>
-                        <div className="text-xs text-gray-500 space-y-1">
-                          <p>
-                            📝 Created by: {receipt.employee_name} •{' '}
-                            {formatDateTime(receipt.created_at)}
-                          </p>
-                          <p className="text-red-600">
-                            🗑️ Deleted by: {receipt.deleted_by_employee_name} •{' '}
-                            {formatDateTime(receipt.deleted_at)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-red-600">
-                          Rp{receipt.total_amount.toLocaleString('id-ID')}
-                        </div>
-                        <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          DELETED
-                        </span>
-                      </div>
-                    </div>
-
-                    {receipt.deletion_reason && (
-                      <div className="mb-3 p-3 bg-yellow-50 rounded-lg">
-                        <p className="text-sm">
-                          <strong>Deletion Reason:</strong> {receipt.deletion_reason}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mb-3">
-                      <h4 className="text-sm font-medium mb-2">Items:</h4>
-                      <div className="space-y-1">
-                        {receipt.items.map((item, index) => (
-                          <div key={index} className="text-sm text-gray-600 flex justify-between">
-                            <span>
-                              {item.quantity}x {item.item_type} ({item.service})
-                            </span>
-                            <span>Rp{item.total_price.toLocaleString('id-ID')}</span>
+                  <motion.div key={receipt.id} variants={listItem}>
+                    <Card className="border-danger/30">
+                      <div className="flex justify-between items-start mb-3 gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-lg text-ink">{receipt.client_name}</h3>
+                          <p className="text-sm text-ink-muted">{receipt.client_phone}</p>
+                          <div className="text-xs text-ink-faint space-y-0.5 mt-1">
+                            <p>Dibuat oleh: {receipt.employee_name} · {formatDateTime(receipt.created_at)}</p>
+                            <p className="text-danger">Dihapus oleh: {receipt.deleted_by_employee_name} · {formatDateTime(receipt.deleted_at)}</p>
                           </div>
-                        ))}
+                        </div>
+                        <div className="text-right shrink-0 space-y-1">
+                          <Money value={receipt.total_amount} className="text-lg" />
+                          <div><Badge variant="danger">DIHAPUS</Badge></div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+
+                      {receipt.deletion_reason && (
+                        <div className="mb-3 p-3 rounded-lg bg-warning-light">
+                          <p className="text-sm text-warning-dark">
+                            <strong>Alasan Penghapusan:</strong> {receipt.deletion_reason}
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <h4 className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted mb-2">
+                          <FileText size={13} /> Item
+                        </h4>
+                        <div className="space-y-1">
+                          {receipt.items.map((item, index) => (
+                            <div key={index} className="text-sm text-ink-muted flex justify-between gap-2">
+                              <span>{item.quantity}x {item.item_type} ({item.service})</span>
+                              <span className="price">Rp {item.total_price.toLocaleString('id-ID')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                No deleted receipts found. This is good - it means no receipts have been deleted.
-              </div>
+              <Card>
+                <EmptyState title="Tidak ada bon dihapus" description="Bagus - belum ada bon yang dihapus." />
+              </Card>
             )}
           </div>
         )}
-        </div>
       </div>
     </div>
   );

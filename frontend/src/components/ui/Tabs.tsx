@@ -62,12 +62,12 @@ export function Tabs({ tabs, value, onChange, className, id }: TabsProps) {
             onClick={() => onChange(tab.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'relative inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md',
+              'relative inline-flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold rounded-md',
               'transition-colors duration-[150ms] ease-out',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
               'select-none',
               isActive
-                ? 'text-brand-700'
+                ? 'text-white'
                 : 'text-ink-muted hover:text-ink',
             )}
           >
@@ -75,7 +75,7 @@ export function Tabs({ tabs, value, onChange, className, id }: TabsProps) {
             {isActive && (
               <motion.span
                 layoutId={`tabs-active-pill-${id ?? 'default'}`}
-                className="absolute inset-0 bg-surface shadow-sm rounded-md"
+                className="absolute inset-0 gradient-brand shadow-glow-sm rounded-md"
                 transition={{ type: 'spring', stiffness: 500, damping: 40, mass: 0.8 }}
                 aria-hidden="true"
               />

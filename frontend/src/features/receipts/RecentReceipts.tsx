@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Printer, Trash2, Clock, CheckCircle, ListChecks, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import type { Employee } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
 import { formatDateTime } from '../../lib/format';
 import { PrintReceipt } from './PrintReceipt';
+import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { SkeletonCard } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { staggerContainer, listItem } from '../../lib/motion';
+import { cn } from '../../lib/cn';
 
 export interface RecentReceiptsProps {
   employee: Employee;
@@ -32,29 +42,30 @@ interface LegacyReceipt {
   items: LegacyReceiptItem[];
 }
 
-const getStatusColor = (status: string): string => {
+type StatusVariant = 'success' | 'warning' | 'info' | 'danger' | 'default';
+
+function getStatusBadge(status: string): { label: string; variant: StatusVariant } {
   switch (status) {
-    case 'pending': return 'bg-yellow-100 text-yellow-800';
-    case 'ready': return 'bg-blue-100 text-blue-800';
-    case 'completed': return 'bg-green-100 text-green-800';
-    case 'deleted': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'pending':   return { label: 'Menunggu',  variant: 'warning' };
+    case 'ready':     return { label: 'Siap',       variant: 'info'    };
+    case 'completed': return { label: 'Selesai',    variant: 'success' };
+    case 'deleted':   return { label: 'Dihapus',    variant: 'danger'  };
+    default:          return { label: status,        variant: 'default' };
   }
-};
+}
 
 export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
-  const [receipts, setReceipts] = useState<LegacyReceipt[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showDeleted, setShowDeleted] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [receiptToDelete, setReceiptToDelete] = useState<LegacyReceipt | null>(null);
-  const [deleteReason, setDeleteReason] = useState('');
+  const [receipts, setReceipts]             = useState<LegacyReceipt[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [showDeleted, setShowDeleted]       = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen]   = useState(false);
+  const [receiptToDelete, setReceiptToDelete]   = useState<LegacyReceipt | null>(null);
+  const [deleteReason, setDeleteReason]     = useState('');
+  const [deleting, setDeleting]             = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printReceiptData, setPrintReceiptData] = useState<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    loadReceipts();
-  }, [showDeleted]);
+  useEffect(() => { loadReceipts(); }, [showDeleted]);
 
   const loadReceipts = async () => {
     setLoading(true);
@@ -63,8 +74,8 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
         `/receipts?limit=50&include_deleted=${showDeleted}`
       );
       setReceipts(response.data);
-    } catch (err) {
-      console.error('Error loading receipts:', err);
+    } catch {
+      // non-fatal
     } finally {
       setLoading(false);
     }
@@ -74,9 +85,8 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
     try {
       await apiClient.put(`/receipts/${receiptId}/status?status=${newStatus}&employee_id=${employee.id}`);
       loadReceipts();
-    } catch (err) {
-      console.error('Error updating status:', err);
-      toast.error('Error memperbarui status. Silakan coba lagi.');
+    } catch {
+      toast.error('Gagal memperbarui status. Silakan coba lagi.');
     }
   };
 
@@ -85,7 +95,6 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
     setDeleteModalOpen(true);
     setDeleteReason('');
   };
-
   const closeDeleteModal = () => {
     setDeleteModalOpen(false);
     setReceiptToDelete(null);
@@ -93,241 +102,257 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
   };
 
   const confirmDelete = async () => {
-    if (!deleteReason.trim()) {
-      toast.error('Harap berikan alasan penghapusan');
-      return;
-    }
-
+    if (!deleteReason.trim()) { toast.error('Harap berikan alasan penghapusan'); return; }
+    setDeleting(true);
     try {
       await apiClient.delete(`/receipts/${receiptToDelete!.id}`, {
-        data: {
-          employee_id: employee.id,
-          deletion_reason: deleteReason,
-        },
+        data: { employee_id: employee.id, deletion_reason: deleteReason },
       });
-
       closeDeleteModal();
       loadReceipts();
       toast.success('Bon berhasil dihapus');
-    } catch (err) {
-      console.error('Error deleting receipt:', err);
-      toast.error('Error menghapus bon. Silakan coba lagi.');
+    } catch {
+      toast.error('Gagal menghapus bon. Silakan coba lagi.');
+    } finally {
+      setDeleting(false);
     }
   };
 
   const openPrintModal = async (receipt: LegacyReceipt) => {
-    console.log('🖨️ [Print] Opening print modal for receipt:', receipt.id);
     try {
-      console.log('📡 [Print] Fetching print data from API...');
       const response = await apiClient.get<Record<string, unknown>>(`/receipts/${receipt.id}/print`);
-      console.log('✅ [Print] Print data fetched successfully:', response.data);
-
       setPrintReceiptData(response.data);
       setPrintModalOpen(true);
-      console.log('✅ [Print] Print modal opened');
-    } catch (err) {
-      console.error('❌ [Print] Error loading print data:', err);
-      toast.error('Error menyiapkan bon untuk cetak. Silakan coba lagi.');
+    } catch {
+      toast.error('Gagal menyiapkan bon untuk cetak.');
     }
   };
-
-  const closePrintModal = () => {
-    setPrintModalOpen(false);
-    setPrintReceiptData(null);
-  };
-
-  if (loading) {
-    return <div className="text-center py-8">Memuat bon...</div>;
-  }
+  const closePrintModal = () => { setPrintModalOpen(false); setPrintReceiptData(null); };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Manajemen Bon</h2>
-
-        <div className="flex items-center space-x-4">
-          <label className="flex items-center space-x-2">
+    <div>
+      <PageHeader
+        title="Semua Bon"
+        description={`${receipts.length} bon${showDeleted ? ' (termasuk dihapus)' : ''}`}
+        action={
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <span className="text-xs font-semibold text-ink-muted">Tampilkan dihapus</span>
             <input
               type="checkbox"
               checked={showDeleted}
               onChange={(e) => setShowDeleted(e.target.checked)}
-              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
+              className="sr-only"
             />
-            <span className="text-sm text-gray-700">Tampilkan yang Dihapus</span>
+            <div className={cn(
+              'relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-[150ms]',
+              showDeleted ? 'bg-brand-600' : 'bg-border',
+            )}>
+              <span className={cn(
+                'inline-block h-3.5 w-3.5 rounded-full bg-white shadow',
+                'transition-transform duration-[150ms]',
+                showDeleted ? 'translate-x-4' : 'translate-x-0.5',
+              )} />
+            </div>
           </label>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="space-y-4">
-        {receipts.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            {showDeleted ? 'Tidak ada bon yang dihapus.' : 'Tidak ada bon ditemukan. Buat bon pertama Anda!'}
-          </div>
-        ) : (
-          receipts.map((receipt) => (
-            <div
-              key={receipt.id}
-              className={`border rounded-lg p-4 transition-shadow ${
-                receipt.is_deleted ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:shadow-md'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold text-lg">{receipt.client_name}</h3>
-                  <p className="text-sm text-gray-600">{receipt.client_phone}</p>
-                  <p className="text-xs text-gray-500">
-                    Dibuat oleh: {receipt.employee_name} • {formatDateTime(receipt.created_at)}
-                  </p>
-                  {receipt.is_deleted && receipt.deleted_at && (
-                    <p className="text-xs text-red-600 font-medium">
-                      🗑️ Dihapus oleh: {receipt.deleted_by_employee_name} • {formatDateTime(receipt.deleted_at)}
-                      {receipt.deletion_reason && ` • Alasan: ${receipt.deletion_reason}`}
+      {/* Receipt list */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} lines={3} />)}
+        </div>
+      ) : receipts.length === 0 ? (
+        <EmptyState
+          icon={<ListChecks size={24} />}
+          title={showDeleted ? 'Tidak ada bon yang dihapus' : 'Belum ada bon'}
+          description={showDeleted ? undefined : 'Buat bon baru untuk memulai.'}
+        />
+      ) : (
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="space-y-3"
+        >
+          {receipts.map((receipt) => {
+            const { label: statusLabel, variant: statusVariant } = getStatusBadge(receipt.status);
+            return (
+              <motion.div
+                key={receipt.id}
+                variants={listItem}
+                className={cn(
+                  'bg-surface rounded-xl border shadow-xs',
+                  'transition-shadow duration-[150ms]',
+                  receipt.is_deleted
+                    ? 'border-danger-light bg-danger-light/30'
+                    : 'border-border hover:shadow-sm',
+                )}
+              >
+                <div className="p-4 md:p-5">
+                  {/* Top row: client + amount/status */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-ink text-base truncate">{receipt.client_name}</p>
+                      {receipt.client_phone && (
+                        <p className="text-xs text-ink-muted mt-0.5">{receipt.client_phone}</p>
+                      )}
+                      <p className="text-xs text-ink-faint mt-0.5">
+                        {receipt.employee_name} · {formatDateTime(receipt.created_at)}
+                      </p>
+                      {receipt.is_deleted && receipt.deleted_at && (
+                        <p className="text-xs text-danger font-medium mt-1">
+                          Dihapus oleh {receipt.deleted_by_employee_name} · {formatDateTime(receipt.deleted_at)}
+                          {receipt.deletion_reason && ` — ${receipt.deletion_reason}`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <span className="price text-lg">
+                        Rp{receipt.total_amount.toLocaleString('id-ID')}
+                      </span>
+                      <Badge variant={statusVariant} size="sm">
+                        {statusLabel}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  {receipt.items.length > 0 && (
+                    <div className="mb-3 space-y-1">
+                      {receipt.items.map((item, i) => (
+                        <div key={i} className="flex justify-between text-sm text-ink-muted">
+                          <span>{item.quantity}× {item.item_type} ({item.service})</span>
+                          <span className="font-mono text-xs">
+                            Rp{item.total_price.toLocaleString('id-ID')}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {receipt.notes && (
+                    <p className="text-xs text-ink-muted mb-3 italic">
+                      {receipt.notes}
                     </p>
                   )}
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-green-600">Rp{receipt.total_amount.toLocaleString('id-ID')}</div>
-                  {(() => {
-                    const statusLabel =
-                      receipt.status === 'pending' ? 'menunggu' :
-                      receipt.status === 'ready' ? 'siap' :
-                      receipt.status === 'completed' ? 'selesai' :
-                      receipt.status === 'deleted' ? 'dihapus' : receipt.status;
-                    return (
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(receipt.status)}`}
-                        aria-label={`Status: ${statusLabel}`}
-                      >
-                        {statusLabel}
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
 
-              <div className="mb-3">
-                <h4 className="text-sm font-medium mb-2">Item:</h4>
-                <div className="space-y-1">
-                  {receipt.items.map((item, index) => (
-                    <div key={index} className="text-sm text-gray-600 flex justify-between">
-                      <span>{item.quantity}x {item.item_type} ({item.service})</span>
-                      <span>Rp{item.total_price.toLocaleString('id-ID')}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                  {/* Action buttons */}
+                  <div className="flex gap-2 flex-wrap pt-1">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<Printer size={14} />}
+                      onClick={() => openPrintModal(receipt)}
+                    >
+                      Cetak
+                    </Button>
 
-              {receipt.notes && (
-                <div className="mb-3 text-sm text-gray-600">
-                  <strong>Catatan:</strong> {receipt.notes}
-                </div>
-              )}
-
-              <div className="flex gap-2 flex-wrap">
-                {/* Print button - always available */}
-                <button
-                  onClick={() => openPrintModal(receipt)}
-                  className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
-                  title={`Print receipt for ${receipt.client_name} - Rp${receipt.total_amount.toLocaleString('id-ID')}`}
-                >
-                  🖨️ Cetak
-                </button>
-
-                {/* Status management buttons - only for non-deleted receipts */}
-                {!receipt.is_deleted && (
-                  <>
-                    {receipt.status === 'pending' && (
-                      <button
-                        onClick={() => updateStatus(receipt.id, 'ready')}
-                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                      >
-                        Tandai Siap
-                      </button>
+                    {!receipt.is_deleted && (
+                      <>
+                        {receipt.status === 'pending' && (
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            icon={<Clock size={14} />}
+                            onClick={() => updateStatus(receipt.id, 'ready')}
+                          >
+                            Tandai Siap
+                          </Button>
+                        )}
+                        {receipt.status === 'ready' && (
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            icon={<CheckCircle size={14} />}
+                            onClick={() => updateStatus(receipt.id, 'completed')}
+                          >
+                            Selesai
+                          </Button>
+                        )}
+                        {receipt.status !== 'completed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={<Trash2 size={14} />}
+                            onClick={() => openDeleteModal(receipt)}
+                            className="text-danger hover:bg-danger-light hover:text-danger"
+                          >
+                            Hapus
+                          </Button>
+                        )}
+                      </>
                     )}
-                    {receipt.status === 'ready' && (
-                      <button
-                        onClick={() => updateStatus(receipt.id, 'completed')}
-                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                      >
-                        Selesai
-                      </button>
-                    )}
-                    {receipt.status !== 'completed' && (
-                      <button
-                        onClick={() => openDeleteModal(receipt)}
-                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                      >
-                        Hapus
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Delete Confirmation Modal */}
-      {deleteModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Hapus Bon</h3>
-
-              <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>⚠️ Penting:</strong> Tindakan ini akan dilacak untuk tujuan audit.
-                  Bon akan ditandai sebagai dihapus tetapi disimpan dalam sistem untuk pencegahan penipuan.
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm text-gray-700 mb-2">
-                  <strong>Bon:</strong> {receiptToDelete?.client_name} - Rp{receiptToDelete?.total_amount.toLocaleString('id-ID')}
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Alasan penghapusan: <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={deleteReason}
-                  onChange={(e) => setDeleteReason(e.target.value)}
-                  placeholder="Contoh: Pelanggan salah, jumlah salah, duplikat..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={confirmDelete}
-                  disabled={!deleteReason.trim()}
-                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Hapus Bon
-                </button>
-                <button
-                  onClick={closeDeleteModal}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       )}
 
-      {/* Print Modal */}
+      {/* Delete confirmation modal */}
+      <Modal
+        open={deleteModalOpen}
+        onClose={closeDeleteModal}
+        title="Hapus Bon"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div className="flex gap-3 p-3 bg-warning-light rounded-xl">
+            <AlertTriangle size={16} className="text-warning shrink-0 mt-0.5" />
+            <p className="text-xs text-warning-dark leading-relaxed">
+              Tindakan ini akan dilacak untuk audit. Bon tidak dihapus permanen —
+              hanya ditandai dihapus untuk pencegahan penipuan.
+            </p>
+          </div>
+
+          {receiptToDelete && (
+            <p className="text-sm text-ink">
+              <span className="font-semibold">{receiptToDelete.client_name}</span>
+              {' — '}
+              <span className="price">Rp{receiptToDelete.total_amount.toLocaleString('id-ID')}</span>
+            </p>
+          )}
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-ink-muted">
+              Alasan penghapusan <span className="text-danger">*</span>
+            </label>
+            <textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Contoh: Pelanggan salah, jumlah salah, duplikat..."
+              className={cn(
+                'w-full rounded-lg border border-border bg-surface text-sm text-ink',
+                'px-3 py-2.5 resize-none',
+                'focus:outline-none focus:border-brand-500 focus:ring-brand',
+                'placeholder:text-ink-faint',
+              )}
+              rows={3}
+            />
+          </div>
+
+          <div className="flex gap-2.5 justify-end">
+            <Button variant="secondary" size="sm" onClick={closeDeleteModal}>
+              Batal
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              loading={deleting}
+              disabled={!deleteReason.trim()}
+              onClick={confirmDelete}
+            >
+              Hapus Bon
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Print modal */}
       {printModalOpen && printReceiptData && (
-        <PrintReceipt
-          receiptData={printReceiptData}
-          onClose={closePrintModal}
-        />
+        <PrintReceipt receiptData={printReceiptData} onClose={closePrintModal} />
       )}
     </div>
   );

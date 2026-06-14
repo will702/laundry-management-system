@@ -1,16 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
-  BarChart, Bar, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, Area, AreaChart,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { TrendingUp, Receipt, Wallet, Users } from 'lucide-react';
 import { reportsApi } from '../../services/api';
 import type { DailySalesReport, MonthlySalesReport } from '@mass-laundry/shared-types';
-import { Card } from '../../components/ui/Card';
+import {
+  Card, PageHeader, Tabs, StatCard, Badge, Money,
+  Table, THead, TBody, Tr, Th, Td, EmptyState,
+} from '../../components/ui';
+import { staggerContainer } from '../../lib/motion';
 import { formatIDR } from '../../lib/format';
 import { ExcelReportExport } from './ExcelReportExport';
 import { toast } from 'sonner';
 
 type ReportTab = 'daily' | 'monthly' | 'export';
+
+// Token-derived chart colors (oklch literals so recharts can consume them)
+const CHART = {
+  brand: 'oklch(0.45 0.18 264)',
+  accent: 'oklch(0.62 0.20 277)',
+  grid: 'oklch(0.90 0.010 255)',
+  tick: 'oklch(0.45 0.022 257)',
+};
 
 // Format a date string YYYY-MM-DD to short Indonesian (e.g. "Sen, 10 Jun")
 function shortDate(dateStr: string): string {
@@ -24,18 +38,21 @@ function monthName(month: number): string {
   return new Date(2000, month - 1, 1).toLocaleDateString('id-ID', { month: 'long' });
 }
 
-// Custom tooltip for charts
+// Custom tooltip for charts — uses design tokens
 function IDRTooltip({ active, payload, label }: {
   active?: boolean; payload?: Array<{ value: number }>; label?: string;
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg text-sm">
-      <p className="font-medium text-gray-700 mb-1">{label}</p>
-      <p className="text-brand-600 font-semibold">{formatIDR(payload[0].value)}</p>
+    <div className="bg-surface border border-border rounded-lg p-3 shadow-md text-sm">
+      <p className="font-semibold text-ink-muted mb-1">{label}</p>
+      <p className="price text-base">{formatIDR(payload[0].value)}</p>
     </div>
   );
 }
+
+const statusVariant = (status: string) =>
+  status === 'completed' ? 'success' : status === 'ready' ? 'info' : 'warning';
 
 export function AnalyticsDashboard() {
   const [activeTab, setActiveTab] = useState<ReportTab>('daily');
@@ -57,7 +74,6 @@ export function AnalyticsDashboard() {
   const [monthlyReport, setMonthlyReport] = useState<MonthlySalesReport | null>(null);
   const [monthlyLoading, setMonthlyLoading] = useState(false);
 
-  // Load daily report
   const loadDaily = useCallback(async (date: string) => {
     setDailyLoading(true);
     try {
@@ -70,7 +86,6 @@ export function AnalyticsDashboard() {
     }
   }, []);
 
-  // Load last 7 days for the bar chart
   const loadWeek = useCallback(async () => {
     setWeekLoading(true);
     try {
@@ -92,7 +107,6 @@ export function AnalyticsDashboard() {
     }
   }, []);
 
-  // Load monthly report
   const loadMonthly = useCallback(async (year: number, month: number) => {
     setMonthlyLoading(true);
     try {
@@ -109,51 +123,54 @@ export function AnalyticsDashboard() {
   useEffect(() => { loadWeek(); }, [loadWeek]);
   useEffect(() => { loadMonthly(selectedYear, selectedMonth); }, [selectedYear, selectedMonth, loadMonthly]);
 
+  const dateInputClass =
+    'h-9 rounded-lg border border-border bg-surface px-3 text-sm text-ink ' +
+    'focus:outline-none focus:border-brand-500 focus:ring-brand';
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Laporan &amp; Analitik</h2>
-      </div>
+      <PageHeader kicker="Analitik" title="Laporan & Penjualan" description="Pantau pendapatan harian dan bulanan secara langsung." />
 
-      {/* Sub-tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit" role="tablist" aria-label="Tab laporan">
-        {([['daily', 'Harian'], ['monthly', 'Bulanan'], ['export', 'Ekspor']] as [ReportTab, string][]).map(([tab, label]) => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab
-                ? 'bg-white text-brand-700 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        id="reports"
+        value={activeTab}
+        onChange={(v) => setActiveTab(v as ReportTab)}
+        tabs={[
+          { value: 'daily', label: 'Harian' },
+          { value: 'monthly', label: 'Bulanan' },
+          { value: 'export', label: 'Ekspor' },
+        ]}
+      />
 
       {/* Daily tab */}
       {activeTab === 'daily' && (
         <div className="space-y-5" role="tabpanel" aria-live="polite">
           {/* 7-day bar chart */}
           <Card>
-            <h3 className="font-semibold text-gray-800 mb-4">Pendapatan 7 Hari Terakhir</h3>
+            <h3 className="font-bold text-ink mb-4">Pendapatan 7 Hari Terakhir</h3>
             {weekLoading ? (
-              <div className="h-48 flex items-center justify-center text-gray-400">Memuat...</div>
+              <div className="h-48 flex items-center justify-center text-ink-faint">Memuat...</div>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={weekData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <defs>
+                    <linearGradient id="barBrand" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART.accent} />
+                      <stop offset="100%" stopColor={CHART.brand} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: CHART.tick }} axisLine={{ stroke: CHART.grid }} tickLine={false} />
                   <YAxis
                     tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: CHART.tick }}
                     width={45}
+                    axisLine={false}
+                    tickLine={false}
                   />
-                  <Tooltip content={(props) => <IDRTooltip {...(props as React.ComponentProps<typeof IDRTooltip>)} />} />
-                  <Bar dataKey="revenue" name="Pendapatan" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  <Tooltip cursor={{ fill: 'oklch(0.62 0.20 277 / 0.08)' }} content={(props) => <IDRTooltip {...(props as any)} />} />
+                  <Bar dataKey="revenue" name="Pendapatan" fill="url(#barBrand)" radius={[6, 6, 0, 0]} animationDuration={700} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -161,68 +178,60 @@ export function AnalyticsDashboard() {
 
           {/* Date picker + daily summary */}
           <Card>
-            <div className="flex items-center gap-4 mb-4">
-              <h3 className="font-semibold text-gray-800">Detail Harian</h3>
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
+              <h3 className="font-bold text-ink">Detail Harian</h3>
               <input
                 type="date"
                 value={dailyDate}
                 max={today}
                 onChange={(e) => setDailyDate(e.target.value)}
                 aria-label="Pilih tanggal laporan"
-                className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className={dateInputClass}
               />
             </div>
 
             {dailyLoading ? (
-              <div className="py-8 text-center text-gray-400">Memuat...</div>
+              <div className="py-8 text-center text-ink-faint">Memuat...</div>
             ) : dailyReport ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {/* KPI row */}
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { label: 'Total Bon', value: String(dailyReport.receiptCount) },
-                    { label: 'Subtotal', value: formatIDR(dailyReport.totalSubtotalCents) },
-                    { label: 'Pendapatan', value: formatIDR(dailyReport.totalRevenueCents) },
-                  ].map((kpi) => (
-                    <div key={kpi.label} className="bg-brand-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-brand-600 font-medium">{kpi.label}</p>
-                      <p className="text-lg font-bold text-brand-800 mt-1">{kpi.value}</p>
-                    </div>
-                  ))}
-                </div>
+                <motion.div
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <StatCard featured label="Pendapatan" value={dailyReport.totalRevenueCents} money icon={<Wallet size={20} />} />
+                  <StatCard label="Total Bon" value={dailyReport.receiptCount} accent="brand" icon={<Receipt size={16} />} />
+                  <StatCard label="Subtotal" value={dailyReport.totalSubtotalCents} money accent="amount" icon={<TrendingUp size={16} />} />
+                </motion.div>
 
                 {/* Receipt list */}
                 {dailyReport.receipts.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th scope="col" className="text-left py-2 text-gray-600 font-medium">Pelanggan</th>
-                          <th scope="col" className="text-left py-2 text-gray-600 font-medium">Kasir</th>
-                          <th scope="col" className="text-right py-2 text-gray-600 font-medium">Total</th>
-                          <th scope="col" className="text-left py-2 text-gray-600 font-medium">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dailyReport.receipts.map((r) => (
-                          <tr key={r.id} className="border-b last:border-0 hover:bg-gray-50">
-                            <td className="py-2">{r.clientName}</td>
-                            <td className="py-2 text-gray-600">{r.employeeName}</td>
-                            <td className="py-2 text-right font-medium">{formatIDR(r.totalAmountCents)}</td>
-                            <td className="py-2">
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                r.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                r.status === 'ready' ? 'bg-blue-100 text-blue-700' :
-                                'bg-yellow-100 text-yellow-700'
-                              }`}>{r.status}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table>
+                    <THead>
+                      <Tr noHover>
+                        <Th>Pelanggan</Th>
+                        <Th>Kasir</Th>
+                        <Th numeric>Total</Th>
+                        <Th>Status</Th>
+                      </Tr>
+                    </THead>
+                    <TBody>
+                      {dailyReport.receipts.map((r) => (
+                        <Tr key={r.id}>
+                          <Td className="font-medium">{r.clientName}</Td>
+                          <Td className="text-ink-muted">{r.employeeName}</Td>
+                          <Td numeric><Money value={r.totalAmountCents} /></Td>
+                          <Td>
+                            <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </TBody>
+                  </Table>
                 ) : (
-                  <p className="text-center py-6 text-gray-400">Tidak ada bon pada tanggal ini</p>
+                  <EmptyState title="Belum ada bon" description="Tidak ada bon pada tanggal ini." />
                 )}
               </div>
             ) : null}
@@ -233,15 +242,14 @@ export function AnalyticsDashboard() {
       {/* Monthly tab */}
       {activeTab === 'monthly' && (
         <div className="space-y-5" role="tabpanel" aria-live="polite">
-          {/* Month/year picker */}
           <Card>
             <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <h3 className="font-semibold text-gray-800">Laporan Bulanan</h3>
+              <h3 className="font-bold text-ink">Laporan Bulanan</h3>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 aria-label="Pilih bulan"
-                className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className={dateInputClass}
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                   <option key={m} value={m}>{monthName(m)}</option>
@@ -251,7 +259,7 @@ export function AnalyticsDashboard() {
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
                 aria-label="Pilih tahun"
-                className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className={dateInputClass}
               >
                 {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
                   <option key={y} value={y}>{y}</option>
@@ -260,26 +268,24 @@ export function AnalyticsDashboard() {
             </div>
 
             {monthlyLoading ? (
-              <div className="h-48 flex items-center justify-center text-gray-400">Memuat...</div>
+              <div className="h-48 flex items-center justify-center text-ink-faint">Memuat...</div>
             ) : monthlyReport ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {/* KPI row */}
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Total Bon', value: String(monthlyReport.receiptCount) },
-                    { label: 'Total Pendapatan', value: formatIDR(monthlyReport.totalRevenueCents) },
-                  ].map((kpi) => (
-                    <div key={kpi.label} className="bg-brand-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-brand-600 font-medium">{kpi.label}</p>
-                      <p className="text-lg font-bold text-brand-800 mt-1">{kpi.value}</p>
-                    </div>
-                  ))}
-                </div>
+                <motion.div
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <StatCard featured label="Total Pendapatan" value={monthlyReport.totalRevenueCents} money icon={<Wallet size={20} />} />
+                  <StatCard label="Total Bon" value={monthlyReport.receiptCount} accent="brand" icon={<Receipt size={16} />} />
+                </motion.div>
 
-                {/* Line chart */}
+                {/* Area chart */}
                 {monthlyReport.dailyBreakdown.length > 0 && (
                   <ResponsiveContainer width="100%" height={220}>
-                    <LineChart
+                    <AreaChart
                       data={monthlyReport.dailyBreakdown.map((d) => ({
                         date: new Date(d.date + 'T00:00:00Z').getUTCDate(),
                         revenue: d.revenueCents,
@@ -287,45 +293,56 @@ export function AnalyticsDashboard() {
                       }))}
                       margin={{ top: 5, right: 10, bottom: 5, left: 10 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}`} />
+                      <defs>
+                        <linearGradient id="areaBrand" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={CHART.accent} stopOpacity={0.35} />
+                          <stop offset="100%" stopColor={CHART.brand} stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} vertical={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: CHART.tick }} axisLine={{ stroke: CHART.grid }} tickLine={false} />
                       <YAxis
                         tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
-                        tick={{ fontSize: 11 }}
+                        tick={{ fontSize: 11, fill: CHART.tick }}
                         width={45}
+                        axisLine={false}
+                        tickLine={false}
                       />
-                      <Tooltip content={(props) => <IDRTooltip {...(props as React.ComponentProps<typeof IDRTooltip>)} />} />
-                      <Legend />
-                      <Line
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <Tooltip content={(props) => <IDRTooltip {...(props as any)} />} />
+                      <Area
                         type="monotone" dataKey="revenue" name="Pendapatan"
-                        stroke="#2563eb" strokeWidth={2} dot={false}
+                        stroke={CHART.accent} strokeWidth={2.5} fill="url(#areaBrand)"
+                        dot={false} animationDuration={800}
                       />
-                    </LineChart>
+                    </AreaChart>
                   </ResponsiveContainer>
                 )}
 
                 {/* Employee breakdown */}
                 {monthlyReport.employeeBreakdown.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2">Per Karyawan</h4>
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th scope="col" className="text-left py-2 text-gray-600 font-medium">Karyawan</th>
-                          <th scope="col" className="text-right py-2 text-gray-600 font-medium">Bon</th>
-                          <th scope="col" className="text-right py-2 text-gray-600 font-medium">Pendapatan</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <h4 className="flex items-center gap-2 font-semibold text-ink mb-2">
+                      <Users size={15} className="text-accent-600" /> Per Karyawan
+                    </h4>
+                    <Table>
+                      <THead>
+                        <Tr noHover>
+                          <Th>Karyawan</Th>
+                          <Th numeric>Bon</Th>
+                          <Th numeric>Pendapatan</Th>
+                        </Tr>
+                      </THead>
+                      <TBody>
                         {monthlyReport.employeeBreakdown.map((e) => (
-                          <tr key={e.name} className="border-b last:border-0">
-                            <td className="py-2">{e.name}</td>
-                            <td className="py-2 text-right">{e.count}</td>
-                            <td className="py-2 text-right font-medium">{formatIDR(e.revenueCents)}</td>
-                          </tr>
+                          <Tr key={e.name}>
+                            <Td className="font-medium">{e.name}</Td>
+                            <Td numeric>{e.count}</Td>
+                            <Td numeric><Money value={e.revenueCents} /></Td>
+                          </Tr>
                         ))}
-                      </tbody>
-                    </table>
+                      </TBody>
+                    </Table>
                   </div>
                 )}
               </div>

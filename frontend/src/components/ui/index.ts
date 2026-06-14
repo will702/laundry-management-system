@@ -12,6 +12,8 @@ export { StatCard } from './StatCard';
 export { Tabs } from './Tabs';
 export type { TabItem } from './Tabs';
 export { Table, THead, TBody, Tr, Th, Td } from './Table';
+export { Money, CountUp, formatRupiah, useCountUp } from './Money';
 export { RadioGroup } from './RadioGroup';
 export type { RadioOption } from './RadioGroup';
 export { Textarea } from './Textarea';
+export { Logo, LogoIcon } from './Logo';

@@ -32,7 +32,7 @@ export class WebUsbAdapter implements PrinterAdapter {
 
   async print(bytes: Uint8Array): Promise<void> {
     if (!this.device) throw new Error('No USB device connected');
-    await this.device.transferOut(this.endpointNumber, bytes);
+    await this.device.transferOut(this.endpointNumber, bytes as unknown as BufferSource);
   }
 
   async printHtml(_html: string): Promise<void> {

@@ -2,6 +2,8 @@
 
 A production-ready, full-stack laundry point-of-sale system for Indonesian laundry businesses. Built with **NestJS + Prisma** on the backend and **React + TypeScript + Vite** on the frontend, with native **Bluetooth ESC/POS** thermal printing via Capacitor (iOS & Android), automatic Excel reports, Recharts analytics dashboards, and Claude-powered AI insights.
 
+The UI runs on a documented design system — **"Midnight Counter"** — a bold, dimensional take on POS: dramatic dark navy chrome and a signature navy→indigo gradient frame calm, high-contrast white working surfaces, with money always called out in amber JetBrains Mono. Motion (Framer Motion) is expressive but disciplined and fully honors `prefers-reduced-motion`.
+
 ---
 
 ## Table of Contents
@@ -13,6 +15,7 @@ A production-ready, full-stack laundry point-of-sale system for Indonesian laund
 - [API Reference](#api-reference)
 - [Printing Architecture](#printing-architecture)
 - [AI Features](#ai-features)
+- [Design System](#design-system)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Running in Development](#running-in-development)
@@ -82,7 +85,8 @@ A production-ready, full-stack laundry point-of-sale system for Indonesian laund
 | Auth | Custom PIN + JWT (`@nestjs/jwt`, bcrypt, 12 salt rounds) |
 | Validation | `class-validator` + global `ValidationPipe` |
 | Frontend | React 19 + TypeScript + Vite 7 |
-| Styling | Tailwind CSS + brand design tokens |
+| Styling | Tailwind CSS + OKLCH design tokens ("Midnight Counter" system) |
+| Motion | Framer Motion (spring entrances, count-up, animated nav/tab indicators; reduced-motion aware) |
 | Routing | React Router v6 |
 | HTTP client | Axios (JWT interceptor + 401→logout) |
 | Charts | Recharts |
@@ -126,9 +130,15 @@ LaundryApp/
 │
 ├── frontend/                       # React + Vite SPA
 │   ├── capacitor.config.ts
+│   ├── DESIGN.md                   # "Midnight Counter" design system spec
+│   ├── PRODUCT.md                  # Product brief, users, brand principles
+│   ├── tailwind.config.ts          # Design tokens (OKLCH colors, gradients, glow shadows)
 │   ├── src/
-│   │   ├── App.jsx                 # Thin orchestrator (~700 lines)
-│   │   ├── main.tsx                # BrowserRouter + Toaster
+│   │   ├── App.tsx                 # Thin orchestrator (auth gate + shell)
+│   │   ├── main.tsx                # BrowserRouter + MotionConfig + Toaster
+│   │   ├── index.css               # CSS token vars + signature utilities (.metric-tile, .price)
+│   │   ├── app/                    # AppShell + dark chrome: Sidebar, Topbar, BottomNav
+│   │   ├── pages/                  # Route-level page wrappers
 │   │   ├── features/
 │   │   │   ├── auth/               # EmployeeLogin, Registration, AdminRegistration
 │   │   │   ├── receipts/           # ReceiptForm (POS), PrintReceipt, RecentReceipts
@@ -137,13 +147,15 @@ LaundryApp/
 │   │   │   ├── reports/            # AnalyticsDashboard, ExcelReportExport
 │   │   │   ├── audit/              # AuditDashboard (fraud prevention)
 │   │   │   └── settings/           # LaundrySettingsPanel, PrinterSettings
-│   │   ├── components/ui/          # Button, Input, Select, Card, Badge, Modal, ConfirmDialog
+│   │   ├── components/ui/          # Button, Input, Select, Textarea, Card, Badge, Modal,
+│   │   │                           # ConfirmDialog, Tabs, Table, PageHeader, StatCard,
+│   │   │                           # Money/CountUp, Skeleton, EmptyState, Logo
 │   │   ├── contexts/               # PrinterContext
 │   │   ├── services/
 │   │   │   ├── api/                # Typed Axios client + per-domain modules
 │   │   │   ├── printing/           # PrinterService, EscPosEncoder, adapters
 │   │   │   └── receipt/            # footerNotes (parse + render helpers)
-│   │   └── lib/                    # cn(), formatIDR(), formatDateTime()
+│   │   └── lib/                    # cn(), format (IDR/date), motion (Framer variants)
 │   └── public/                     # favicon, icons, manifest (PWA assets)
 │
 └── packages/
@@ -380,6 +392,34 @@ Browser (Admin)              NestJS AiService               Anthropic
 | `get_revenue_by_employee` | Per-employee totals |
 | `get_customer_summary` | Top customers by spend |
 | `get_receipt_count_by_status` | Counts by pending / ready / completed |
+
+---
+
+## Design System
+
+The frontend is governed by a documented design language — **"Midnight Counter"** — codified in [`frontend/DESIGN.md`](frontend/DESIGN.md) and [`frontend/.impeccable/design.json`](frontend/.impeccable), with the product brief in [`frontend/PRODUCT.md`](frontend/PRODUCT.md). Tokens live in [`frontend/tailwind.config.ts`](frontend/tailwind.config.ts) and [`frontend/src/index.css`](frontend/src/index.css).
+
+**Philosophy.** Bold where it counts, quiet where the work happens. Dramatic dark navy chrome (sidebar, topbar, bottom nav, hero headers) and a signature navy→indigo gradient frame calm, high-contrast white working surfaces so data entry never strains under glare.
+
+**Tokens (OKLCH).**
+
+| Token | Role |
+|-------|------|
+| `brand` (navy) | Primary action base |
+| `accent` (electric indigo) | Pairs with navy for the signature gradient; active/selected states |
+| `amount` (warm amber) | **Money only** — every Rupiah figure, JetBrains Mono + tabular numerics |
+| `surface` / `surface-inverse` | Light working surfaces · dark chrome shell |
+| `ink` / `ink-on-dark` | Text on light · text on dark chrome |
+
+**Named rules.**
+
+- **Gradient-for-Action** — the navy→indigo gradient and indigo accent are reserved for action and emphasis (primary buttons, active nav, hero headers, headline metric tiles). Never decorative on neutral content.
+- **Amber-for-Money** — amber is exclusive to Rupiah amounts; the indigo accent never touches money.
+- **Light-Workspace** — forms, tables, and working cards stay light; dark chrome only frames navigation and hero headers.
+
+**Signature treatments.** `.metric-tile` (gradient-lit dimensional KPI tile), `.gradient-brand` CTAs with accent glow, animated `layoutId` nav/tab indicators, and animated number count-up via the `<Money>` / `<CountUp>` helpers.
+
+**Motion & accessibility.** Framer Motion provides spring entrances, staggered lists, count-up, and chart draw-on. A root `<MotionConfig reducedMotion="user">` plus a global CSS `prefers-reduced-motion` block and a guard inside the count-up hook ensure all motion degrades gracefully. WCAG AA contrast and 44px minimum touch targets throughout.
 
 ---
 
