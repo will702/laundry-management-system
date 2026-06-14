@@ -466,6 +466,14 @@ BOOTSTRAP_ADMIN_PIN=yourpin BOOTSTRAP_ADMIN_NAME="Admin" npm run db:seed
 echo "VITE_BACKEND_URL=http://localhost:3001" > frontend/.env
 ```
 
+### Portfolio demo (pre-populated snapshot)
+
+For a ready-to-show local demo with sample data and mocked AI (no API key), see **[DEMO.md](DEMO.md)**:
+
+```bash
+npm run demo:setup
+```
+
 ---
 
 ## Environment Variables

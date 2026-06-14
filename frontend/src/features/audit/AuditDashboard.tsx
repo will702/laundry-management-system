@@ -1,50 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Receipt, Trash2, FileText } from 'lucide-react';
+import { ShieldCheck, Trash2, FileText } from 'lucide-react';
 import { apiClient } from '../../services/api';
 import {
   Card, PageHeader, Tabs, Badge, EmptyState, Money, SkeletonCard,
 } from '../../components/ui';
 import { staggerContainer, listItem } from '../../lib/motion';
+import { formatDateTime } from '../../lib/format';
 
-interface ReceiptSummary {
-  client_name: string;
-  total_amount: number;
-  created_at: string;
-  is_deleted: boolean;
-}
-
-interface EmployeeAuditData {
-  _id: string;
-  employee_name: string;
-  total_amount: number;
-  total_receipts: number;
-  deleted_receipts: number;
-  receipts: ReceiptSummary[];
+interface EmployeeAuditSummary {
+  employeeId: string;
+  employeeName: string;
+  receiptCount: number;
+  totalRevenueCents: number;
+  deletedCount?: number;
 }
 
 interface DeletedReceiptItem {
+  serviceName: string;
+  itemType?: string | null;
   quantity: number;
-  item_type: string;
-  service: string;
-  total_price: number;
+  lineTotal: number;
 }
 
 interface DeletedReceipt {
   id: string;
-  client_name: string;
-  client_phone: string;
-  employee_name: string;
-  deleted_by_employee_name: string;
-  created_at: string;
-  deleted_at: string;
-  total_amount: number;
-  deletion_reason?: string;
+  clientName: string;
+  employeeName: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  totalAmountCents: number;
+  deleteReason?: string | null;
   items: DeletedReceiptItem[];
 }
 
+function toRupiah(cents: number): number {
+  return Math.round(cents / 100);
+}
+
 export const AuditDashboard: React.FC = () => {
-  const [auditData, setAuditData] = useState<EmployeeAuditData[] | null>(null);
+  const [auditData, setAuditData] = useState<EmployeeAuditSummary[]>([]);
   const [deletedReceipts, setDeletedReceipts] = useState<DeletedReceipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeAuditTab, setActiveAuditTab] = useState<'summary' | 'deleted'>('summary');
@@ -54,19 +49,29 @@ export const AuditDashboard: React.FC = () => {
   const loadAuditData = async () => {
     try {
       const [summaryResponse, deletedResponse] = await Promise.all([
-        apiClient.get<EmployeeAuditData[]>('/audit/receipts-by-employee?include_deleted=true'),
-        apiClient.get<DeletedReceipt[]>('/audit/deleted-receipts'),
+        apiClient.get<EmployeeAuditSummary[]>('/receipts/audit/by-employee'),
+        apiClient.get<DeletedReceipt[]>('/receipts/audit/deleted'),
       ]);
-      setAuditData(summaryResponse.data);
-      setDeletedReceipts(deletedResponse.data);
+
+      const deleted = deletedResponse.data;
+      const deletedByEmployee: Record<string, number> = {};
+      for (const r of deleted) {
+        deletedByEmployee[r.employeeName] = (deletedByEmployee[r.employeeName] ?? 0) + 1;
+      }
+
+      setAuditData(
+        summaryResponse.data.map((row) => ({
+          ...row,
+          deletedCount: deletedByEmployee[row.employeeName] ?? 0,
+        })),
+      );
+      setDeletedReceipts(deleted);
     } catch (err) {
       console.error('Error loading audit data:', err);
     } finally {
       setLoading(false);
     }
   };
-
-  const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString('id-ID');
 
   if (loading) {
     return (
@@ -110,46 +115,30 @@ export const AuditDashboard: React.FC = () => {
               </ul>
             </div>
 
-            {auditData && auditData.length > 0 ? (
+            {auditData.length > 0 ? (
               <motion.div
-                className="grid gap-4"
+                className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
               >
-                {auditData.map((empData) => (
-                  <motion.div key={empData._id} variants={listItem}>
+                {auditData.map((emp) => (
+                  <motion.div key={emp.employeeId} variants={listItem}>
                     <Card>
-                      <div className="flex justify-between items-start mb-4 gap-3">
-                        <div className="min-w-0">
-                          <h3 className="text-lg font-semibold text-ink">{empData.employee_name}</h3>
-                          <p className="text-xs text-ink-faint font-mono">ID: {empData._id}</p>
+                      <h3 className="text-lg font-semibold text-ink mb-1">{emp.employeeName}</h3>
+                      <p className="text-xs text-ink-faint font-mono mb-4">ID: {emp.employeeId.slice(-8)}</p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-ink-muted">Total bon</span>
+                          <span className="font-semibold tabular-nums">{emp.receiptCount}</span>
                         </div>
-                        <div className="text-right shrink-0">
-                          <Money value={empData.total_amount} className="text-xl" />
-                          <div className="text-sm text-ink-muted">
-                            <span className="tabular-nums">{empData.total_receipts}</span> bon ·{' '}
-                            <span className="tabular-nums">{empData.deleted_receipts}</span> dihapus
-                          </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink-muted">Pendapatan</span>
+                          <Money value={toRupiah(emp.totalRevenueCents)} />
                         </div>
-                      </div>
-
-                      <div className="rounded-lg bg-surface-sunken p-3">
-                        <h4 className="font-semibold text-ink-muted text-sm mb-2">Aktivitas Terbaru</h4>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {empData.receipts.slice(0, 5).map((receipt, index) => (
-                            <div
-                              key={index}
-                              className={`flex justify-between gap-2 text-sm ${receipt.is_deleted ? 'text-danger' : 'text-ink'}`}
-                            >
-                              <span className="flex items-center gap-1.5 min-w-0">
-                                {receipt.is_deleted ? <Trash2 size={13} className="shrink-0" /> : <Receipt size={13} className="shrink-0 text-ink-faint" />}
-                                <span className="truncate">{receipt.client_name}</span>
-                                <span className="price shrink-0">Rp {receipt.total_amount.toLocaleString('id-ID')}</span>
-                              </span>
-                              <span className="text-xs text-ink-faint shrink-0 tabular-nums">{formatDateTime(receipt.created_at)}</span>
-                            </div>
-                          ))}
+                        <div className="flex justify-between">
+                          <span className="text-ink-muted">Bon dihapus</span>
+                          <span className="font-semibold tabular-nums text-danger">{emp.deletedCount ?? 0}</span>
                         </div>
                       </div>
                     </Card>
@@ -188,23 +177,24 @@ export const AuditDashboard: React.FC = () => {
                     <Card className="border-danger/30">
                       <div className="flex justify-between items-start mb-3 gap-3">
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-lg text-ink">{receipt.client_name}</h3>
-                          <p className="text-sm text-ink-muted">{receipt.client_phone}</p>
+                          <h3 className="font-semibold text-lg text-ink">{receipt.clientName}</h3>
                           <div className="text-xs text-ink-faint space-y-0.5 mt-1">
-                            <p>Dibuat oleh: {receipt.employee_name} · {formatDateTime(receipt.created_at)}</p>
-                            <p className="text-danger">Dihapus oleh: {receipt.deleted_by_employee_name} · {formatDateTime(receipt.deleted_at)}</p>
+                            <p>Dibuat oleh: {receipt.employeeName} · {formatDateTime(receipt.createdAt)}</p>
+                            {receipt.deletedAt && (
+                              <p className="text-danger">Dihapus · {formatDateTime(receipt.deletedAt)}</p>
+                            )}
                           </div>
                         </div>
                         <div className="text-right shrink-0 space-y-1">
-                          <Money value={receipt.total_amount} className="text-lg" />
+                          <Money value={toRupiah(receipt.totalAmountCents)} className="text-lg" />
                           <div><Badge variant="danger">DIHAPUS</Badge></div>
                         </div>
                       </div>
 
-                      {receipt.deletion_reason && (
+                      {receipt.deleteReason && (
                         <div className="mb-3 p-3 rounded-lg bg-warning-light">
                           <p className="text-sm text-warning-dark">
-                            <strong>Alasan Penghapusan:</strong> {receipt.deletion_reason}
+                            <strong>Alasan Penghapusan:</strong> {receipt.deleteReason}
                           </p>
                         </div>
                       )}
@@ -214,10 +204,13 @@ export const AuditDashboard: React.FC = () => {
                           <FileText size={13} /> Item
                         </h4>
                         <div className="space-y-1">
-                          {receipt.items.map((item, index) => (
-                            <div key={index} className="text-sm text-ink-muted flex justify-between gap-2">
-                              <span>{item.quantity}x {item.item_type} ({item.service})</span>
-                              <span className="price">Rp {item.total_price.toLocaleString('id-ID')}</span>
+                          {receipt.items.map((item) => (
+                            <div key={`${receipt.id}-${item.serviceName}-${item.quantity}`} className="text-sm text-ink-muted flex justify-between gap-2">
+                              <span>
+                                {item.quantity}× {item.serviceName}
+                                {item.itemType ? ` (${item.itemType})` : ''}
+                              </span>
+                              <Money value={toRupiah(item.lineTotal)} bare className="text-xs" />
                             </div>
                           ))}
                         </div>

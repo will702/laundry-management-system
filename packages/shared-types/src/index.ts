@@ -15,8 +15,8 @@ export interface PaginatedResponse<T> {
 // ── Auth ──────────────────────────────────────────────────────────────────
 
 export interface LoginRequest {
-  username: string;
   pin: string;
+  name?: string;
 }
 
 export interface LoginResponse {
@@ -91,12 +91,12 @@ export interface Package {
 
 export interface ReceiptItem {
   id: string;
-  serviceId: string;
+  serviceId?: string;
   serviceName: string;
-  unitName: string;
+  itemType?: string | null;
   quantity: number;
-  pricePerItemCents: number;
-  lineTotalCents: number;
+  pricePerItem: number;
+  lineTotal: number;
 }
 
 export interface Receipt {

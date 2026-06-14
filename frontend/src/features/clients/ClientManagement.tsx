@@ -39,19 +39,17 @@ export const ClientManagement: React.FC<ClientManagementProps> = ({ employee }) 
 
   const loadClients = async () => {
     try {
-      if (isAdmin) {
-        const response = await apiClient.get<ClientWithStats[]>(
-          `/admin/clients-with-stats?admin_id=${employee.id}`,
-        );
-        setClients(response.data);
-      } else {
-        const response = await apiClient.get<ClientWithStats[]>('/clients');
-        setClients(response.data.map((client) => ({
-          ...client, total_receipts: 0, active_receipts: 0, total_spent: 0,
-        })));
-      }
+      const response = await apiClient.get<ClientWithStats[]>('/clients');
+      setClients(response.data.map((client) => ({
+        ...client,
+        total_receipts: client.total_receipts ?? 0,
+        active_receipts: client.active_receipts ?? 0,
+        completed_receipts: client.completed_receipts ?? 0,
+        total_spent: client.total_spent ?? 0,
+      })));
     } catch (err) {
       console.error('Error loading clients:', err);
+      toast.error('Gagal memuat daftar pelanggan');
     } finally {
       setLoading(false);
     }
@@ -71,7 +69,7 @@ export const ClientManagement: React.FC<ClientManagementProps> = ({ employee }) 
     if (!clientToDelete || !isAdmin) return;
     setDeleteLoading(true);
     try {
-      await apiClient.delete(`/clients/${clientToDelete.id}?admin_id=${employee.id}`);
+      await apiClient.delete(`/clients/${clientToDelete.id}`);
       setClients(clients.filter((c) => c.id !== clientToDelete.id));
       closeDeleteModal();
       toast.success(`Pelanggan ${clientToDelete.name} berhasil dihapus`);

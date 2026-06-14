@@ -1,41 +1,72 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
-import type { MessageParam, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages/messages';
+import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { ReportsService } from '../reports/reports.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CHAT_TOOLS, executeTool } from './tools';
+import {
+  demoGetSalesInsights,
+  demoWriteFooterNotes,
+  demoGetDemandForecast,
+  demoChat,
+} from './ai.demo';
+
+const DEFAULT_QWEN_BASE_URL =
+  'https://llm-r0dddz90e42xqg2z.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1';
+const DEFAULT_QWEN_MODEL = 'qwen3.6-flash';
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private client: Anthropic | null = null;
+  private client: OpenAI | null = null;
+  private readonly model: string;
 
   constructor(
     private readonly config: ConfigService,
     private readonly reportsService: ReportsService,
     private readonly prisma: PrismaService,
   ) {
-    const key = this.config.get<string>('ANTHROPIC_API_KEY');
+    const key = this.config.get<string>('QWEN_API_KEY');
+    this.model = this.config.get<string>('QWEN_MODEL') ?? DEFAULT_QWEN_MODEL;
+
     if (key) {
-      this.client = new Anthropic({ apiKey: key });
+      this.client = new OpenAI({
+        apiKey: key,
+        baseURL: this.config.get<string>('QWEN_BASE_URL') ?? DEFAULT_QWEN_BASE_URL,
+      });
+      this.logger.log(`Qwen AI configured (model: ${this.model})`);
+    } else if (this.config.get<boolean>('DEMO_MODE')) {
+      this.logger.log('DEMO_MODE enabled — AI endpoints use data-aware mock responses');
     } else {
-      this.logger.warn('ANTHROPIC_API_KEY not set — AI features disabled');
+      this.logger.warn('QWEN_API_KEY not set — AI features disabled');
     }
   }
 
-  private requireClient(): Anthropic {
+  private requireClient(): OpenAI {
     if (!this.client) {
-      throw new ServiceUnavailableException('AI features are not configured (missing ANTHROPIC_API_KEY)');
+      throw new ServiceUnavailableException('AI features are not configured (missing QWEN_API_KEY)');
     }
     return this.client;
+  }
+
+  private async complete(prompt: string, maxTokens: number): Promise<string> {
+    const client = this.requireClient();
+    const response = await client.chat.completions.create({
+      model: this.model,
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    return response.choices[0]?.message?.content ?? '';
   }
 
   // ── (a) Sales insights ────────────────────────────────────────────────────
 
   /** Generate a natural-language summary of sales for a given date range */
   async getSalesInsights(startDate: string, endDate: string): Promise<{ summary: string; highlights: string[] }> {
-    const anthropic = this.requireClient();
+    if (this.config.get<boolean>('DEMO_MODE')) {
+      return demoGetSalesInsights(this.reportsService, startDate, endDate);
+    }
 
     // Compute aggregates from DB (never pass raw tables to the LLM)
     const allDays: Array<{ date: string; count: number; revenueCents: number }> = [];
@@ -53,8 +84,8 @@ export class AiService {
     const totalRevenue = allDays.reduce((s, d) => s + d.revenueCents, 0);
     const totalReceipts = allDays.reduce((s, d) => s + d.count, 0);
     const avgDaily = totalRevenue / Math.max(allDays.length, 1);
-    const bestDay = allDays.reduce((best, d) => d.revenueCents > best.revenueCents ? d : best, allDays[0]);
-    const worstDay = allDays.reduce((worst, d) => d.revenueCents < worst.revenueCents ? d : worst, allDays[0]);
+    const bestDay = allDays.reduce((best, d) => (d.revenueCents > best.revenueCents ? d : best), allDays[0]);
+    const worstDay = allDays.reduce((worst, d) => (d.revenueCents < worst.revenueCents ? d : worst), allDays[0]);
 
     const prompt = `Kamu adalah asisten analitik bisnis laundry. Buat ringkasan singkat performa penjualan dalam bahasa Indonesia yang ramah dan profesional.
 
@@ -72,16 +103,8 @@ Berikan:
 
 Format respons sebagai JSON: {"summary": "...", "highlights": ["...", "...", "..."]}`;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const block = response.content[0];
-    const text = block.type === 'text' ? block.text : '{}';
+    const text = await this.complete(prompt, 500);
     try {
-      // Extract JSON from response (it may have markdown fences)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       return jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: text, highlights: [] };
     } catch {
@@ -93,7 +116,9 @@ Format respons sebagai JSON: {"summary": "...", "highlights": ["...", "...", "..
 
   /** Generate new footer notes for the receipt */
   async writeFooterNotes(businessName: string, context?: string): Promise<{ footerNotes: string[] }> {
-    const anthropic = this.requireClient();
+    if (this.config.get<boolean>('DEMO_MODE')) {
+      return demoWriteFooterNotes(businessName);
+    }
 
     const prompt = `Kamu adalah copywriter bisnis laundry bernama "${businessName}".
 Tulis 3-4 catatan kaki untuk struk laundry yang ramah, profesional, dan informatif dalam bahasa Indonesia.
@@ -108,14 +133,7 @@ Contoh yang baik:
 Buat catatan yang relevan dan tidak terlalu panjang (max 50 karakter per catatan).
 Format respons: JSON array of strings, e.g. ["catatan 1", "catatan 2", "catatan 3"]`;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const block = response.content[0];
-    const text = block.type === 'text' ? block.text : '[]';
+    const text = await this.complete(prompt, 300);
     try {
       const arrayMatch = text.match(/\[[\s\S]*\]/);
       const notes: string[] = arrayMatch ? JSON.parse(arrayMatch[0]) : [];
@@ -129,7 +147,9 @@ Format respons: JSON array of strings, e.g. ["catatan 1", "catatan 2", "catatan 
 
   /** Generate a narrative demand forecast based on recent volume trends */
   async getDemandForecast(): Promise<{ forecast: string; staffingNote: string }> {
-    const anthropic = this.requireClient();
+    if (this.config.get<boolean>('DEMO_MODE')) {
+      return demoGetDemandForecast(this.reportsService);
+    }
 
     // Fetch last 28 days of data
     const days: Array<{ date: string; count: number }> = [];
@@ -161,14 +181,7 @@ Berikan:
 
 Format: JSON {"forecast": "...", "staffingNote": "..."}`;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const block = response.content[0];
-    const text = block.type === 'text' ? block.text : '{}';
+    const text = await this.complete(prompt, 400);
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       return jsonMatch ? JSON.parse(jsonMatch[0]) : { forecast: text, staffingNote: '' };
@@ -177,12 +190,16 @@ Format: JSON {"forecast": "...", "staffingNote": "..."}`;
     }
   }
 
-  // ── (c) Chat-over-data ────────────────────────────────────────────────────
+  // ── (d) Chat-over-data ────────────────────────────────────────────────────
 
   async chat(
     messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   ): Promise<{ reply: string; toolsUsed: string[] }> {
-    const anthropic = this.requireClient();
+    if (this.config.get<boolean>('DEMO_MODE')) {
+      return demoChat(messages, this.prisma);
+    }
+
+    const client = this.requireClient();
     const toolsUsed: string[] = [];
 
     const systemPrompt = `Kamu adalah asisten analitik bisnis laundry bernama "Laundry AI".
@@ -191,63 +208,53 @@ Gunakan tools yang tersedia untuk mengambil data yang relevan sebelum menjawab.
 Selalu jawab dalam bahasa Indonesia yang ramah dan profesional.
 Semua nilai uang dalam satuan sen (cents) — tampilkan ke user sebagai Rupiah (bagi 100, format ribuan).`;
 
-    // Build initial message array
-    const apiMessages: MessageParam[] = messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
+    const apiMessages: ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...messages.map((m) => ({ role: m.role, content: m.content })),
+    ];
 
-    let response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
+    let response = await client.chat.completions.create({
+      model: this.model,
       max_tokens: 1024,
-      system: systemPrompt,
       tools: CHAT_TOOLS,
       messages: apiMessages,
     });
 
-    // Agentic loop: keep going while Claude wants to use tools
-    while (response.stop_reason === 'tool_use') {
-      const assistantMessage: MessageParam = {
-        role: 'assistant',
-        content: response.content,
-      };
+    // Agentic loop: keep going while the model wants to use tools
+    while (response.choices[0]?.finish_reason === 'tool_calls') {
+      const assistantMessage = response.choices[0].message;
+      const toolCalls = assistantMessage.tool_calls ?? [];
 
-      const toolResults: ToolResultBlockParam[] = [];
-      for (const block of response.content) {
-        if (block.type !== 'tool_use') continue;
-        toolsUsed.push(block.name);
+      apiMessages.push(assistantMessage);
+
+      for (const toolCall of toolCalls) {
+        if (toolCall.type !== 'function') continue;
+        toolsUsed.push(toolCall.function.name);
+
         let result: unknown;
         try {
-          result = await executeTool(block.name, block.input as Record<string, unknown>, this.prisma);
+          const input = JSON.parse(toolCall.function.arguments || '{}') as Record<string, unknown>;
+          result = await executeTool(toolCall.function.name, input, this.prisma);
         } catch (err) {
           result = { error: String(err) };
         }
-        toolResults.push({
-          type: 'tool_result',
-          tool_use_id: block.id,
+
+        apiMessages.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
           content: JSON.stringify(result),
         });
       }
 
-      const toolResultMessage: MessageParam = {
-        role: 'user',
-        content: toolResults,
-      };
-
-      response = await anthropic.messages.create({
-        model: 'claude-haiku-4-5',
+      response = await client.chat.completions.create({
+        model: this.model,
         max_tokens: 1024,
-        system: systemPrompt,
         tools: CHAT_TOOLS,
-        messages: [...apiMessages, assistantMessage, toolResultMessage],
+        messages: apiMessages,
       });
     }
 
-    const reply = response.content
-      .filter((b) => b.type === 'text')
-      .map((b) => (b as { type: 'text'; text: string }).text)
-      .join('\n');
-
+    const reply = response.choices[0]?.message?.content ?? '';
     return { reply, toolsUsed };
   }
 }

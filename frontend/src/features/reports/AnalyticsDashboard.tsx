@@ -169,7 +169,7 @@ export function AnalyticsDashboard() {
                     tickLine={false}
                   />
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <Tooltip cursor={{ fill: 'oklch(0.62 0.20 277 / 0.08)' }} content={(props) => <IDRTooltip {...(props as any)} />} />
+                  <Tooltip cursor={{ fill: 'oklch(0.62 0.20 277 / 0.08)' }} content={(props: any) => <IDRTooltip {...(props as any)} />} />
                   <Bar dataKey="revenue" name="Pendapatan" fill="url(#barBrand)" radius={[6, 6, 0, 0]} animationDuration={700} />
                 </BarChart>
               </ResponsiveContainer>
@@ -309,7 +309,7 @@ export function AnalyticsDashboard() {
                         tickLine={false}
                       />
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Tooltip content={(props) => <IDRTooltip {...(props as any)} />} />
+                      <Tooltip content={(props: any) => <IDRTooltip {...(props as any)} />} />
                       <Area
                         type="monotone" dataKey="revenue" name="Pendapatan"
                         stroke={CHART.accent} strokeWidth={2.5} fill="url(#areaBrand)"
