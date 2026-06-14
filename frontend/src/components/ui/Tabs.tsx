@@ -13,9 +13,10 @@ interface TabsProps {
   value: string;
   onChange: (v: string) => void;
   className?: string;
+  id?: string;
 }
 
-export function Tabs({ tabs, value, onChange, className }: TabsProps) {
+export function Tabs({ tabs, value, onChange, className, id }: TabsProps) {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleKeyDown = useCallback(
@@ -73,7 +74,7 @@ export function Tabs({ tabs, value, onChange, className }: TabsProps) {
             {/* Shared-element sliding pill for active indicator */}
             {isActive && (
               <motion.span
-                layoutId="tabs-active-pill"
+                layoutId={`tabs-active-pill-${id ?? 'default'}`}
                 className="absolute inset-0 bg-surface shadow-sm rounded-md"
                 transition={{ type: 'spring', stiffness: 500, damping: 40, mass: 0.8 }}
                 aria-hidden="true"

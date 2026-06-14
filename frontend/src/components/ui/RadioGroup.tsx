@@ -14,6 +14,7 @@ interface RadioGroupProps {
   onChange: (v: string) => void;
   name: string;
   className?: string;
+  label?: string;
 }
 
 export function RadioGroup({
@@ -22,9 +23,14 @@ export function RadioGroup({
   onChange,
   name,
   className,
+  label,
 }: RadioGroupProps) {
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div
+      role="radiogroup"
+      aria-label={label ?? name}
+      className={cn('flex flex-col gap-2', className)}
+    >
       {options.map((option) => {
         const isSelected = option.value === value;
         const optionId = `${name}-${option.value}`;

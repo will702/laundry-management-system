@@ -53,14 +53,15 @@ export function TBody({ children, className }: TBodyProps) {
 interface TrProps {
   children: React.ReactNode;
   className?: string;
+  noHover?: boolean;
 }
 
-export function Tr({ children, className }: TrProps) {
+export function Tr({ children, className, noHover = false }: TrProps) {
   return (
     <tr
       className={cn(
         'border-b border-border last:border-0',
-        'hover:bg-surface-sunken transition-colors duration-[150ms] ease-out',
+        !noHover && 'hover:bg-surface-sunken transition-colors duration-[150ms] ease-out',
         className,
       )}
     >
