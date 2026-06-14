@@ -41,8 +41,16 @@ export const EmployeeLogin: React.FC<EmployeeLoginProps> = ({
     setError('');
 
     try {
-      const response = await authApi.login({ username: '', pin });
-      onLogin(response.employee);
+      const response = await authApi.login({ pin });
+      localStorage.setItem('auth_token', response.access_token);
+      onLogin({
+        id: response.employee.id,
+        username: response.employee.name,
+        name: response.employee.name,
+        role: response.employee.role,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      });
     } catch {
       setError('PIN tidak valid. Silakan coba lagi.');
       toast.error('PIN tidak valid');

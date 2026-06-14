@@ -1,68 +1,83 @@
-import type { Tool } from '@anthropic-ai/sdk/resources/messages/messages';
+import type { ChatCompletionTool } from 'openai/resources/chat/completions';
 import { PrismaService } from '../prisma/prisma.service';
 
-// Tool definitions for Claude
-export const CHAT_TOOLS: Tool[] = [
+// Tool definitions for Qwen (OpenAI-compatible format)
+export const CHAT_TOOLS: ChatCompletionTool[] = [
   {
-    name: 'get_sales_summary',
-    description: 'Get total revenue and receipt count for a date range.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+    type: 'function',
+    function: {
+      name: 'get_sales_summary',
+      description: 'Get total revenue and receipt count for a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
+          end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+        },
+        required: ['start_date', 'end_date'],
       },
-      required: ['start_date', 'end_date'],
     },
   },
   {
-    name: 'get_top_services',
-    description: 'Get the top N most-ordered services by quantity in a date range.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
-        limit: { type: 'number', description: 'Max results (1-20)', default: 5 },
+    type: 'function',
+    function: {
+      name: 'get_top_services',
+      description: 'Get the top N most-ordered services by quantity in a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
+          end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+          limit: { type: 'number', description: 'Max results (1-20)', default: 5 },
+        },
+        required: ['start_date', 'end_date'],
       },
-      required: ['start_date', 'end_date'],
     },
   },
   {
-    name: 'get_revenue_by_employee',
-    description: 'Get total revenue and receipt count per employee for a date range.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+    type: 'function',
+    function: {
+      name: 'get_revenue_by_employee',
+      description: 'Get total revenue and receipt count per employee for a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
+          end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+        },
+        required: ['start_date', 'end_date'],
       },
-      required: ['start_date', 'end_date'],
     },
   },
   {
-    name: 'get_customer_summary',
-    description: 'Get top customers by total spending (all time or in a date range).',
-    input_schema: {
-      type: 'object',
-      properties: {
-        limit: { type: 'number', description: 'Max results (1-20)', default: 5 },
-        start_date: { type: 'string', description: 'Optional start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'Optional end date YYYY-MM-DD' },
+    type: 'function',
+    function: {
+      name: 'get_customer_summary',
+      description: 'Get top customers by total spending (all time or in a date range).',
+      parameters: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max results (1-20)', default: 5 },
+          start_date: { type: 'string', description: 'Optional start date YYYY-MM-DD' },
+          end_date: { type: 'string', description: 'Optional end date YYYY-MM-DD' },
+        },
+        required: [],
       },
-      required: [],
     },
   },
   {
-    name: 'get_receipt_count_by_status',
-    description: 'Count receipts grouped by status (pending, ready, completed) for a date range.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+    type: 'function',
+    function: {
+      name: 'get_receipt_count_by_status',
+      description: 'Count receipts grouped by status (pending, ready, completed) for a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
+          end_date: { type: 'string', description: 'End date YYYY-MM-DD' },
+        },
+        required: ['start_date', 'end_date'],
       },
-      required: ['start_date', 'end_date'],
     },
   },
 ];

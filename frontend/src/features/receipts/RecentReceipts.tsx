@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Printer, Trash2, Clock, CheckCircle, ListChecks, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { Employee } from '@mass-laundry/shared-types';
-import { apiClient } from '../../services/api';
+import type { Employee, Receipt } from '@mass-laundry/shared-types';
+import { receiptsApi } from '../../services/api/receipts';
 import { formatDateTime } from '../../lib/format';
 import { PrintReceipt } from './PrintReceipt';
 import { Badge } from '../../components/ui/Badge';
@@ -12,6 +12,7 @@ import { Modal } from '../../components/ui/Modal';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { Money } from '../../components/ui/Money';
 import { staggerContainer, listItem } from '../../lib/motion';
 import { cn } from '../../lib/cn';
 
@@ -19,27 +20,9 @@ export interface RecentReceiptsProps {
   employee: Employee;
 }
 
-interface LegacyReceiptItem {
-  service: string;
-  item_type: string;
-  quantity: number;
-  total_price: number;
-}
-
-interface LegacyReceipt {
-  id: string;
-  client_name: string;
-  client_phone?: string;
-  employee_name: string;
-  created_at: string;
-  total_amount: number;
-  status: string;
-  is_deleted: boolean;
-  deleted_at?: string;
-  deleted_by_employee_name?: string;
-  deletion_reason?: string;
-  notes?: string;
-  items: LegacyReceiptItem[];
+/** API stores amounts in sen (1/100 Rp) despite the *Cents field names */
+function toRupiah(cents: number): number {
+  return Math.round(cents / 100);
 }
 
 type StatusVariant = 'success' | 'warning' | 'info' | 'danger' | 'default';
@@ -54,14 +37,14 @@ function getStatusBadge(status: string): { label: string; variant: StatusVariant
   }
 }
 
-export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
-  const [receipts, setReceipts]             = useState<LegacyReceipt[]>([]);
-  const [loading, setLoading]               = useState(true);
-  const [showDeleted, setShowDeleted]       = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen]   = useState(false);
-  const [receiptToDelete, setReceiptToDelete]   = useState<LegacyReceipt | null>(null);
-  const [deleteReason, setDeleteReason]     = useState('');
-  const [deleting, setDeleting]             = useState(false);
+export const RecentReceipts: React.FC<RecentReceiptsProps> = () => {
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState<Receipt | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printReceiptData, setPrintReceiptData] = useState<Record<string, unknown> | null>(null);
 
@@ -70,12 +53,10 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
   const loadReceipts = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get<LegacyReceipt[]>(
-        `/receipts?limit=50&include_deleted=${showDeleted}`
-      );
-      setReceipts(response.data);
+      const data = await receiptsApi.list({ limit: 50, includeDeleted: showDeleted });
+      setReceipts(data);
     } catch {
-      // non-fatal
+      toast.error('Gagal memuat daftar bon');
     } finally {
       setLoading(false);
     }
@@ -83,14 +64,14 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
 
   const updateStatus = async (receiptId: string, newStatus: string) => {
     try {
-      await apiClient.put(`/receipts/${receiptId}/status?status=${newStatus}&employee_id=${employee.id}`);
+      await receiptsApi.updateStatus(receiptId, newStatus);
       loadReceipts();
     } catch {
       toast.error('Gagal memperbarui status. Silakan coba lagi.');
     }
   };
 
-  const openDeleteModal = (receipt: LegacyReceipt) => {
+  const openDeleteModal = (receipt: Receipt) => {
     setReceiptToDelete(receipt);
     setDeleteModalOpen(true);
     setDeleteReason('');
@@ -103,11 +84,10 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
 
   const confirmDelete = async () => {
     if (!deleteReason.trim()) { toast.error('Harap berikan alasan penghapusan'); return; }
+    if (!receiptToDelete) return;
     setDeleting(true);
     try {
-      await apiClient.delete(`/receipts/${receiptToDelete!.id}`, {
-        data: { employee_id: employee.id, deletion_reason: deleteReason },
-      });
+      await receiptsApi.softDelete(receiptToDelete.id, deleteReason);
       closeDeleteModal();
       loadReceipts();
       toast.success('Bon berhasil dihapus');
@@ -118,10 +98,10 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
     }
   };
 
-  const openPrintModal = async (receipt: LegacyReceipt) => {
+  const openPrintModal = async (receipt: Receipt) => {
     try {
-      const response = await apiClient.get<Record<string, unknown>>(`/receipts/${receipt.id}/print`);
-      setPrintReceiptData(response.data);
+      const data = await receiptsApi.getPrintPayload(receipt.id);
+      setPrintReceiptData(data as Record<string, unknown>);
       setPrintModalOpen(true);
     } catch {
       toast.error('Gagal menyiapkan bon untuk cetak.');
@@ -157,7 +137,6 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
         }
       />
 
-      {/* Receipt list */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => <SkeletonCard key={i} lines={3} />)}
@@ -184,48 +163,46 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
                 className={cn(
                   'bg-surface rounded-xl border shadow-xs',
                   'transition-shadow duration-[150ms]',
-                  receipt.is_deleted
+                  receipt.isDeleted
                     ? 'border-danger-light bg-danger-light/30'
                     : 'border-border hover:shadow-sm',
                 )}
               >
                 <div className="p-4 md:p-5">
-                  {/* Top row: client + amount/status */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
-                      <p className="font-bold text-ink text-base truncate">{receipt.client_name}</p>
-                      {receipt.client_phone && (
-                        <p className="text-xs text-ink-muted mt-0.5">{receipt.client_phone}</p>
-                      )}
+                      <p className="font-bold text-ink text-base truncate">{receipt.clientName}</p>
                       <p className="text-xs text-ink-faint mt-0.5">
-                        {receipt.employee_name} · {formatDateTime(receipt.created_at)}
+                        {receipt.employeeName} · {formatDateTime(receipt.createdAt)}
                       </p>
-                      {receipt.is_deleted && receipt.deleted_at && (
+                      {receipt.isDeleted && receipt.deletedAt && (
                         <p className="text-xs text-danger font-medium mt-1">
-                          Dihapus oleh {receipt.deleted_by_employee_name} · {formatDateTime(receipt.deleted_at)}
-                          {receipt.deletion_reason && ` — ${receipt.deletion_reason}`}
+                          Dihapus · {formatDateTime(receipt.deletedAt)}
+                          {receipt.deleteReason && ` — ${receipt.deleteReason}`}
                         </p>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="price text-lg">
-                        Rp{receipt.total_amount.toLocaleString('id-ID')}
-                      </span>
+                      <Money value={toRupiah(receipt.totalAmountCents)} className="text-lg" />
                       <Badge variant={statusVariant} size="sm">
                         {statusLabel}
                       </Badge>
                     </div>
                   </div>
 
-                  {/* Items */}
                   {receipt.items.length > 0 && (
                     <div className="mb-3 space-y-1">
-                      {receipt.items.map((item, i) => (
-                        <div key={i} className="flex justify-between text-sm text-ink-muted">
-                          <span>{item.quantity}× {item.item_type} ({item.service})</span>
-                          <span className="font-mono text-xs">
-                            Rp{item.total_price.toLocaleString('id-ID')}
+                      {receipt.items.map((item) => (
+                        <div key={item.id} className="flex justify-between text-sm text-ink-muted">
+                          <span>
+                            {item.quantity}× {item.serviceName}
+                            {item.itemType ? ` (${item.itemType})` : ''}
                           </span>
+                          <Money
+                            value={toRupiah(item.lineTotal)}
+                            bare
+                            className="text-xs"
+                          />
                         </div>
                       ))}
                     </div>
@@ -237,7 +214,6 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
                     </p>
                   )}
 
-                  {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap pt-1">
                     <Button
                       variant="secondary"
@@ -248,7 +224,7 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
                       Cetak
                     </Button>
 
-                    {!receipt.is_deleted && (
+                    {!receipt.isDeleted && (
                       <>
                         {receipt.status === 'pending' && (
                           <Button
@@ -291,7 +267,6 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
         </motion.div>
       )}
 
-      {/* Delete confirmation modal */}
       <Modal
         open={deleteModalOpen}
         onClose={closeDeleteModal}
@@ -309,9 +284,9 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
 
           {receiptToDelete && (
             <p className="text-sm text-ink">
-              <span className="font-semibold">{receiptToDelete.client_name}</span>
+              <span className="font-semibold">{receiptToDelete.clientName}</span>
               {' — '}
-              <span className="price">Rp{receiptToDelete.total_amount.toLocaleString('id-ID')}</span>
+              <Money value={toRupiah(receiptToDelete.totalAmountCents)} />
             </p>
           )}
 
@@ -350,7 +325,6 @@ export const RecentReceipts: React.FC<RecentReceiptsProps> = ({ employee }) => {
         </div>
       </Modal>
 
-      {/* Print modal */}
       {printModalOpen && printReceiptData && (
         <PrintReceipt receiptData={printReceiptData} onClose={closePrintModal} />
       )}

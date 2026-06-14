@@ -12,10 +12,10 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "prisma migrate deploy",
     "db:seed": "ts-node prisma/seed.ts",
+    "db:demo-seed": "ts-node prisma/demo-seed.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.104.1",
     "@google-cloud/storage": "^7.21.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
@@ -32,6 +32,7 @@
     "exceljs": "^4.4.0",
     "helmet": "^8.0.0",
     "joi": "^18.2.1",
+    "openai": "^6.42.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",

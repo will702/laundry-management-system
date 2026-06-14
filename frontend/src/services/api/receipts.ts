@@ -2,7 +2,7 @@ import type { Receipt, CreateReceiptInput } from '@mass-laundry/shared-types';
 import { apiClient } from './client';
 
 export const receiptsApi = {
-  list: (params?: { status?: string; page?: number; limit?: number }) =>
+  list: (params?: { limit?: number; includeDeleted?: boolean }) =>
     apiClient.get<Receipt[]>('/receipts', { params }).then((r) => r.data),
 
   get: (id: string) =>
@@ -12,7 +12,7 @@ export const receiptsApi = {
     apiClient.post<Receipt>('/receipts', data).then((r) => r.data),
 
   updateStatus: (id: string, status: string) =>
-    apiClient.patch(`/receipts/${id}/status`, { status }).then((r) => r.data),
+    apiClient.put(`/receipts/${id}/status`, { status }).then((r) => r.data),
 
   softDelete: (id: string, reason: string) =>
     apiClient.delete(`/receipts/${id}`, { data: { reason } }).then((r) => r.data),

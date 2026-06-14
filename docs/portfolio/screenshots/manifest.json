@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-06-14T14:08:06.437Z",
+  "baseUrl": "http://localhost:5173",
+  "viewport": "1440×900 @2x",
+  "loginPin": "1234",
+  "files": [
+    "docs/portfolio/screenshots/01-login.png",
+    "docs/portfolio/screenshots/02-create-receipt.png",
+    "docs/portfolio/screenshots/03-receipts.png",
+    "docs/portfolio/screenshots/04-reports.png",
+    "docs/portfolio/screenshots/05-audit.png",
+    "docs/portfolio/screenshots/06-clients.png",
+    "docs/portfolio/screenshots/07-customization.png",
+    "docs/portfolio/screenshots/08-settings.png",
+    "docs/portfolio/screenshots/09-print-receipt.png"
+  ]
+}
