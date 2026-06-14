@@ -1,6 +1,7 @@
 import type { PaperWidth, Codepage, ReceiptPrintData } from '../types';
 import { COLS, labelValue, divider, formatIDR, formatReceiptDate } from './paper';
 import { renderFooterNotesText } from '../../receipt/footerNotes';
+// @ts-ignore
 import EscPosEncoderLib from 'esc-pos-encoder';
 
 export function buildReceiptBytes(

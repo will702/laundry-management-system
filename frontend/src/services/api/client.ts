@@ -16,14 +16,18 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// 401 → clear token and reload to login
+// 401 → clear token and reload to login if we were logged in
 apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      const token = localStorage.getItem('auth_token');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_employee');
-      window.location.href = '/';
+      localStorage.removeItem('laundry_user_session');
+      if (token) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(err);
   },

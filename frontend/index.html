@@ -100,6 +100,69 @@
             @media (prefers-reduced-motion: reduce) {
                 .app-loading .spinner { animation: none; border-top-color: oklch(0.45 0.18 264); }
             }
+
+            /* PWA install banner */
+            .pwa-install-banner {
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+                background: linear-gradient(135deg, oklch(0.45 0.18 264) 0%, oklch(0.55 0.21 278) 100%);
+                color: white;
+                font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+                box-shadow: 0 -4px 24px oklch(0.45 0.18 264 / 0.25);
+            }
+            .pwa-install-inner {
+                max-width: 600px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+            .pwa-install-title {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: -0.01em;
+            }
+            .pwa-install-desc {
+                margin: 2px 0 0 28px;
+                font-size: 12px;
+                opacity: 0.85;
+            }
+            .pwa-install-actions {
+                display: flex;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+            .pwa-install-btn {
+                background: white;
+                color: oklch(0.45 0.18 264);
+                border: none;
+                padding: 8px 14px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 700;
+                cursor: pointer;
+                font-family: inherit;
+            }
+            .pwa-dismiss-btn {
+                background: transparent;
+                color: white;
+                border: 1px solid oklch(1 0 0 / 0.35);
+                padding: 8px 14px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                font-family: inherit;
+            }
         </style>
     </head>
     <body>
@@ -112,7 +175,11 @@
 
         <div id="app-loading" class="app-loading" style="display: none;">
             <div class="brand">
-                <div class="brand-icon">&#x1F455;</div>
+                <div class="brand-icon">
+                    <svg width="20" height="20" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M50 10C40 10 33 18 33 28C33 34 37 39 43 41L10 76C6 80 8 86 14 86H86C92 86 94 80 90 76L57 41C63 39 67 34 67 28C67 18 60 10 50 10ZM50 18C54 18 57 21 57 25C57 28 54 31 50 31C46 31 43 28 43 25C43 21 46 18 50 18Z"/>
+                    </svg>
+                </div>
                 <span class="title">Mass Laundry</span>
             </div>
             <div class="spinner"></div>
@@ -121,20 +188,20 @@
         <div id="root"></div>
 
         <!-- PWA Install Prompt -->
-        <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #4f46e5; color: white; padding: 16px; z-index: 1000;">
-            <div style="max-width: 600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+        <div id="pwa-install-banner" class="pwa-install-banner">
+            <div class="pwa-install-inner">
                 <div>
-                    <strong>📱 Install Mass Laundry</strong>
-                    <br>
-                    <small>Akses lebih cepat dan dapat digunakan offline</small>
+                    <div class="pwa-install-title">
+                        <svg width="20" height="20" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M50 10C40 10 33 18 33 28C33 34 37 39 43 41L10 76C6 80 8 86 14 86H86C92 86 94 80 90 76L57 41C63 39 67 34 67 28C67 18 60 10 50 10ZM50 18C54 18 57 21 57 25C57 28 54 31 50 31C46 31 43 28 43 25C43 21 46 18 50 18Z"/>
+                        </svg>
+                        Install Mass Laundry
+                    </div>
+                    <p class="pwa-install-desc">Akses lebih cepat dan dapat digunakan offline</p>
                 </div>
-                <div>
-                    <button id="pwa-install-btn" style="background: white; color: #4f46e5; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 8px; cursor: pointer;">
-                        Install
-                    </button>
-                    <button id="pwa-dismiss-btn" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
-                        Nanti
-                    </button>
+                <div class="pwa-install-actions">
+                    <button id="pwa-install-btn" class="pwa-install-btn" type="button">Install</button>
+                    <button id="pwa-dismiss-btn" class="pwa-dismiss-btn" type="button">Nanti</button>
                 </div>
             </div>
         </div>

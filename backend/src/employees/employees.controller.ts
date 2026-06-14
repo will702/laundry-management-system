@@ -8,19 +8,16 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('employees')
-@UseGuards(JwtAuthGuard)
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
-  // Admin: create employee
+  // Public: create employee (self-registration)
   @Post()
-  @UseGuards(RolesGuard)
-  @Roles('admin')
   create(@Body() dto: CreateEmployeeDto) {
     return this.employeesService.create(dto);
   }
 
-  // Any authenticated employee: list active employees
+  // Public: list active employees (needed for checking registered employees on login page)
   @Get()
   findAll() {
     return this.employeesService.findAll();
@@ -28,7 +25,7 @@ export class EmployeesController {
 
   // Admin: update employee
   @Put(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   update(@Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
     return this.employeesService.update(id, dto);
@@ -36,7 +33,7 @@ export class EmployeesController {
 
   // Admin: deactivate (soft-delete) employee
   @Delete(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   deactivate(@Param('id') id: string) {
     return this.employeesService.deactivate(id);

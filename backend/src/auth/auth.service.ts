@@ -16,19 +16,42 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const employee = await this.prisma.employee.findFirst({
-      where: { name: dto.name, isActive: true },
-    });
+    let employee: any = null;
 
-    if (!employee) {
-      // Constant-time dummy compare to prevent timing-based username enumeration
-      await bcrypt.compare(dto.pin, '$2b$12$invalidhashpadding000000000000000000000000000000000000000');
-      throw new UnauthorizedException('Invalid name or PIN');
-    }
+    if (dto.name && dto.name.trim() !== '') {
+      employee = await this.prisma.employee.findFirst({
+        where: { name: dto.name, isActive: true },
+      });
 
-    const pinValid = await bcrypt.compare(dto.pin, employee.pin);
-    if (!pinValid) {
-      throw new UnauthorizedException('Invalid name or PIN');
+      if (!employee) {
+        // Constant-time dummy compare to prevent timing-based username enumeration
+        await bcrypt.compare(dto.pin, '$2b$12$invalidhashpadding000000000000000000000000000000000000000');
+        throw new UnauthorizedException('Invalid name or PIN');
+      }
+
+      const pinValid = await bcrypt.compare(dto.pin, employee.pin);
+      if (!pinValid) {
+        throw new UnauthorizedException('Invalid name or PIN');
+      }
+    } else {
+      // PIN-only login
+      const employees = await this.prisma.employee.findMany({
+        where: { isActive: true },
+      });
+
+      for (const emp of employees) {
+        const pinValid = await bcrypt.compare(dto.pin, emp.pin);
+        if (pinValid) {
+          employee = emp;
+          break;
+        }
+      }
+
+      if (!employee) {
+        // Run a dummy comparison to match timing
+        await bcrypt.compare(dto.pin, '$2b$12$invalidhashpadding000000000000000000000000000000000000000');
+        throw new UnauthorizedException('Invalid PIN');
+      }
     }
 
     const payload: JwtPayload = {
@@ -59,6 +82,16 @@ export class AuthService {
     });
     if (existing) {
       throw new ConflictException('An employee with this name already exists');
+    }
+
+    // Enforce unique PIN
+    const employees = await this.prisma.employee.findMany({
+      where: { isActive: true },
+    });
+    for (const emp of employees) {
+      if (await bcrypt.compare(dto.pin, emp.pin)) {
+        throw new ConflictException('PIN sudah digunakan');
+      }
     }
 
     const hashedPin = await bcrypt.hash(dto.pin, 12);
