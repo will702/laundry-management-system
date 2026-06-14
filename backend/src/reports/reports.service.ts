@@ -1,12 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Readable } from 'stream';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../common/storage/storage.service';
 import * as ExcelJS from 'exceljs';
-import * as fs from 'fs';
-import * as path from 'path';
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -241,12 +244,6 @@ export class ReportsService {
 
   // ── Scheduled report storage ──────────────────────────────────────────────
 
-  private getStorageDir(): string {
-    const dir = path.join(process.cwd(), 'storage', 'reports');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    return dir;
-  }
-
   async generateAndSaveReport(
     reportType: 'daily' | 'weekly' | 'monthly',
     startDateStr: string,
@@ -254,9 +251,12 @@ export class ReportsService {
   ): Promise<{ id: string; filePath: string; filename: string; reportType: string; createdAt: Date }> {
     const buffer = await this.generateExcel(startDateStr, endDateStr, false);
     const filename = `${reportType}_${startDateStr}_to_${endDateStr}_${Date.now()}.xlsx`;
-    const dir = this.getStorageDir();
-    const filePath = path.join(dir, filename);
-    fs.writeFileSync(filePath, Buffer.from(buffer as ArrayBuffer));
+
+    // filePath is an opaque storage reference (gs:// URI in prod, disk path locally).
+    const filePath = await this.storage.save(
+      filename,
+      Buffer.from(buffer as ArrayBuffer),
+    );
 
     const record = await this.prisma.scheduledReport.create({
       data: {
@@ -280,10 +280,14 @@ export class ReportsService {
     });
   }
 
-  async getScheduledReportFile(id: string): Promise<{ filePath: string; filename: string }> {
+  async getScheduledReportStream(id: string): Promise<{ stream: Readable; filename: string }> {
     const record = await this.prisma.scheduledReport.findUnique({ where: { id } });
     if (!record) throw new NotFoundException(`Report ${id} not found`);
-    if (!fs.existsSync(record.filePath)) throw new NotFoundException('Report file not found on disk');
-    return { filePath: record.filePath, filename: record.filename };
+    try {
+      const stream = await this.storage.getStream(record.filePath);
+      return { stream, filename: record.filename };
+    } catch {
+      throw new NotFoundException('Report file not found in storage');
+    }
   }
 }

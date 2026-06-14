@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ReportsService } from './reports.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../common/storage/storage.service';
 
 describe('ReportsService — UTC date bounds', () => {
   let service: ReportsService;
@@ -26,6 +27,10 @@ describe('ReportsService — UTC date bounds', () => {
       providers: [
         ReportsService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: StorageService,
+          useValue: { save: jest.fn(), getStream: jest.fn() },
+        },
       ],
     }).compile();
 

@@ -112,3 +112,10 @@ backend/prisma/migrations-postgres/
 
 # Monorepo
 packages/*/node_modules/
+
+# Firebase local cache
+.firebase/
+
+# Prisma SQLite databases
+backend/prisma/*.db
+backend/prisma/*.db-journal

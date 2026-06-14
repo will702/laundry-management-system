@@ -6,5 +6,5 @@ export const authApi = {
     apiClient.post<LoginResponse>('/auth/login', data).then((r) => r.data),
 
   registerAdmin: (data: { username: string; name: string; pin: string; registrationCode: string }) =>
-    apiClient.post('/auth/register-admin', data).then((r) => r.data),
+    apiClient.post('/auth/admin/register', data).then((r) => r.data),
 };

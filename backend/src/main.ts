@@ -35,8 +35,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
-  await app.listen(3001);
-  console.log('Mass Laundry API running on http://localhost:3001/api');
+
+  // Cloud Run (and most PaaS) inject the port via $PORT; default to 3001 locally.
+  const port = parseInt(process.env.PORT ?? '3001', 10);
+  await app.listen(port, '0.0.0.0');
+  console.log(`Mass Laundry API running on port ${port} (prefix: /api)`);
 }
 
 bootstrap();

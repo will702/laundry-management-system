@@ -1,7 +1,6 @@
 import {
   Controller, Get, Param, Query, Res, UseGuards, BadRequestException,
 } from '@nestjs/common';
-import { createReadStream } from 'fs';
 import { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -45,10 +44,10 @@ export class ReportsController {
   /** GET /reports/scheduled/:id/download — stream the saved .xlsx file */
   @Get('scheduled/:id/download')
   async downloadScheduled(@Param('id') id: string, @Res() res: Response) {
-    const { filePath, filename } = await this.reportsService.getScheduledReportFile(id);
+    const { stream, filename } = await this.reportsService.getScheduledReportStream(id);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    createReadStream(filePath).pipe(res);
+    stream.pipe(res);
   }
 
   // ── On-demand Excel export ───────────────────────────────────────────────

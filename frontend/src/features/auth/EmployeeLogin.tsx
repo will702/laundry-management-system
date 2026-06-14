@@ -78,12 +78,14 @@ export const EmployeeLogin: React.FC<EmployeeLoginProps> = ({
           <div className="gradient-hero relative px-8 py-10 text-on-dark overflow-hidden">
             <span className="pointer-events-none absolute -top-10 -right-8 h-40 w-40 rounded-full bg-accent-400/30 blur-2xl" aria-hidden="true" />
             <div className="relative flex items-center gap-3 mb-1">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm shadow-glow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-brand text-white shadow-glow-sm">
                 <LogoIcon size={20} />
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight">Mass Laundry</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-sm">
+                Mass Laundry
+              </h1>
             </div>
-            <p className="text-on-dark-muted text-sm font-medium ml-[3.25rem]">
+            <p className="text-white/85 text-sm font-medium ml-[3.25rem]">
               Sistem Manajemen Laundry
             </p>
           </div>

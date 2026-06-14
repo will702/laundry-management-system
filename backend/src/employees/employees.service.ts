@@ -27,6 +27,22 @@ export class EmployeesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateEmployeeDto) {
+    const existingName = await this.prisma.employee.findFirst({
+      where: { name: dto.name, isActive: true },
+    });
+    if (existingName) {
+      throw new ConflictException('Nama karyawan sudah digunakan');
+    }
+
+    const employees = await this.prisma.employee.findMany({
+      where: { isActive: true },
+    });
+    for (const emp of employees) {
+      if (await bcrypt.compare(dto.pin, emp.pin)) {
+        throw new ConflictException('PIN sudah digunakan');
+      }
+    }
+
     const pinHash = await bcrypt.hash(dto.pin, BCRYPT_SALT_ROUNDS);
 
     const employee = await this.prisma.employee.create({

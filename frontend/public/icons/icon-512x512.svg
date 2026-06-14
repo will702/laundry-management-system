@@ -1,6 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" fill="#4f46e5" rx="50"/>
-  <text x="256" y="350" font-family="Arial, sans-serif" font-size="300" text-anchor="middle" fill="white">🧺</text>
-  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">LaundryPro</text>
+  <defs>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d4a8a"/>
+      <stop offset="100%" stop-color="#5b4fcf"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#brand)" rx="96"/>
+  <g transform="translate(156 156) scale(2)">
+    <path fill="#fff" fill-rule="evenodd" d="M50 10C40 10 33 18 33 28C33 34 37 39 43 41L10 76C6 80 8 86 14 86H86C92 86 94 80 90 76L57 41C63 39 67 34 67 28C67 18 60 10 50 10ZM50 18C54 18 57 21 57 25C57 28 54 31 50 31C46 31 43 28 43 25C43 21 46 18 50 18Z"/>
+  </g>
 </svg>
