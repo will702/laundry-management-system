@@ -84,7 +84,7 @@ export function Modal({
         >
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-ink/50"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -97,7 +97,6 @@ export function Modal({
             aria-labelledby={title ? 'modal-title' : undefined}
             className={cn(
               'relative bg-surface rounded-2xl shadow-xl w-full overflow-hidden',
-              'border border-border',
               MODAL_SIZES[size],
             )}
             variants={scaleIn}
@@ -105,13 +104,10 @@ export function Modal({
             animate="visible"
             exit="exit"
           >
-            {/* Signature gradient hairline */}
-            <div className="absolute inset-x-0 top-0 h-0.5 gradient-brand" aria-hidden="true" />
-
             {/* Header */}
             {title && (
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <h2 id="modal-title" className="text-base font-bold text-ink">
+                <h2 id="modal-title" className="font-display text-lg font-bold text-ink">
                   {title}
                 </h2>
                 <button
@@ -119,8 +115,8 @@ export function Modal({
                   aria-label="Tutup"
                   className={cn(
                     'flex items-center justify-center w-8 h-8 rounded-lg',
-                    'text-ink-faint hover:text-ink hover:bg-surface-overlay',
-                    'transition-colors duration-[120ms]',
+                    'text-ink-muted [@media(hover:hover)]:hover:text-ink [@media(hover:hover)]:hover:bg-surface-overlay',
+                    'transition-[color,background-color,transform] duration-press ease-out active:scale-95',
                   )}
                 >
                   <X size={18} />

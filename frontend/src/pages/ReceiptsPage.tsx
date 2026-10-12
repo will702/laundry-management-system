@@ -8,7 +8,7 @@ interface Props {
 
 export function ReceiptsPage({ employee }: Props) {
   return (
-    <div className="page-container">
+    <div className="page-container min-w-0 bg-surface-sunken">
       <RecentReceipts employee={employee} />
     </div>
   );

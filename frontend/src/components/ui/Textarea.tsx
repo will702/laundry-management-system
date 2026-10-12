@@ -21,7 +21,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={textareaId}
-            className="text-sm font-semibold text-ink-muted"
+            className="text-sm font-medium text-ink-muted"
           >
             {label}
           </label>
@@ -34,9 +34,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
           className={cn(
             // base
-            'w-full rounded-lg border bg-surface text-ink text-sm',
+            'w-full rounded-lg border bg-surface text-ink text-base',
             'px-3 py-2.5',
-            'transition-colors duration-[150ms] ease-out',
+            'transition-colors duration-fast ease-out',
             'placeholder:text-ink-faint',
             'resize-y',
             // states

@@ -1,19 +1,10 @@
-/**
- * EmployeeLogin — the focal entry point for every user.
- *
- * Aesthetic: "Precision Linen" — deep navy brand, clean white card,
- * Plus Jakarta Sans typography. Confident, not decorative.
- * PIN input is large, centered, monospace for clarity.
- */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { LogoIcon } from '@/components/ui';
-import { motion } from 'framer-motion';
+import { Delete } from 'lucide-react';
+import { Button, Card, LogoIcon } from '@/components/ui';
 import type { Employee } from '@mass-laundry/shared-types';
 import { authApi } from '../../services/api';
 import { cn } from '../../lib/cn';
-import { fadeUp, scaleIn, staggerContainer, listItem } from '../../lib/motion';
 
 interface EmployeeLoginProps {
   onLogin: (employee: Employee) => void;
@@ -31,7 +22,15 @@ export const EmployeeLogin: React.FC<EmployeeLoginProps> = ({
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus only on devices with a real pointer/keyboard (not touch-only).
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,182 +60,117 @@ export const EmployeeLogin: React.FC<EmployeeLoginProps> = ({
     }
   };
 
+  const handlePinChange = (value: string) => {
+    setError('');
+    setPin(value.replace(/\D/g, '').slice(0, 4));
+  };
+
+  const activeSlot = Math.min(pin.length, 3);
+
   return (
-    <div
-      className={cn(
-        'min-h-screen flex items-center justify-center',
-        'bg-surface-sunken p-4',
-      )}
-    >
-      <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-sm"
-      >
-        {/* Card */}
-        <motion.div
-          variants={scaleIn}
-          className={cn(
-            'bg-surface rounded-2xl shadow-xl border border-border',
-            'overflow-hidden',
-          )}
-        >
-          {/* Header strip */}
-          <div className="gradient-hero relative px-8 py-10 text-on-dark overflow-hidden">
-            <span className="pointer-events-none absolute -top-10 -right-8 h-40 w-40 rounded-full bg-accent-400/30 blur-2xl" aria-hidden="true" />
-            <div className="relative flex items-center gap-3 mb-1">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-brand text-white shadow-glow-sm">
-                <LogoIcon size={20} />
-              </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-sm">
-                Mass Laundry
-              </h1>
-            </div>
-            <p className="text-white/85 text-sm font-medium ml-[3.25rem]">
-              Sistem Manajemen Laundry
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken p-4 text-ink">
+      <Card className="w-full max-w-sm p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <LogoIcon size={32} />
+          <h1 className="text-xl font-bold tracking-tight">Mass Laundry</h1>
+        </div>
+        <p className="mt-2 text-sm text-ink-muted">Masukkan PIN 4 digit untuk masuk.</p>
+
+        <form onSubmit={handleLogin} className="mt-6 space-y-5">
+          <div>
+            <input
+              ref={inputRef}
+              id="pin-input"
+              type="password"
+              value={pin}
+              onChange={(e) => handlePinChange(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              className="sr-only"
+              maxLength={4}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="current-password"
+              aria-label="PIN 4 digit"
+              aria-describedby={error ? 'login-error' : undefined}
+            />
+            <label htmlFor="pin-input" className="grid cursor-text grid-cols-4 gap-4" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'flex h-14 items-center justify-center border-b-2 transition-colors duration-fast ease-out',
+                    focused && i === activeSlot ? 'border-brand-600' : 'border-border-strong',
+                  )}
+                >
+                  {i < pin.length && <span className="h-3 w-3 rounded-full bg-ink" />}
+                </span>
+              ))}
+            </label>
+            <p className="mt-3 text-center text-sm text-ink-muted [@media(hover:none)]:hidden">
+              Ketik PIN dari keyboard
             </p>
           </div>
 
-          {/* Body */}
-          <div className="px-8 py-7">
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label
-                  htmlFor="pin-input"
-                  className="block text-sm font-semibold text-ink-muted mb-2"
+          <div
+            className="hidden grid-cols-3 gap-3 [@media(hover:none)]:grid"
+            role="group"
+            aria-label="Papan angka PIN"
+          >
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'backspace'].map((digit) =>
+              digit === '' ? (
+                <span key="spacer" aria-hidden="true" />
+              ) : (
+                <Button
+                  key={digit}
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  className="h-14 text-xl"
+                  aria-label={digit === 'backspace' ? 'Hapus digit terakhir' : digit}
+                  onClick={() => handlePinChange(digit === 'backspace' ? pin.slice(0, -1) : pin + digit)}
                 >
-                  Masukkan PIN Anda
-                </label>
-                <input
-                  ref={inputRef}
-                  id="pin-input"
-                  type="password"
-                  value={pin}
-                  onChange={(e) => {
-                    setError('');
-                    setPin(e.target.value.replace(/\D/g, '').slice(0, 4));
-                  }}
-                  className={cn(
-                    'w-full h-14 rounded-xl border text-center',
-                    'font-mono text-2xl tracking-[0.5em] font-bold',
-                    'bg-surface placeholder:text-ink-faint',
-                    'transition-colors duration-[150ms]',
-                    'focus:outline-none focus:ring-brand focus:border-brand-500',
-                    error ? 'border-danger' : 'border-border hover:border-border-strong',
-                  )}
-                  placeholder="••••"
-                  maxLength={4}
-                  inputMode="numeric"
-                  autoComplete="current-password"
-                  aria-label="PIN 4 digit"
-                  aria-describedby={error ? 'login-error' : undefined}
-                />
-                {/* PIN dots indicator */}
-                <div className="flex justify-center gap-2 mt-3" aria-hidden="true">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        'h-1.5 w-1.5 rounded-full transition-colors duration-[120ms]',
-                        i < pin.length ? 'bg-brand-600' : 'bg-border',
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {error && (
-                <motion.p
-                  id="login-error"
-                  role="alert"
-                  variants={fadeUp}
-                  initial="hidden"
-                  animate="visible"
-                  className="text-sm text-danger bg-danger-light px-3 py-2 rounded-lg"
-                >
-                  {error}
-                </motion.p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading || pin.length < 4}
-                className={cn(
-                  'w-full h-12 rounded-xl font-bold text-sm',
-                  'gradient-brand text-white shadow-glow-sm',
-                  'hover:shadow-glow hover:brightness-[1.06] active:brightness-95',
-                  'disabled:opacity-50 disabled:shadow-none disabled:brightness-100 disabled:cursor-not-allowed',
-                  'transition-[box-shadow,filter] duration-[150ms]',
-                  'focus-visible:ring-brand focus-visible:outline-none',
-                )}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    Masuk…
-                  </span>
-                ) : 'Masuk'}
-              </button>
-            </form>
-
-            {/* No-employees warning */}
-            {employees.length === 0 && (
-              <motion.div
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="mt-5 px-4 py-3 bg-warning-light rounded-xl"
-              >
-                <p className="text-xs text-warning-dark font-medium">
-                  Belum ada karyawan terdaftar. Silakan daftarkan admin terlebih dahulu.
-                </p>
-              </motion.div>
+                  {digit === 'backspace' ? <Delete size={20} aria-hidden="true" /> : digit}
+                </Button>
+              ),
             )}
-
-            {/* Register links */}
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="mt-6 pt-5 border-t border-border space-y-2 text-center"
-            >
-              <motion.p variants={listItem} className="text-xs text-ink-faint mb-2">
-                Belum punya akses?
-              </motion.p>
-              <motion.div variants={listItem} className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={onShowAdminRegistration}
-                  className={cn(
-                    'text-sm font-semibold text-brand-600',
-                    'hover:text-brand-700 transition-colors duration-[120ms]',
-                    'focus-visible:outline-none focus-visible:underline',
-                  )}
-                >
-                  Daftar sebagai Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onShowEmployeeRegistration(true)}
-                  className={cn(
-                    'text-sm font-semibold text-success',
-                    'hover:text-success-dark transition-colors duration-[120ms]',
-                    'focus-visible:outline-none focus-visible:underline',
-                  )}
-                >
-                  Daftar sebagai Pegawai
-                </button>
-              </motion.div>
-            </motion.div>
           </div>
-        </motion.div>
 
-        {/* Footer watermark */}
-        <p className="mt-5 text-center text-[11px] text-ink-faint">
-          Mass Laundry POS · v2.0
-        </p>
-      </motion.div>
+          {error && (
+            <p id="login-error" role="alert" className="text-sm font-medium text-danger-dark">
+              {error}
+            </p>
+          )}
+
+          <Button type="submit" size="lg" loading={loading} disabled={pin.length < 4} className="w-full">
+            Masuk
+          </Button>
+        </form>
+
+        {employees.length === 0 && (
+          <p className="mt-4 text-sm text-ink-muted">
+            Belum ada karyawan terdaftar. Daftarkan admin terlebih dahulu.
+          </p>
+        )}
+
+        <div className="mt-6 flex items-center justify-center gap-3 border-t border-border pt-4 text-sm">
+          <button
+            type="button"
+            onClick={onShowAdminRegistration}
+            className="min-h-11 px-2 text-ink-muted transition-colors duration-fast ease-out hover:text-ink hover:underline"
+          >
+            Daftar admin
+          </button>
+          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <button
+            type="button"
+            onClick={() => onShowEmployeeRegistration(true)}
+            className="min-h-11 px-2 text-ink-muted transition-colors duration-fast ease-out hover:text-ink hover:underline"
+          >
+            Daftar pegawai
+          </button>
+        </div>
+      </Card>
     </div>
   );
 };

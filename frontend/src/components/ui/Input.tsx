@@ -28,7 +28,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="text-sm font-semibold text-ink-muted"
+          className="text-sm font-medium text-ink-muted"
         >
           {label}
         </label>
@@ -45,9 +45,9 @@ export function Input({
           {...props}
           className={cn(
             // base
-            'w-full rounded-lg border bg-surface text-ink text-sm',
-            'h-10 px-3',
-            'transition-colors duration-[150ms] ease-out',
+            'w-full rounded-lg border bg-surface text-ink text-base',
+            'h-11 px-3',
+            'transition-colors duration-fast ease-out',
             'placeholder:text-ink-faint',
             // states
             'hover:border-border-strong',

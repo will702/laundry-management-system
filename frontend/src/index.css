@@ -1,6 +1,3 @@
-/* ── Google Fonts ─────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,87 +5,82 @@
 /* ── Design Tokens (CSS Custom Properties) ───────────────────────────────── */
 @layer base {
   :root {
-    /* Accent — electric indigo (signature gradient + active glow) */
-    --accent-400: oklch(0.70 0.17 277);
-    --accent-500: oklch(0.62 0.20 277);
-    --accent-600: oklch(0.55 0.21 278);
-    --accent-700: oklch(0.47 0.20 279);
+    /* Nota Kontan — ballpoint ink, printed red serial, ruled paper */
+    --brand-50:  oklch(0.97 0.015 264);
+    --brand-100: oklch(0.93 0.035 264);
+    --brand-200: oklch(0.87 0.060 264);
+    --brand-300: oklch(0.76 0.110 264);
+    --brand-400: oklch(0.62 0.160 264);
+    --brand-500: oklch(0.50 0.180 264);
+    --brand-600: oklch(0.42 0.170 264);   /* ballpoint — the one action colour */
+    --brand-700: oklch(0.36 0.160 264);
+    --brand-800: oklch(0.30 0.120 264);
+    --brand-900: oklch(0.24 0.090 264);
+    --accent-400: var(--brand-400);
+    --accent-500: var(--brand-500);
+    --accent-600: var(--brand-600);
+    --accent-700: var(--brand-700);
 
-    /* Dark chrome surfaces */
-    --surface-inverse:         oklch(0.21 0.040 265);
-    --surface-inverse-raised:  oklch(0.26 0.050 265);
-    --surface-inverse-overlay: oklch(0.32 0.055 266);
-    --ink-on-dark:       oklch(0.97 0.010 260);
-    --ink-on-dark-muted: oklch(0.74 0.022 262);
-    --ink-on-dark-faint: oklch(0.58 0.025 264);
-
-    /* Signature gradients + glow */
-    --gradient-brand:  linear-gradient(135deg, oklch(0.45 0.18 264) 0%, oklch(0.55 0.21 278) 100%);
-    --gradient-chrome: linear-gradient(180deg, oklch(0.25 0.050 265) 0%, oklch(0.19 0.038 266) 100%);
-    --gradient-hero:   linear-gradient(135deg, oklch(0.24 0.055 266) 0%, oklch(0.30 0.10 274) 55%, oklch(0.40 0.16 278) 100%);
-    --shadow-glow:     0 10px 30px -6px oklch(0.55 0.21 278 / 0.45);
-
-    /* Brand */
-    --brand-50:  oklch(0.97 0.02 258);
-    --brand-100: oklch(0.93 0.05 260);
-    --brand-200: oklch(0.86 0.09 261);
-    --brand-300: oklch(0.75 0.13 262);
-    --brand-400: oklch(0.63 0.16 263);
-    --brand-500: oklch(0.53 0.18 263);
-    --brand-600: oklch(0.45 0.18 264);
-    --brand-700: oklch(0.37 0.17 264);
-    --brand-800: oklch(0.30 0.14 264);
-    --brand-900: oklch(0.22 0.10 265);
-
-    /* Surface */
     --surface:         oklch(1.00 0 0);
-    --surface-raised:  oklch(0.99 0.003 255);
-    --surface-sunken:  oklch(0.965 0.007 255);
-    --surface-overlay: oklch(0.93 0.008 255);
+    --surface-raised:  oklch(0.99 0.002 250);
+    --surface-sunken:  oklch(0.975 0.004 250);          /* paper */
+    --surface-overlay: oklch(0.940 0.008 250);
+    --surface-inverse:         oklch(0.24 0.040 262);   /* ink navy rail */
+    --surface-inverse-raised:  oklch(0.29 0.042 262);
+    --surface-inverse-overlay: oklch(0.35 0.042 262);
 
-    /* Ink */
-    --ink:       oklch(0.16 0.018 258);
-    --ink-muted: oklch(0.45 0.022 257);
-    --ink-faint: oklch(0.65 0.014 256);
+    --ink:       oklch(0.24 0.040 262);
+    --ink-muted: oklch(0.46 0.030 258);
+    --ink-faint: oklch(0.54 0.025 256);
+    --ink-on-dark:       oklch(0.98 0.006 260);
+    --ink-on-dark-muted: oklch(0.82 0.020 262);
+    --ink-on-dark-faint: oklch(0.72 0.025 262);
 
-    /* Border */
-    --border:       oklch(0.88 0.010 255);
-    --border-strong: oklch(0.78 0.016 258);
+    --border:        oklch(0.86 0.020 255);   /* ruled line */
+    --border-strong: oklch(0.74 0.025 258);   /* perforation */
 
-    /* Semantic */
-    --success:       oklch(0.53 0.17 148);
-    --success-light: oklch(0.95 0.05 148);
-    --warning:       oklch(0.66 0.17 65);
-    --warning-light: oklch(0.96 0.05 75);
-    --danger:        oklch(0.54 0.22 27);
-    --danger-light:  oklch(0.96 0.05 20);
+    /* Stamp inks */
+    --success:       oklch(0.55 0.120 160);
+    --success-light: oklch(0.96 0.030 160);
+    --success-dark:  oklch(0.42 0.100 160);
+    --warning:       oklch(0.62 0.130 75);
+    --warning-light: oklch(0.97 0.040 90);
+    --warning-dark:  oklch(0.46 0.110 72);
+    --danger:        oklch(0.52 0.200 27);
+    --danger-light:  oklch(0.96 0.025 27);
+    --danger-dark:   oklch(0.42 0.180 27);
+    --serial:        oklch(0.52 0.200 27);    /* printed serial number only */
 
-    /* Amount (prices — warm amber to pop) */
-    --amount:       oklch(0.60 0.15 52);
-    --amount-light: oklch(0.95 0.06 75);
+    /* Legacy tokens — flat, kept so older call sites keep resolving */
+    --gradient-brand:  linear-gradient(var(--brand-600), var(--brand-600));
+    --gradient-chrome: linear-gradient(var(--surface-inverse), var(--surface-inverse));
+    --gradient-hero:   linear-gradient(var(--surface-inverse), var(--surface-inverse));
+    --shadow-glow:     none;
+    --amount:       var(--ink);
+    --amount-light: var(--surface-sunken);
 
-    /* Radii */
-    --radius-sm:  0.25rem;
-    --radius:     0.375rem;
-    --radius-md:  0.5rem;
-    --radius-lg:  0.75rem;
-    --radius-xl:  1rem;
-    --radius-2xl: 1.25rem;
+    /* Radii — printed form, not bubbly */
+    --radius-sm:  0.1875rem;
+    --radius:     0.25rem;
+    --radius-md:  0.375rem;
+    --radius-lg:  0.375rem;
+    --radius-xl:  0.5rem;
+    --radius-2xl: 0.75rem;
 
-    /* Motion (fast by default — POS tool) */
+    /* Motion */
+    --duration-press:   140ms;
     --duration-fast:    150ms;
     --duration-normal:  220ms;
     --duration-slow:    350ms;
-    --ease-out:         cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-in-out:      cubic-bezier(0.45, 0, 0.55, 1);
+    --ease-out:         cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out:      cubic-bezier(0.77, 0, 0.175, 1);
 
     /* Layout */
-    --sidebar-width:      14rem;   /* 224px expanded */
-    --sidebar-rail-width: 4rem;    /* 64px collapsed icon-rail */
-    --topbar-height:      3.5rem;  /* 56px */
-    --bottom-nav-height:  4rem;    /* 64px */
+    --sidebar-width:      15rem;
+    --sidebar-rail-width: 4.5rem;
+    --topbar-height:      3.5rem;
+    --bottom-nav-height:  4rem;
 
-    /* Safe-area (Capacitor iOS) */
     --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left:   env(safe-area-inset-left, 0px);
@@ -111,8 +103,8 @@
     margin: 0;
     background-color: var(--surface-sunken);
     color: var(--ink);
-    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.9375rem;
+    font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -126,10 +118,15 @@
 
   /* ── Accessibility ──────────────────────────────────────────────────────── */
   *:focus-visible {
-    outline: 3px solid var(--brand-400);
+    outline: 2px solid var(--brand-600);
     outline-offset: 2px;
-    border-radius: var(--radius-sm);
   }
+
+  /* Browser surfaces themed from the palette */
+  ::selection { background: var(--brand-200); color: var(--ink); }
+  input, textarea, select { caret-color: var(--brand-600); accent-color: var(--brand-600); }
+  a { text-underline-offset: 3px; }
+  * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 
   /* Remove outline for mouse/touch — only show for keyboard */
   *:focus:not(:focus-visible) {
@@ -149,10 +146,12 @@
   /* ── Typography scale ───────────────────────────────────────────────────── */
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
     text-wrap: balance;
     color: var(--ink);
   }
+
+  h1 { letter-spacing: -0.02em; }
 
   p {
     text-wrap: pretty;
@@ -178,9 +177,9 @@
   .skeleton {
     background: linear-gradient(
       90deg,
-      oklch(0.93 0.008 255) 25%,
-      oklch(0.90 0.010 255) 50%,
-      oklch(0.93 0.008 255) 75%
+      oklch(0.940 0.008 250) 25%,
+      oklch(0.91 0.010 250) 50%,
+      oklch(0.935 0.008 250) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.8s ease-in-out infinite;
@@ -190,72 +189,89 @@
   @media (prefers-reduced-motion: reduce) {
     .skeleton {
       animation: none;
-      background: oklch(0.93 0.008 255);
+      background: oklch(0.935 0.008 250);
     }
   }
 
-  /* Price display (JetBrains Mono, amber accent) */
+  /* Money is data: IBM Plex Mono, tabular, ink. Never coloured. */
   .price {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    color: var(--amount);
+    color: var(--ink);
     letter-spacing: -0.01em;
   }
 
-  /* ── "Midnight Counter" signature treatments ───────────────────────────── */
-
-  /* Navy→indigo gradient fill (primary CTAs, hero accents) */
-  .gradient-brand { background-image: var(--gradient-brand); }
-  /* Dark chrome shell (sidebar / topbar) */
-  .gradient-chrome { background-image: var(--gradient-chrome); }
-  /* Hero header banner */
-  .gradient-hero { background-image: var(--gradient-hero); }
-
-  /* Text colors for dark chrome */
+  /* Legacy treatments, flattened */
+  .gradient-brand  { background-color: var(--brand-600); }
+  .gradient-chrome { background-color: var(--surface-inverse); }
+  .gradient-hero   { background-color: var(--surface-inverse); }
   .text-on-dark        { color: var(--ink-on-dark); }
   .text-on-dark-muted  { color: var(--ink-on-dark-muted); }
+  .text-on-dark-faint  { color: var(--ink-on-dark-faint); }
+  .metric-tile { position: relative; border-radius: var(--radius-xl); background-color: var(--surface-inverse); color: var(--ink-on-dark); }
+  .ring-gradient { background: var(--surface); border: 1px solid var(--brand-600); }
 
-  /* Signature metric tile — dimensional, gradient-lit panel for headline numbers */
-  .metric-tile {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-xl);
-    background-image: var(--gradient-hero);
-    color: var(--ink-on-dark);
-    box-shadow: var(--shadow-glow);
-    isolation: isolate;
+  /* Printed serial number: the red numeral at the top of every nota */
+  .serial {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--serial);
   }
-  /* Soft light bloom in the corner of the hero tile */
-  .metric-tile::after {
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -20%;
-    width: 70%;
-    height: 140%;
-    background: radial-gradient(circle, oklch(0.70 0.17 277 / 0.45) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: -1;
+  /* Plain mono data (timestamps etc.) */
+  .stamp {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
   }
 
-  /* Hairline gradient ring used on key cards (avoids the banned border+shadow combo
-     because it is a single layered background, not a 1px border + blurred shadow) */
-  .ring-gradient {
-    background:
-      linear-gradient(var(--surface), var(--surface)) padding-box,
-      var(--gradient-brand) border-box;
-    border: 1px solid transparent;
+  /* Rubber-stamp status: ink, outline, a hair off-square. No fill. */
+  .stamp-status {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border: 1.5px solid currentColor;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.25;
+    transform: rotate(-1.5deg);
+    white-space: nowrap;
+    transition: color var(--duration-normal) var(--ease-out);
+  }
+
+  /* Ledger: ruled rows on the sheet. Rows are separated by lines, not cards. */
+  .ledger { border-top: 1px solid var(--border-strong); }
+  .ledger > * { border-bottom: 1px solid var(--border); }
+  /* Perforated tear line between nota rows */
+  .nota-row { border-bottom: 1.5px dashed var(--border-strong); }
+  @media (hover: hover) and (pointer: fine) {
+    .ledger-row:hover { background: var(--surface-raised); }
+  }
+
+  /* Legacy .ticket (still used by print preview until rewritten): flat, no tinted stub */
+  .ticket { position: relative; display: grid; grid-template-columns: var(--stub-w, 7.5rem) 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); }
+  .ticket-stub { padding: 0.875rem 1rem; border-right: 1.5px dashed var(--border-strong); }
+  .ticket-body { padding: 0.875rem 1.125rem; min-width: 0; }
+  @media (max-width: 479px) {
+    .ticket { grid-template-columns: 1fr; }
+    .ticket-stub { border-right: 0; border-bottom: 1.5px dashed var(--border-strong); display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
   }
 
   /* Focus ring utility */
   .ring-brand {
-    box-shadow: 0 0 0 3px oklch(0.63 0.16 263 / 0.35);
+    box-shadow: 0 0 0 3px oklch(0.42 0.17 264 / 0.30);
   }
 
   /* Page-level layout helpers */
   .page-container {
-    max-width: 64rem; /* 1024px — keep POS content reachable on tablet */
+    max-width: 70rem; /* 1120px */
     margin-inline: auto;
     padding-inline: 1rem;
     padding-block: 1.25rem;

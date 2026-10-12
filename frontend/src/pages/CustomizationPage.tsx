@@ -6,7 +6,7 @@ interface Props { employee: Employee }
 
 export function CustomizationPage({ employee }: Props) {
   return (
-    <div className="page-container">
+    <div className="page-container min-w-0 bg-surface-sunken py-6">
       <CustomizationManager employee={employee} />
     </div>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Plus, Trash2, Lock, Clock } from 'lucide-react';
+import { Minus, Plus, Trash2, Clock, CopyPlus } from 'lucide-react';
 import type { Employee, Client } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
 import { parseFooterNotes, renderFooterNotesHtml } from '../../services/receipt/footerNotes';
+import { cn } from '@/lib/cn';
 import {
   Button,
   Input,
@@ -12,7 +13,22 @@ import {
   Card,
   SkeletonCard,
   EmptyState,
+  Tabs,
+  Money,
 } from '../../components/ui';
+import {
+  ITEM_TYPES,
+  calcTotals,
+  canSave,
+  duplicateLine,
+  setItemType,
+  setPrice,
+  setQuantity,
+  tapService,
+  totalQuantityFor,
+  type LineItem,
+  type ServiceItem,
+} from './lineItems';
 
 export interface ReceiptFormProps {
   employee: Employee;
@@ -20,57 +36,20 @@ export interface ReceiptFormProps {
   onReceiptCreated: (receiptId: string) => void;
 }
 
-interface ServiceItem {
-  id: string;
-  name: string;
-  price: number;
-  unit: string;
-  duration_days: number;
-  duration_hours: number;
-  duration_minutes: number;
-  category_name?: string;
-}
-
-interface LineItem {
-  service_item_id: string;
-  service_name: string;
-  item_type: string;
-  quantity: number;
-  price_per_item: number;
-  total_price: number;
-}
-
-const ITEM_TYPES = [
-  { value: 'shirt', label: 'Kemeja' },
-  { value: 'pants', label: 'Celana' },
-  { value: 'dress', label: 'Gaun' },
-  { value: 'suit', label: 'Jas' },
-  { value: 'jacket', label: 'Jaket' },
-  { value: 'skirt', label: 'Rok' },
-  { value: 'blouse', label: 'Blus' },
-  { value: 'curtains', label: 'Gorden' },
-  { value: 'bedsheet', label: 'Seprai' },
-  { value: 'other', label: 'Lainnya' },
-];
-
-const makeInitialItem = (service?: ServiceItem): LineItem => ({
-  service_item_id: service?.id ?? '',
-  service_name: service?.name ?? '',
-  item_type: 'shirt',
-  quantity: 1,
-  price_per_item: service?.price ?? 10,
-  total_price: service?.price ?? 10,
-});
+const ALL_CATEGORIES = 'all';
 
 export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onReceiptCreated }) => {
-  const [items, setItems] = useState<LineItem[]>([
-    { service_item_id: '', service_name: '', item_type: 'shirt', quantity: 1, price_per_item: 10, total_price: 10 },
-  ]);
+  // A bon starts empty: the cashier taps services to build it.
+  const [items, setItems] = useState<LineItem[]>([]);
   const [notes, setNotes] = useState('');
   const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
+  const [category, setCategory] = useState(ALL_CATEGORIES);
+  const [editingPrice, setEditingPrice] = useState<number | null>(null);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showDiscount, setShowDiscount] = useState(false);
 
   useEffect(() => {
     loadServiceItems();
@@ -102,21 +81,6 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
       }));
 
       setServiceItems(servicesData);
-
-      // Update first item with first service if available
-      if (servicesData.length > 0) {
-        const firstService = servicesData[0];
-        setItems([
-          {
-            service_item_id: firstService.id,
-            service_name: firstService.name,
-            item_type: 'shirt',
-            quantity: 1,
-            price_per_item: firstService.price,
-            total_price: firstService.price,
-          },
-        ]);
-      }
     } catch (err) {
       console.error('Error loading services:', err);
     } finally {
@@ -124,59 +88,17 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
     }
   };
 
-  const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
-    const newItems = [...items];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (newItems[index] as any)[field] = value;
-
-    // If service changed, update price and service name
-    if (field === 'service_item_id') {
-      const selectedService = serviceItems.find((s) => s.id === value);
-      if (selectedService) {
-        newItems[index].service_name = selectedService.name;
-        newItems[index].price_per_item = selectedService.price;
-        newItems[index].total_price = newItems[index].quantity * selectedService.price;
-      }
-    }
-
-    if (field === 'quantity' || field === 'price_per_item') {
-      newItems[index].total_price = newItems[index].quantity * newItems[index].price_per_item;
-    }
-
-    setItems(newItems);
-  };
-
-  const addItem = () => {
-    const firstService = serviceItems[0] || { id: '', name: '', price: 10 };
-    setItems([
-      ...items,
-      {
-        service_item_id: firstService.id,
-        service_name: firstService.name,
-        item_type: 'shirt',
-        quantity: 1,
-        price_per_item: firstService.price,
-        total_price: firstService.price,
-      },
-    ]);
-  };
-
-  const removeItem = (index: number) => {
-    if (items.length > 1) {
-      setItems(items.filter((_, i) => i !== index));
-    }
-  };
-
   const resetForm = () => {
-    const firstService = serviceItems[0];
-    setItems([makeInitialItem(firstService)]);
+    setItems([]);
     setNotes('');
     setDiscount(0);
+    setShowNotes(false);
+    setShowDiscount(false);
+    setEditingPrice(null);
   };
 
-  const subtotal = items.reduce((total, item) => total + item.total_price, 0);
-  const discountAmount = subtotal * (discount / 100);
-  const totalAmount = subtotal - discountAmount;
+  const { subtotal, discountAmount, totalAmount } = calcTotals(items, discount);
+  const savable = canSave(items);
 
   const createReceipt = async () => {
     setLoading(true);
@@ -441,216 +363,236 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ employee, client, onRe
     return (
       <Card>
         <EmptyState
-          title="Belum Ada Layanan"
+          title="Belum ada layanan"
           description={
-            `Anda perlu menambahkan layanan laundry terlebih dahulu sebelum membuat bon. ` +
-            `Pergi ke menu "Kelola Layanan" untuk menambahkan layanan seperti Cuci Kemeja, Setrika Celana, atau Dry Clean Jas.`
+            `Tambahkan layanan laundry dulu sebelum membuat bon. ` +
+            `Buka menu Kustomisasi untuk menambah layanan seperti Cuci Kiloan atau Dry Clean Jas.`
           }
         />
       </Card>
     );
   }
 
+  const categoryNames = Array.from(
+    new Set(serviceItems.map((service) => service.category_name || 'Lainnya')),
+  );
+  const categoryTabs = [
+    { value: ALL_CATEGORIES, label: 'Semua' },
+    ...categoryNames.map((name) => ({ value: name, label: name })),
+  ];
+  const visibleServices =
+    category === ALL_CATEGORIES
+      ? serviceItems
+      : serviceItems.filter((service) => (service.category_name || 'Lainnya') === category);
+
+  const saveButton = (
+    <Button
+      variant="primary"
+      size="lg"
+      onClick={createReceipt}
+      disabled={!savable}
+      loading={loading}
+      className="w-full"
+    >
+      Simpan bon
+    </Button>
+  );
+
   return (
-    <Card noPadding>
-      <div className="p-3 sm:p-6">
-        {/* Mobile-optimized header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-2xl font-bold text-ink mb-2 sm:mb-0">Bon Baru</h2>
-          <div className="text-left sm:text-right text-sm text-ink-muted">
-            <div>Karyawan: {employee.name}</div>
-            <div>Pelanggan: {client.name}</div>
+    <div className="grid min-w-0 items-start gap-6 md:grid-cols-[minmax(0,1fr)_19rem] lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+      {/* ── Service keys: tap to add ─────────────────────────────────────── */}
+      <section className="min-w-0 space-y-4" aria-label="Pilih layanan">
+        {categoryTabs.length > 2 && (
+          <Tabs id="receipt-categories" tabs={categoryTabs} value={category} onChange={setCategory} />
+        )}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {visibleServices.map((service) => {
+            const qty = totalQuantityFor(items, service.id);
+            return (
+              <button
+                type="button"
+                key={service.id}
+                onClick={() => setItems(tapService(items, service))}
+                aria-label={`Tambah ${service.name}`}
+                className={cn(
+                  'relative flex min-h-24 flex-col justify-between rounded-lg border p-3 text-left',
+                  'transition-[background-color,border-color,transform] duration-press ease-out',
+                  'active:scale-[0.97] motion-reduce:active:scale-100',
+                  qty > 0
+                    ? 'border-brand-600 bg-brand-50'
+                    : 'border-border bg-surface hover:border-border-strong',
+                )}
+              >
+                <span className={cn('line-clamp-2 text-base font-semibold leading-snug text-ink', qty > 0 && 'pr-9')}>
+                  {service.name}
+                </span>
+                <span className="mt-2 flex flex-wrap items-baseline justify-between gap-x-2">
+                  <Money value={service.price} className="text-sm" />
+                  <span className="text-sm text-ink-muted">/{service.unit}</span>
+                </span>
+                {qty > 0 && (
+                  <span className="absolute right-2 top-2 rounded-sm bg-brand-600 px-1.5 font-mono text-sm font-semibold tabular-nums text-white">
+                    ×{qty}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── The nota in progress ─────────────────────────────────────────── */}
+      <aside className="min-w-0 md:sticky md:top-6 md:flex md:max-h-[calc(100dvh-11rem)] md:flex-col" aria-label="Bon dalam proses">
+        <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-surface">
+          <div className="nota-row shrink-0 px-4 py-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-bold text-ink">Bon baru</h2>
+              <span className="stamp text-ink-muted">{new Date().toLocaleDateString('id-ID')}</span>
+            </div>
+            <p className="mt-1 break-words text-sm text-ink-muted">
+              <span className="font-semibold text-ink">{client.name}</span> · <span className="stamp">{client.phone}</span> · {employee.name}
+            </p>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+          {items.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-ink-muted">
+              Ketuk layanan di samping untuk menambah ke bon.
+            </p>
+          ) : (
+            <ul className="px-4">
+              {items.map((item, index) => (
+                <li key={`${item.service_item_id}-${index}`} className="nota-row py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="min-w-0 break-words font-semibold text-ink">{item.service_name}</p>
+                    <Money value={item.total_price} className="shrink-0 text-base" />
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <div className="flex items-center gap-1" role="group" aria-label={`Jumlah ${item.service_name}`}>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        iconOnly
+                        aria-label={item.quantity === 1 ? `Hapus ${item.service_name}` : `Kurangi ${item.service_name}`}
+                        onClick={() => setItems(setQuantity(items, index, item.quantity - 1))}
+                        icon={item.quantity === 1 ? <Trash2 size={16} /> : <Minus size={16} />}
+                      />
+                      <span className="w-10 text-center font-mono text-base font-semibold tabular-nums" aria-live="polite">
+                        {item.quantity}
+                      </span>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        iconOnly
+                        aria-label={`Tambah ${item.service_name}`}
+                        onClick={() => setItems(setQuantity(items, index, item.quantity + 1))}
+                        icon={<Plus size={16} />}
+                      />
+                    </div>
+                    {editingPrice === index ? (
+                      <Input
+                        autoFocus
+                        type="number"
+                        min="0"
+                        step="500"
+                        className="h-11 w-28"
+                        aria-label={`Harga per item ${item.service_name}`}
+                        value={item.price_per_item}
+                        onChange={(e) => setItems(setPrice(items, index, parseFloat(e.target.value)))}
+                        onBlur={() => setEditingPrice(null)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingPrice(null); }}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditingPrice(index)}
+                        className="inline-flex min-h-11 items-center rounded-md px-2 text-sm text-ink-muted underline decoration-dotted underline-offset-4 hover:text-ink"
+                        aria-label={`Ubah harga ${item.service_name}`}
+                      >
+                        <Money value={item.price_per_item} className="text-sm font-medium text-ink-muted" />
+                        <span>/item</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Select
+                      className="h-10"
+                      aria-label={`Jenis barang ${item.service_name}`}
+                      value={item.item_type}
+                      onChange={(e) => setItems(setItemType(items, index, e.target.value))}
+                      options={ITEM_TYPES}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      iconOnly
+                      aria-label={`Pisahkan baris ${item.service_name} untuk barang lain`}
+                      title="Pisahkan baris untuk barang lain"
+                      onClick={() => setItems(duplicateLine(items, index))}
+                      icon={<CopyPlus size={16} />}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Notes + discount stay out of the way until needed */}
+          <div className="space-y-3 px-4 py-3">
+            {showNotes || notes ? (
+              <Textarea label="Catatan" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Instruksi khusus, tanggal ambil, dll." rows={2} />
+            ) : (
+              <button type="button" onClick={() => setShowNotes(true)} className="min-h-11 text-sm font-medium text-brand-700 underline-offset-4 hover:underline">
+                + Catatan
+              </button>
+            )}
+            {showDiscount || discount > 0 ? (
+              <Input label="Diskon (%)" type="number" min="0" max="100" aria-label="Diskon persen" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} placeholder="0" />
+            ) : (
+              <button type="button" onClick={() => setShowDiscount(true)} className="ml-4 min-h-11 text-sm font-medium text-brand-700 underline-offset-4 hover:underline">
+                + Diskon
+              </button>
+            )}
+          </div>
+
+          </div>
+
+          <div className="shrink-0 space-y-2 border-t border-border-strong px-4 py-4">
+            {discount > 0 && (
+              <>
+                <div className="flex justify-between gap-2 text-sm text-ink-muted"><span>Subtotal</span><Money value={subtotal} className="text-sm font-medium text-ink-muted" /></div>
+                <div className="flex justify-between gap-2 text-sm text-ink-muted"><span>Diskon ({discount}%)</span><span>−<Money value={discountAmount} className="text-sm font-medium text-ink-muted" /></span></div>
+              </>
+            )}
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-base font-semibold text-ink">Total bayar</span>
+              <Money value={totalAmount} className="break-all text-3xl" />
+            </div>
             {items.length > 0 && (
-              <div className="mt-1 text-brand-600 font-medium flex items-center gap-1 sm:justify-end">
-                <Clock size={14} className="shrink-0" />
-                Estimasi selesai: {calculateEstimatedCompletion()}
-              </div>
+              <p className="flex items-start gap-2 text-sm text-ink-muted">
+                <Clock size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span>Estimasi selesai: {calculateEstimatedCompletion()}</span>
+              </p>
             )}
           </div>
         </div>
 
-        <div className="space-y-3 sm:space-y-4">
-          {items.map((item, index) => (
-            <div key={index} className="bg-surface-sunken rounded-lg p-3 sm:p-4">
-              {/* Mobile: Stack vertically, Desktop: Grid layout */}
-              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-3">
-
-                {/* Service Selection - Full width on mobile */}
-                <div className="sm:col-span-5">
-                  <Select
-                    label="Layanan"
-                    value={item.service_item_id}
-                    onChange={(e) => updateItem(index, 'service_item_id', e.target.value)}
-                    options={serviceItems.map((service) => ({
-                      value: service.id,
-                      label: `${service.name} - Rp${service.price.toLocaleString('id-ID')}/${service.unit}`,
-                    }))}
-                  />
-                </div>
-
-                {/* Item Type and Quantity - Side by side on mobile */}
-                <div className="grid grid-cols-2 gap-2 sm:contents">
-                  <div className="sm:col-span-3">
-                    <Select
-                      label="Barang"
-                      value={item.item_type}
-                      onChange={(e) => updateItem(index, 'item_type', e.target.value)}
-                      options={ITEM_TYPES}
-                    />
-                  </div>
-
-                  <div className="sm:col-span-1">
-                    <Input
-                      label="Qty"
-                      type="number"
-                      min="1"
-                      aria-label={`Jumlah ${item.service_name || 'layanan'}`}
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                    />
-                  </div>
-                </div>
-
-                {/* Price and Total - Side by side on mobile */}
-                <div className="grid grid-cols-2 gap-2 sm:contents">
-                  <div className="sm:col-span-2">
-                    <Input
-                      label="Harga"
-                      type="number"
-                      min="0"
-                      step="500"
-                      aria-label={`Harga per item ${item.service_name || 'layanan'}`}
-                      value={item.price_per_item}
-                      onChange={(e) => updateItem(index, 'price_per_item', parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-ink-muted mb-1.5">Total</label>
-                    <div className="w-full h-10 px-3 flex items-center bg-surface-raised border border-border rounded-lg text-sm">
-                      <span className="price">Rp{item.total_price.toLocaleString('id-ID')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Remove Button - Full width on mobile */}
-                <div className="sm:col-span-1">
-                  <label className="block text-sm font-semibold text-ink-muted mb-1.5 sm:invisible">Hapus</label>
-                  {items.length === 1 ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled
-                      className="w-full"
-                      icon={<Lock size={14} />}
-                    >
-                      Minimal 1
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                      className="w-full"
-                      icon={<Trash2 size={14} />}
-                    >
-                      Hapus
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Add Item Button - More prominent on mobile */}
-          <Button
-            variant="outline"
-            onClick={addItem}
-            className="w-full py-4 sm:py-3 border-dashed"
-            icon={<Plus size={16} />}
-          >
-            Tambah Item Baru
-          </Button>
-
-          {/* Notes - Mobile optimized */}
-          <Textarea
-            label="Catatan (Opsional)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Instruksi khusus, tanggal ambil, dll."
-            rows={2}
-          />
-
-          {/* Discount Section - Mobile optimized layout */}
-          <div className="bg-surface-sunken border border-border p-3 sm:p-4 rounded-lg">
-            <h4 className="text-sm font-semibold text-ink mb-3">Diskon (Opsional)</h4>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <Input
-                  label="Diskon (%)"
-                  type="number"
-                  min="0"
-                  max="100"
-                  aria-label="Diskon persen"
-                  value={discount}
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-ink-muted mb-1.5">Nilai Diskon</label>
-                <div className="w-full h-10 px-3 flex items-center bg-surface-raised border border-border rounded-lg text-sm">
-                  <span className="price">-Rp{discountAmount.toLocaleString('id-ID')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Section — signature hero tile */}
-          <div className="metric-tile p-5">
-            <div className="text-center sm:text-left">
-              <div className="flex justify-between items-center text-sm text-on-dark-muted mb-1">
-                <span>Subtotal</span>
-                <span className="font-mono tabular-nums">Rp{subtotal.toLocaleString('id-ID')}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between items-center text-sm text-on-dark-muted mb-1">
-                  <span>Diskon ({discount}%)</span>
-                  <span className="font-mono tabular-nums">-Rp{discountAmount.toLocaleString('id-ID')}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-baseline border-t border-white/15 pt-2 mt-2">
-                <span className="text-sm font-semibold uppercase tracking-wider text-on-dark-muted">Total</span>
-                <span className="font-mono tabular-nums font-extrabold text-2xl sm:text-3xl text-on-dark">
-                  Rp{totalAmount.toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons - Mobile optimized */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={createReceipt}
-              disabled={items.some((item) => !item.service_item_id)}
-              loading={loading}
-              className="w-full"
-            >
-              Buat Bon
-            </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              onClick={resetForm}
-              className="w-full"
-            >
-              Reset Form
-            </Button>
-          </div>
+        <div className="mt-3 hidden shrink-0 space-y-1 md:block">
+          {saveButton}
+          {items.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={resetForm} className="w-full">Kosongkan bon</Button>
+          )}
         </div>
+      </aside>
+
+      {/* Mobile: total + save pinned above the bottom nav */}
+      <div className="sticky bottom-0 z-raised col-span-full flex items-center justify-between gap-3 border-t border-border-strong bg-surface p-3 md:hidden">
+        <div className="min-w-0">
+          <p className="text-sm text-ink-muted">Total bayar</p>
+          <Money value={totalAmount} className="break-all text-xl" />
+        </div>
+        <div className="w-40 shrink-0">{saveButton}</div>
       </div>
-    </Card>
+    </div>
   );
 };

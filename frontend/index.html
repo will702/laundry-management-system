@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
         <!-- PWA Meta Tags -->
-        <meta name="theme-color" content="#1d4278" />
+        <meta name="theme-color" content="#17233f" />
         <meta name="description" content="Mass Laundry - Sistem manajemen laundry profesional dengan estimasi manual, kustomisasi lengkap, dan fitur paket." />
         <meta name="keywords" content="laundry, manajemen, estimasi manual, kustomisasi, paket, bon, audit, laporan, PWA" />
         <meta name="author" content="Mass Laundry" />
@@ -34,8 +34,8 @@
         <!-- Preconnect for fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <!-- Plus Jakarta Sans + JetBrains Mono -->
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        <!-- Instrument Sans (UI) + IBM Plex Mono (serials, amounts) -->
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet" />
 
         <!-- Open Graph Meta Tags for sharing -->
         <meta property="og:title" content="Mass Laundry - Sistem Manajemen Laundry" />
@@ -59,8 +59,8 @@
                 justify-content: center;
                 align-items: center;
                 height: 100vh;
-                background: oklch(0.965 0.007 255);
-                font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+                background: oklch(0.975 0.004 250);
+                font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
                 -webkit-font-smoothing: antialiased;
             }
             .app-loading .brand {
@@ -72,7 +72,7 @@
             .app-loading .brand-icon {
                 width: 40px;
                 height: 40px;
-                background: oklch(0.45 0.18 264);
+                background: oklch(0.42 0.17 264);
                 border-radius: 10px;
                 display: flex;
                 align-items: center;
@@ -83,14 +83,14 @@
             .app-loading .title {
                 font-size: 20px;
                 font-weight: 700;
-                color: oklch(0.16 0.018 258);
+                color: oklch(0.24 0.04 262);
                 letter-spacing: -0.02em;
             }
             .app-loading .spinner {
                 width: 28px;
                 height: 28px;
-                border: 2.5px solid oklch(0.88 0.010 255);
-                border-top-color: oklch(0.45 0.18 264);
+                border: 2.5px solid oklch(0.86 0.02 255);
+                border-top-color: oklch(0.42 0.17 264);
                 border-radius: 50%;
                 animation: spin 0.8s linear infinite;
             }
@@ -98,7 +98,7 @@
                 to { transform: rotate(360deg); }
             }
             @media (prefers-reduced-motion: reduce) {
-                .app-loading .spinner { animation: none; border-top-color: oklch(0.45 0.18 264); }
+                .app-loading .spinner { animation: none; border-top-color: oklch(0.42 0.17 264); }
             }
 
             /* PWA install banner */
@@ -110,9 +110,9 @@
                 right: 0;
                 z-index: 1000;
                 padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-                background: linear-gradient(135deg, oklch(0.45 0.18 264) 0%, oklch(0.55 0.21 278) 100%);
+                background: oklch(0.24 0.04 262);
                 color: white;
-                font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+                font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
                 box-shadow: 0 -4px 24px oklch(0.45 0.18 264 / 0.25);
             }
             .pwa-install-inner {
@@ -143,7 +143,7 @@
             }
             .pwa-install-btn {
                 background: white;
-                color: oklch(0.45 0.18 264);
+                color: oklch(0.42 0.17 264);
                 border: none;
                 padding: 8px 14px;
                 border-radius: 8px;

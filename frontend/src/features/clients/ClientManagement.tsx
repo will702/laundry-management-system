@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import { Trash2, Lock, AlertTriangle, Info, Phone } from 'lucide-react';
+import { Trash2, Lock } from 'lucide-react';
 import type { Employee } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
 import {
-  Card, PageHeader, Button, Badge, Modal, EmptyState, Money, SkeletonCard,
+  Card, PageHeader, Button, Modal, EmptyState, Money, SkeletonCard, Table, THead, TBody, Tr, Th, Td,
 } from '../../components/ui';
-import { staggerContainer, listItem } from '../../lib/motion';
 
 interface ClientWithStats {
   id: string;
@@ -98,139 +96,106 @@ export const ClientManagement: React.FC<ClientManagementProps> = ({ employee }) 
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        kicker="Pelanggan"
-        title="Manajemen Pelanggan"
-        description={isAdmin ? 'Kelola pelanggan beserta statistik transaksinya.' : 'Daftar pelanggan terdaftar.'}
-        action={<Badge variant="info">{clients.length} pelanggan</Badge>}
-      />
+  const deleteButton = (client: ClientWithStats) => {
+    const hasActive = (client.active_receipts ?? 0) > 0;
+    return (
+      <Button
+        variant="ghost"
+        size="md"
+        className={hasActive ? 'text-ink-muted disabled:opacity-80' : 'text-danger-dark'}
+        onClick={() => openDeleteModal(client)}
+        disabled={hasActive}
+        icon={hasActive ? <Lock size={14} /> : <Trash2 size={14} />}
+        title={hasActive ? `Tidak dapat dihapus: ${client.active_receipts} bon aktif` : 'Hapus pelanggan'}
+      >
+        {hasActive ? 'Terkunci' : 'Hapus'}
+      </Button>
+    );
+  };
 
-      {!isAdmin && (
-        <div className="flex items-start gap-2.5 rounded-xl bg-warning-light p-4">
-          <AlertTriangle size={16} className="shrink-0 mt-0.5 text-warning-dark" />
-          <span className="text-sm text-warning-dark">
-            Hanya admin yang dapat menghapus pelanggan. Hubungi administrator untuk akses penuh.
-          </span>
-        </div>
-      )}
+  return (
+    <div className="space-y-5">
+      <PageHeader
+        title="Pelanggan"
+        description={
+          isAdmin
+            ? `${clients.length} pelanggan. Pelanggan hanya bisa dihapus jika tidak punya bon aktif.`
+            : `${clients.length} pelanggan. Hanya admin yang dapat menghapus pelanggan.`
+        }
+      />
 
       {clients.length === 0 ? (
         <Card>
-          <EmptyState title="Belum ada pelanggan" description="Belum ada pelanggan terdaftar." />
+          <EmptyState title="Belum ada pelanggan" description="Tambah pelanggan saat membuat bon." />
         </Card>
       ) : (
-        <motion.div
-          className="space-y-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {clients.map((client) => {
-            const hasActive = (client.active_receipts ?? 0) > 0;
-            return (
-              <motion.div key={client.id} variants={listItem}>
-                <Card>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className="text-lg font-semibold text-ink">{client.name}</h3>
-                        {client.phone && (
-                          <span className="flex items-center gap-1 text-sm text-ink-muted">
-                            <Phone size={13} /> {client.phone}
-                          </span>
-                        )}
-                      </div>
-
-                      {isAdmin && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-2">
-                          <div>
-                            <span className="font-semibold text-ink-muted">Total Bon</span>
-                            <div className="font-semibold text-ink tabular-nums">{client.total_receipts || 0}</div>
-                          </div>
-                          <div>
-                            <span className="font-semibold text-ink-muted">Bon Aktif</span>
-                            <div className={`font-semibold tabular-nums ${hasActive ? 'text-warning-dark' : 'text-success'}`}>
-                              {client.active_receipts || 0}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-semibold text-ink-muted">Bon Selesai</span>
-                            <div className="font-semibold text-ink tabular-nums">{client.completed_receipts || 0}</div>
-                          </div>
-                          <div>
-                            <span className="font-semibold text-ink-muted">Total Transaksi</span>
-                            <div><Money value={client.total_spent || 0} /></div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="text-xs text-ink-faint">
-                        Terdaftar: {formatDate(client.created_at || client.createdAt)}
-                        {isAdmin && client.last_visit && <> · Kunjungan terakhir: {formatDate(client.last_visit)}</>}
-                      </div>
-                    </div>
-
-                    <div className="ml-2 flex flex-col items-end gap-2 shrink-0">
-                      {isAdmin && (
-                        <Button
-                          variant={hasActive ? 'secondary' : 'danger'}
-                          size="sm"
-                          onClick={() => openDeleteModal(client)}
-                          disabled={hasActive}
-                          icon={hasActive ? <Lock size={14} /> : <Trash2 size={14} />}
-                          title={hasActive ? `Tidak dapat dihapus: ${client.active_receipts} bon aktif` : 'Hapus pelanggan'}
-                        >
-                          {hasActive ? 'Terkunci' : 'Hapus'}
-                        </Button>
-                      )}
-                      <Badge variant={hasActive ? 'warning' : 'success'}>
-                        {hasActive ? 'Ada Bon Aktif' : 'Bersih'}
-                      </Badge>
-                    </div>
+        <Card noPadding>
+          <div className="hidden md:block">
+            <Table>
+              <THead><Tr noHover>
+                <Th>Pelanggan</Th><Th>Telepon</Th>
+                {isAdmin && <><Th numeric>Total bon</Th><Th numeric>Bon aktif</Th><Th numeric>Bon selesai</Th><Th numeric>Total transaksi</Th></>}
+                {isAdmin && <Th><span className="sr-only">Aksi</span></Th>}
+              </Tr></THead>
+              <TBody>{clients.map((client) => (
+                <Tr key={client.id}>
+                  <Td>
+                    <p className="font-medium break-words">{client.name}</p>
+                    <p className="text-xs text-ink-muted">
+                      Terdaftar {formatDate(client.created_at || client.createdAt)}
+                      {isAdmin && client.last_visit && <> · kunjungan terakhir {formatDate(client.last_visit)}</>}
+                    </p>
+                  </Td>
+                  <Td className="text-ink-muted">{client.phone || '—'}</Td>
+                  {isAdmin && <><Td numeric>{client.total_receipts || 0}</Td><Td numeric>{client.active_receipts || 0}</Td><Td numeric>{client.completed_receipts || 0}</Td><Td numeric><Money value={client.total_spent || 0} /></Td></>}
+                  {isAdmin && <Td className="text-right">{deleteButton(client)}</Td>}
+                </Tr>
+              ))}</TBody>
+            </Table>
+          </div>
+          <div className="ledger md:hidden border-t-0">
+            {clients.map((client) => (
+              <div key={client.id} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold text-ink break-words">{client.name}</h3>
+                    <p className="text-sm text-ink-muted break-all">{client.phone || '—'}</p>
                   </div>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  {isAdmin && <div className="shrink-0">{deleteButton(client)}</div>}
+                </div>
+                {isAdmin && (
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div><dt className="text-ink-muted">Total bon</dt><dd className="font-mono tabular-nums text-ink">{client.total_receipts || 0}</dd></div>
+                    <div><dt className="text-ink-muted">Total transaksi</dt><dd><Money value={client.total_spent || 0} /></dd></div>
+                    <div><dt className="text-ink-muted">Bon aktif</dt><dd className="font-mono tabular-nums text-ink">{client.active_receipts || 0}</dd></div>
+                    <div><dt className="text-ink-muted">Bon selesai</dt><dd className="font-mono tabular-nums text-ink">{client.completed_receipts || 0}</dd></div>
+                  </dl>
+                )}
+                <p className="mt-2 text-xs text-ink-muted">
+                  Terdaftar {formatDate(client.created_at || client.createdAt)}
+                  {isAdmin && client.last_visit && <> · kunjungan terakhir {formatDate(client.last_visit)}</>}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal open={deleteModalOpen && isAdmin} onClose={closeDeleteModal} title="Konfirmasi Hapus Pelanggan" size="sm">
+      <Modal open={deleteModalOpen && isAdmin} onClose={closeDeleteModal} title="Hapus pelanggan?" size="sm">
         <div className="space-y-4">
-          <div className="rounded-lg bg-danger-light p-4 text-sm text-danger-dark space-y-1">
-            <p><strong>Pelanggan:</strong> {clientToDelete?.name}</p>
-            <p><strong>Telepon:</strong> {clientToDelete?.phone || '-'}</p>
-            <p><strong>Total Bon:</strong> {clientToDelete?.total_receipts || 0}</p>
-          </div>
-          <div className="flex items-start gap-2.5 rounded-lg bg-warning-light p-3">
-            <AlertTriangle size={15} className="shrink-0 mt-0.5 text-warning-dark" />
-            <p className="text-sm text-warning-dark">
-              Aksi ini tidak dapat dibatalkan. Data pelanggan akan dihapus permanen dari sistem.
-            </p>
-          </div>
-          <div className="flex gap-2.5 justify-end">
-            <Button variant="secondary" onClick={closeDeleteModal} disabled={deleteLoading}>Batal</Button>
-            <Button variant="danger" onClick={confirmDelete} loading={deleteLoading}>Ya, Hapus Pelanggan</Button>
+          <dl className="divide-y divide-border border-y border-border text-base">
+            <div className="flex justify-between gap-4 py-2"><dt className="text-ink-muted">Pelanggan</dt><dd className="font-medium text-right break-words">{clientToDelete?.name}</dd></div>
+            <div className="flex justify-between gap-4 py-2"><dt className="text-ink-muted">Telepon</dt><dd className="text-right">{clientToDelete?.phone || '-'}</dd></div>
+            <div className="flex justify-between gap-4 py-2"><dt className="text-ink-muted">Total bon</dt><dd className="font-mono tabular-nums">{clientToDelete?.total_receipts || 0}</dd></div>
+          </dl>
+          <p className="text-sm text-ink-muted">Data pelanggan dihapus permanen dan tidak dapat dikembalikan.</p>
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" size="md" onClick={closeDeleteModal} disabled={deleteLoading}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDelete} loading={deleteLoading}>Hapus pelanggan</Button>
           </div>
         </div>
       </Modal>
-
-      {isAdmin && (
-        <div className="rounded-xl bg-brand-50 p-4">
-          <h4 className="flex items-center gap-2 font-semibold text-brand-800 mb-2">
-            <Info size={15} /> Informasi Admin
-          </h4>
-          <ul className="text-sm text-brand-700 space-y-1 list-disc list-inside">
-            <li>Pelanggan hanya bisa dihapus jika tidak memiliki bon aktif</li>
-            <li>Data statistik menampilkan riwayat transaksi lengkap</li>
-            <li>Penghapusan bersifat permanen dan tidak dapat dibatalkan</li>
-            <li>Pastikan backup data sudah dilakukan sebelum menghapus</li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 };

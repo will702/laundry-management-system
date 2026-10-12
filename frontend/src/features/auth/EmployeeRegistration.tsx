@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { UserPlus, Info } from 'lucide-react';
 import type { Employee } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
-import { Modal, Button, Input, Textarea } from '../../components/ui';
+import { Button, Card, LogoIcon, Input, Textarea } from '../../components/ui';
 
 interface EmployeeRegistrationProps {
   onBack: () => void;
@@ -58,40 +57,36 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
   };
 
   return (
-    <Modal open onClose={onBack} title="Daftar Pegawai" size="md">
-      <div className="flex items-center gap-3 mb-5">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl gradient-brand text-white shadow-glow-sm">
-          <UserPlus size={20} />
-        </span>
-        <p className="text-sm text-ink-muted">Buat akun pegawai untuk mengakses fitur dasar.</p>
+    <Card className="max-h-[90vh] w-full overflow-y-auto p-6 sm:p-8">
+      <div className="flex items-center gap-3">
+        <LogoIcon size={32} />
+        <h1 className="text-xl font-bold tracking-tight">Daftar pegawai</h1>
       </div>
+      <p className="mt-2 text-sm text-ink-muted">Buat akun pegawai untuk membuat bon dan melihat laporan.</p>
 
-      {error && (
-        <div className="mb-4 p-3 bg-danger-light rounded-lg text-danger-dark text-sm">{error}</div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <Input
           type="text"
-          label="Nama Lengkap"
+          label="Nama lengkap"
           placeholder="Nama lengkap"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          autoComplete="name"
           required
         />
         <Input
           type="password"
-          label="PIN Login (minimal 4 digit)"
+          label="PIN login (minimal 4 digit)"
           placeholder="••••"
           inputMode="numeric"
           value={formData.pin}
           onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-          className="font-mono tracking-[0.3em]"
+          className="tracking-widest"
           required
         />
         <Input
           type="tel"
-          label="Nomor Telepon (opsional)"
+          label="Nomor telepon (opsional)"
           placeholder="08xxxxxxxxxx"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -104,18 +99,23 @@ export const EmployeeRegistration: React.FC<EmployeeRegistrationProps> = ({
           rows={2}
         />
 
-        <div className="flex gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onBack} disabled={loading} className="flex-1">Kembali</Button>
-          <Button type="submit" loading={loading} className="flex-1">Daftar Pegawai</Button>
-        </div>
+        {error && (
+          <p className="text-sm font-medium text-danger-dark" role="alert">{error}</p>
+        )}
+
+        <Button type="submit" loading={loading} size="lg" className="w-full">Daftar pegawai</Button>
       </form>
 
-      <div className="mt-6 flex items-start gap-2.5 rounded-xl bg-surface-sunken border border-border p-3">
-        <Info size={15} className="shrink-0 mt-0.5 text-accent-600" />
-        <p className="text-xs text-ink-muted">
-          Pegawai dapat mengakses fitur dasar seperti membuat bon dan melihat laporan. User bernama "user" juga dapat mengakses kustomisasi.
-        </p>
+      <div className="mt-4 text-center">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={loading}
+          className="min-h-11 px-2 text-sm text-ink-muted transition-colors duration-fast ease-out hover:text-ink hover:underline disabled:opacity-50"
+        >
+          Kembali ke login
+        </button>
       </div>
-    </Modal>
+    </Card>
   );
 };

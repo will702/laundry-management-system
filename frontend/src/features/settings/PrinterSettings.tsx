@@ -29,12 +29,10 @@ export function PrinterSettings() {
 
   return (
     <Card>
-      <h3 className="font-bold text-ink mb-5">Pengaturan Printer</h3>
-
-      <div className="space-y-6">
+            <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
         {/* Adapter type */}
         <div>
-          <label className="block text-sm font-semibold text-ink-muted mb-2">Jenis Koneksi</label>
+          <span className="block text-sm font-medium text-ink-muted mb-2">Jenis koneksi</span>
           <div className="grid grid-cols-1 gap-2">
             {ADAPTER_OPTIONS.map((opt) => {
               const active = adapterType === opt.value;
@@ -42,8 +40,8 @@ export function PrinterSettings() {
                 <label
                   key={opt.value}
                   className={cn(
-                    'flex items-start gap-3 p-3 border rounded-xl cursor-pointer transition-colors duration-[150ms]',
-                    active ? 'border-accent-500 bg-accent-50' : 'border-border hover:bg-surface-overlay',
+                    'flex items-start gap-3 p-3 min-h-11 border rounded-lg cursor-pointer transition-colors duration-fast ease-out motion-reduce:transition-none',
+                    active ? 'border-brand-600 bg-brand-50' : 'border-border [@media(hover:hover)]:hover:bg-surface-overlay',
                   )}
                 >
                   <input
@@ -56,7 +54,7 @@ export function PrinterSettings() {
                   />
                   <span>
                     <span className="font-semibold text-sm text-ink">{opt.label}</span>
-                    <span className="block text-xs text-ink-muted">{opt.description}</span>
+                    <span className="block text-sm text-ink-muted">{opt.description}</span>
                   </span>
                 </label>
               );
@@ -66,7 +64,7 @@ export function PrinterSettings() {
 
         {needsDevice && (
           <Select
-            label="Lebar Kertas"
+            label="Lebar kertas"
             value={paperWidth}
             onChange={(e) => setPaperWidth(Number(e.target.value) as PaperWidth)}
             options={PAPER_OPTIONS}
@@ -79,53 +77,53 @@ export function PrinterSettings() {
             value={codepage}
             onChange={(e) => setCodepage(e.target.value as Codepage)}
             options={CODEPAGE_OPTIONS.map((cp) => ({ value: cp, label: cp }))}
-            hint="Untuk teks Indonesia: cp437 atau cp1252 biasanya bekerja"
+            hint="Untuk teks Indonesia, cp437 atau cp1252 biasanya cocok"
           />
         )}
 
         {needsDevice && (
           <div>
-            <label className="block text-sm font-semibold text-ink-muted mb-2">Perangkat</label>
+            <span className="block text-sm font-medium text-ink-muted mb-2">Perangkat</span>
             {connectedDevice ? (
-              <div className="flex items-center justify-between p-3 bg-success-light rounded-xl">
+              <div className="flex flex-wrap gap-3 items-center justify-between p-3 bg-success-light rounded-lg">
                 <span className="flex items-center gap-2 text-sm text-success-dark font-semibold">
                   <CheckCircle2 size={15} /> Terhubung: {connectedDevice.name}
                 </span>
-                <button onClick={disconnectDevice} className="text-xs text-danger font-semibold hover:underline">
+                <Button variant="ghost" onClick={disconnectDevice} className="min-h-11 text-danger">
                   Putuskan
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-2">
                 <Button
                   onClick={scanDevices}
                   loading={isScanning}
-                  className="w-full"
+                  className="min-h-11"
                   icon={<Search size={15} />}
                 >
-                  {isScanning ? 'Memindai...' : 'Cari Printer'}
+                  {isScanning ? 'Memindai...' : 'Cari printer'}
                 </Button>
                 {availableDevices.length > 0 && (
-                  <ul className="border border-border rounded-xl divide-y divide-border overflow-hidden">
+                  <ul className="border border-border rounded-lg divide-y divide-border overflow-hidden">
                     {availableDevices.map((d) => (
                       <li key={d.id}>
                         <button
                           onClick={() => connectDevice(d)}
                           disabled={isConnecting}
-                          className="w-full text-left px-4 py-3 text-sm text-ink hover:bg-surface-overlay disabled:opacity-50 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm text-ink [@media(hover:hover)]:hover:bg-surface-overlay disabled:opacity-50 transition-colors"
                         >
                           {d.name}
-                          {isConnecting && <span className="ml-2 text-ink-faint">Menghubungkan...</span>}
+                          {isConnecting && <span className="ml-2 text-ink-muted">Menghubungkan...</span>}
                         </button>
                       </li>
                     ))}
                   </ul>
                 )}
                 {availableDevices.length === 0 && !isScanning && (
-                  <p className="text-xs text-ink-faint text-center py-2">
+                  <p className="text-sm text-ink-muted py-2">
                     {adapterType === 'ble'
                       ? 'Catatan: iOS hanya mendukung BLE (bukan Bluetooth klasik SPP)'
-                      : 'Klik Cari Printer untuk membuka dialog USB'}
+                      : 'Tekan Cari printer untuk membuka dialog USB'}
                   </p>
                 )}
               </div>
@@ -134,11 +132,11 @@ export function PrinterSettings() {
         )}
 
         {error && (
-          <div className="p-3 bg-danger-light rounded-xl text-sm text-danger-dark">{error}</div>
+          <div className="p-3 bg-danger-light rounded-lg text-sm text-danger-dark">{error}</div>
         )}
 
-        <Button onClick={testPrint} variant="secondary" className="w-full" icon={<Printer size={15} />}>
-          Cetak Test
+        <Button onClick={testPrint} variant="secondary" className="md:col-span-2 justify-self-end" icon={<Printer size={15} />}>
+          Cetak tes
         </Button>
       </div>
     </Card>

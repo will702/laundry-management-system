@@ -9,12 +9,12 @@
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, UserCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Employee, Client } from '@mass-laundry/shared-types';
 import { ClientSelector } from '@/features/clients/ClientSelector';
 import { ReceiptForm }    from '@/features/receipts/ReceiptForm';
-import { Button }         from '@/components/ui/Button';
+import { Button, Card, PageHeader } from '@/components/ui';
 import { fadeUp }         from '@/lib/motion';
 
 interface Props {
@@ -31,7 +31,7 @@ export function CreateReceiptPage({ employee }: Props) {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container bg-surface-sunken py-6">
       <AnimatePresence mode="wait" initial={false}>
         {!selectedClient ? (
           /* ── Step 1: Client selection ────────────────────────────── */
@@ -42,16 +42,13 @@ export function CreateReceiptPage({ employee }: Props) {
             animate="visible"
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
-            <div className="mb-5">
-              <h1 className="text-2xl font-bold text-ink tracking-tight">Bon Baru</h1>
-              <p className="text-sm text-ink-muted mt-0.5">Pilih atau tambah pelanggan untuk mulai</p>
-            </div>
-            <div className="bg-surface rounded-xl border border-border shadow-xs p-4 md:p-6">
+            <PageHeader title="Bon baru" description="Pilih pelanggan, lalu ketuk layanan untuk mengisi bon." />
+            <Card>
               <ClientSelector
                 onClientSelect={setSelectedClient}
                 selectedClient={null}
               />
-            </div>
+            </Card>
           </motion.div>
         ) : (
           /* ── Step 2: Receipt form ──────────────────────────────────── */
@@ -62,24 +59,16 @@ export function CreateReceiptPage({ employee }: Props) {
             animate="visible"
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
-            {/* Breadcrumb / back nav */}
-            <div className="flex items-center gap-3 mb-5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedClient(null)}
-                icon={<ArrowLeft size={14} />}
-                className="px-2.5"
-              >
-                Pilih Ulang
+            <PageHeader title="Bon baru" />
+            {/* Customer strip: who this bon is for, with a way back */}
+            <div className="mb-6 flex items-center justify-between gap-3 border-y border-border py-2">
+              <p className="min-w-0 truncate text-base text-ink-muted">
+                Bon untuk <span className="font-semibold text-ink">{selectedClient.name}</span>
+                <span className="stamp ml-3">{selectedClient.phone}</span>
+              </p>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedClient(null)} icon={<ArrowLeft size={16} />} className="shrink-0">
+                Ganti pelanggan
               </Button>
-              <div className="flex items-center gap-2 text-sm text-ink-muted">
-                <UserCircle size={15} className="text-brand-500" />
-                <span>
-                  Bon untuk{' '}
-                  <span className="font-semibold text-ink">{selectedClient.name}</span>
-                </span>
-              </div>
             </div>
 
             <ReceiptForm

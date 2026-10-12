@@ -23,7 +23,7 @@ export function Select({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={selectId} className="text-sm font-semibold text-ink-muted">
+        <label htmlFor={selectId} className="text-sm font-medium text-ink-muted">
           {label}
         </label>
       )}
@@ -33,9 +33,9 @@ export function Select({
           id={selectId}
           {...props}
           className={cn(
-            'w-full appearance-none rounded-lg border bg-surface text-ink text-sm',
-            'h-10 px-3 pr-9',
-            'transition-colors duration-[150ms] ease-out',
+            'w-full appearance-none rounded-lg border bg-surface text-ink text-base',
+            'h-11 px-3 pr-9',
+            'transition-colors duration-fast ease-out',
             'hover:border-border-strong',
             'focus:outline-none focus:border-brand-500 focus:ring-brand',
             error ? 'border-danger' : 'border-border',

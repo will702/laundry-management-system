@@ -21,9 +21,9 @@ interface CardProps {
 }
 
 const TONES: Record<CardTone, string> = {
-  default: 'bg-surface shadow-sm border border-border text-ink',
-  hero:    'gradient-hero shadow-glow text-on-dark border-0 overflow-hidden',
-  inverse: 'bg-surface-inverse shadow-lg text-on-dark border border-surface-inverse-overlay',
+  default: 'bg-surface border border-border text-ink',
+  hero:    'bg-surface-inverse text-on-dark border-0 overflow-hidden',
+  inverse: 'bg-surface-inverse text-on-dark',
 };
 
 export function Card({
@@ -42,9 +42,8 @@ export function Card({
         !noPadding && 'p-4 md:p-5',
         interactive && [
           'cursor-pointer',
-          'transition-[box-shadow,border-color,transform] duration-[150ms] ease-out',
-          tone === 'default' && 'hover:shadow-md hover:border-border-strong',
-          tone !== 'default' && 'hover:brightness-110',
+          'transition-[border-color,transform] duration-press ease-out',
+          tone === 'default' && '[@media(hover:hover)]:hover:border-border-strong',
           'active:scale-[0.99] motion-reduce:active:scale-100',
         ],
         className,

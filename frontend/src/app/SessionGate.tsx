@@ -157,7 +157,7 @@ export function SessionGate({ children }: SessionGateProps) {
         <AnimatePresence>
           {showEmployeeReg && (
             <motion.div
-              className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-ink/40 backdrop-blur-[2px]"
+              className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-ink/50"
               variants={backdropVariants}
               initial="hidden" animate="visible" exit="exit"
             >
@@ -178,7 +178,7 @@ export function SessionGate({ children }: SessionGateProps) {
         <AnimatePresence>
           {showAdminReg && (
             <motion.div
-              className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-ink/40 backdrop-blur-[2px]"
+              className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-ink/50"
               variants={backdropVariants}
               initial="hidden" animate="visible" exit="exit"
             >

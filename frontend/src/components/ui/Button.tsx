@@ -14,27 +14,26 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  // Signature navy→indigo gradient with accent glow on hover
   primary:
-    'gradient-brand text-white shadow-glow-sm hover:shadow-glow hover:brightness-[1.06] active:brightness-95 disabled:opacity-50 disabled:shadow-none disabled:brightness-100',
+    'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-700 disabled:opacity-50',
   secondary:
-    'bg-surface text-ink border border-border hover:bg-surface-overlay hover:border-border-strong active:bg-surface-overlay disabled:opacity-50',
+    'bg-surface text-ink border border-border-strong hover:bg-surface-overlay active:bg-surface-overlay disabled:opacity-50',
   danger:
     'bg-danger text-white hover:bg-danger-dark active:bg-danger-dark disabled:opacity-50',
   ghost:
     'text-ink-muted hover:bg-surface-overlay hover:text-ink active:bg-surface-overlay disabled:opacity-40',
   outline:
-    'border-2 border-accent-500 text-accent-600 hover:bg-accent-50 active:bg-accent-100 disabled:opacity-50',
+    'border border-brand-600 text-brand-700 hover:bg-brand-50 active:bg-brand-100 disabled:opacity-50',
   subtle:
     'bg-brand-50 text-brand-700 hover:bg-brand-100 active:bg-brand-200 disabled:opacity-50',
 };
 
 const SIZES: Record<Size, string> = {
-  xs:   'h-7  px-2.5 text-xs  gap-1   rounded',
-  sm:   'h-8  px-3   text-sm  gap-1.5 rounded-md',
-  md:   'h-10 px-4   text-sm  gap-2   rounded-md',
-  lg:   'h-12 px-5   text-base gap-2  rounded-lg',
-  icon: 'h-10 w-10   rounded-md p-0',
+  xs:   'h-8  px-2.5 text-sm  gap-1   rounded-md',
+  sm:   'h-10 px-3   text-sm  gap-1.5 rounded-lg',
+  md:   'h-11 px-4   text-base gap-2  rounded-lg',
+  lg:   'h-[3.25rem] px-6 text-base gap-2 rounded-lg',
+  icon: 'h-11 w-11   rounded-lg p-0',
 };
 
 export function Button({
@@ -55,9 +54,8 @@ export function Button({
       className={cn(
         // base
         'inline-flex items-center justify-center font-semibold',
-        'transition-[background,box-shadow,filter,transform,border-color] duration-[150ms] ease-out',
-        'focus-visible:outline-none focus-visible:ring-brand',
-        'active:scale-[0.97] motion-reduce:active:scale-100',
+        'transition-[background-color,border-color,color,transform] duration-press ease-out',
+                'active:scale-[0.97] motion-reduce:active:scale-100',
         'select-none touch-manipulation',
         // variant + size
         VARIANTS[variant],
