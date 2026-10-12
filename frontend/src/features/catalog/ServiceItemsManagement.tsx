@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import { Plus, X, Save } from 'lucide-react';
+import { Plus, X, Save, Trash2, RotateCcw } from 'lucide-react';
 import type { Employee } from '@mass-laundry/shared-types';
 import { apiClient } from '../../services/api';
 import {
-  Card, PageHeader, Button, Input, Select, Textarea, Badge, EmptyState, Money, SkeletonCard,
+  Card, PageHeader, Button, Input, Select, Textarea, EmptyState, Money, SkeletonCard,
+  Table, THead, TBody, Tr, Th, Td,
 } from '../../components/ui';
-import { staggerContainer, listItem } from '../../lib/motion';
 
 interface ServiceItem {
   id: string;
@@ -112,134 +111,123 @@ export const ServiceItemsManagement: React.FC<ServiceItemsManagementProps> = () 
     );
   }
 
+  const hideSm = 'hidden sm:table-cell';
+
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Katalog"
-        title="Item Laundry"
-        description="Kelola daftar item layanan dan harganya."
+        title="Item laundry"
+        description="Daftar item layanan dan harganya."
         action={
           <Button
             variant={showAddForm ? 'secondary' : 'primary'}
             size="sm"
+            className="min-h-11"
             onClick={() => setShowAddForm(!showAddForm)}
             icon={showAddForm ? <X size={15} /> : <Plus size={15} />}
           >
-            {showAddForm ? 'Batal' : 'Tambah Item'}
+            {showAddForm ? 'Batal' : 'Tambah item'}
           </Button>
         }
       />
 
-      {showAddForm && (
-        <Card className="bg-surface-sunken">
-          <h3 className="text-lg font-bold text-ink mb-4">Tambah Item Layanan Baru</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Nama Layanan"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-              placeholder="Misal: Cuci Kemeja Regular"
-              required
-            />
-            <Select
-              label="Kategori"
-              value={newItem.category}
-              onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-              options={CATEGORIES}
-            />
-            <Input
-              label="Harga"
-              type="number"
-              value={newItem.price}
-              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-              placeholder="5000"
-              min="0"
-              step="500"
-              required
-            />
-            <Select
-              label="Satuan"
-              value={newItem.unit}
-              onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
-              options={UNITS}
-            />
-          </div>
-          <div className="mt-4">
+      <Card noPadding>
+        {showAddForm && (
+          <div className="border-b border-border-strong bg-surface-sunken px-4 py-4 md:px-5 space-y-4">
+            <h2 className="text-lg font-bold tracking-tight text-ink">Item baru</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Nama layanan"
+                value={newItem.name}
+                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                placeholder="mis. Cuci kemeja reguler"
+                required
+              />
+              <Select
+                label="Kategori"
+                value={newItem.category}
+                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                options={CATEGORIES}
+              />
+              <Input
+                label="Harga"
+                type="number"
+                value={newItem.price}
+                onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                placeholder="5000"
+                min="0"
+                step="500"
+                required
+              />
+              <Select
+                label="Satuan"
+                value={newItem.unit}
+                onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                options={UNITS}
+              />
+            </div>
             <Textarea
-              label="Deskripsi (Opsional)"
+              label="Deskripsi (opsional)"
               value={newItem.description}
               onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               rows={2}
-              placeholder="Deskripsi tambahan untuk item ini..."
+              placeholder="Catatan tambahan untuk item ini"
             />
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowAddForm(false)}>Batal</Button>
+              <Button onClick={createServiceItem} icon={<Save size={15} />}>Simpan item</Button>
+            </div>
           </div>
-          <div className="flex gap-3 mt-6">
-            <Button onClick={createServiceItem} icon={<Save size={15} />}>Simpan Item</Button>
-            <Button variant="ghost" onClick={() => setShowAddForm(false)}>Batal</Button>
-          </div>
-        </Card>
-      )}
+        )}
 
-      {serviceItems.length === 0 ? (
-        <Card>
-          <EmptyState title="Belum ada item layanan" description="Tambah item layanan pertama Anda." />
-        </Card>
-      ) : (
-        <motion.div
-          className="space-y-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {serviceItems.map((item) => (
-            <motion.div key={item.id} variants={listItem}>
-              <Card className={item.is_active ? undefined : 'border-danger/40 bg-danger-light/40'}>
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-ink">{item.name}</h3>
-                      <Badge variant={item.is_active ? 'success' : 'danger'}>
-                        {item.is_active ? 'Aktif' : 'Nonaktif'}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="font-semibold text-ink-muted">Kategori</span>
-                        <div className="text-ink">{getCategoryLabel(item.category)}</div>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-ink-muted">Harga</span>
-                        <div><Money value={item.price} /></div>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-ink-muted">Satuan</span>
-                        <div className="text-ink">{getUnitLabel(item.unit)}</div>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-ink-muted">Dibuat</span>
-                        <div className="text-ink tabular-nums">{new Date(item.created_at).toLocaleDateString('id-ID')}</div>
-                      </div>
-                    </div>
-                    {item.description && (
-                      <div className="mt-2 text-sm text-ink-muted">
-                        <span className="font-semibold text-ink-muted">Deskripsi:</span> {item.description}
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    variant={item.is_active ? 'danger' : 'primary'}
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => toggleItemStatus(item.id, item.is_active)}
-                  >
-                    {item.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+        {serviceItems.length === 0 ? (
+          <EmptyState
+            title="Belum ada item layanan"
+            description="Tambah item pertama untuk mulai membuat bon."
+            action={!showAddForm && <Button size="sm" className="min-h-11" onClick={() => setShowAddForm(true)} icon={<Plus size={15} />}>Tambah item</Button>}
+          />
+        ) : (
+          <Table>
+            <THead>
+              <Tr noHover>
+                <Th>Nama</Th>
+                <Th className={hideSm}>Kategori</Th>
+                <Th className={hideSm}>Satuan</Th>
+                <Th numeric>Harga</Th>
+                <Th className="w-14"><span className="sr-only">Aksi</span></Th>
+              </Tr>
+            </THead>
+            <TBody>
+              {serviceItems.map((item) => (
+                <Tr key={item.id} className={item.is_active ? undefined : 'opacity-60'}>
+                  <Td className="font-semibold break-words">
+                    {item.name}
+                    {!item.is_active && <span className="ml-2 text-sm font-normal text-ink-muted">Nonaktif</span>}
+                    {item.description && <span className="block text-sm font-normal text-ink-muted">{item.description}</span>}
+                    <span className="block text-sm font-normal text-ink-muted sm:hidden">
+                      {getCategoryLabel(item.category)} · {getUnitLabel(item.unit)}
+                    </span>
+                  </Td>
+                  <Td className={`${hideSm} text-ink-muted`}>{getCategoryLabel(item.category)}</Td>
+                  <Td className={`${hideSm} text-ink-muted`}>{getUnitLabel(item.unit)}</Td>
+                  <Td numeric><Money value={item.price} /></Td>
+                  <Td className="w-14 px-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:text-danger"
+                      aria-label={`${item.is_active ? 'Nonaktifkan' : 'Aktifkan'} ${item.name}`}
+                      iconOnly
+                      icon={item.is_active ? <Trash2 size={16} /> : <RotateCcw size={16} />}
+                      onClick={() => toggleItemStatus(item.id, item.is_active)}
+                    />
+                  </Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 };

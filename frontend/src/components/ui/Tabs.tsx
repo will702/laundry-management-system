@@ -46,7 +46,7 @@ export function Tabs({ tabs, value, onChange, className, id }: TabsProps) {
       role="tablist"
       aria-orientation="horizontal"
       className={cn(
-        'inline-flex bg-surface-sunken p-1 rounded-lg gap-0.5',
+        'flex max-w-full overflow-x-auto gap-1 border-b border-border',
         className,
       )}
     >
@@ -62,20 +62,19 @@ export function Tabs({ tabs, value, onChange, className, id }: TabsProps) {
             onClick={() => onChange(tab.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'relative inline-flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold rounded-md',
-              'transition-colors duration-[150ms] ease-out',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
-              'select-none',
+              'relative inline-flex shrink-0 items-center gap-1.5 px-3 h-11 text-sm font-semibold rounded-t-lg',
+              'transition-[color,background-color] duration-fast ease-out',
+              'select-none whitespace-nowrap',
               isActive
-                ? 'text-white'
-                : 'text-ink-muted hover:text-ink',
+                ? 'text-ink'
+                : 'text-ink-muted [@media(hover:hover)]:hover:text-ink [@media(hover:hover)]:hover:bg-surface-overlay',
             )}
           >
-            {/* Shared-element sliding pill for active indicator */}
+            {/* Shared-element sliding underline for the active tab */}
             {isActive && (
               <motion.span
                 layoutId={`tabs-active-pill-${id ?? 'default'}`}
-                className="absolute inset-0 gradient-brand shadow-glow-sm rounded-md"
+                className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-600"
                 transition={{ type: 'spring', stiffness: 500, damping: 40, mass: 0.8 }}
                 aria-hidden="true"
               />

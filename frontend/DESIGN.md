@@ -163,6 +163,17 @@ components:
     padding: "2px 8px"
 ---
 
+> **Superseded in part — "Nota Kontan" system.** The palette, type, shape and motion sections below describe the earlier "Midnight Counter" system. Current rules:
+>
+> - **World:** the Indonesian carbon-copy nota. Pages are ruled ledger sheets (`.ledger`, `.nota-row`), not stacks of cards. Elevation is declared once: a 1px border on surfaces; shadows only on floating layers.
+> - **Colour:** one action colour, ballpoint blue (`brand-600`, oklch 0.42 0.17 264). Ink navy text and rail, paper page. Red is the printed **serial number only** (`.serial`, `<BonNumber/>`). Status is a rubber stamp (`<StatusSlip/>`, outline in ink, slightly rotated): Menunggu = ochre, Siap = blue, Selesai = green, Dihapus = red struck-through (statuses: `pending | ready | completed | deleted`).
+> - **Type:** one family (Instrument Sans) for all UI incl. titles; IBM Plex Mono for serials and **all amounts** (`<Money/>`, tabular, ink, never coloured). No display face. Body 16px, secondary 14px, 13px only for tertiary meta. No eyebrows/kickers, no uppercase labels except the stamp.
+> - **Shape:** controls 6px, sheets 8px, modals 12px; touch targets 44px (Button md/icon, inputs).
+> - **Bon Baru:** tap-to-add service keys + a live nota with steppers; pure logic in `features/receipts/lineItems.ts` (tested). The payload shape and print code are unchanged.
+> - **Motion:** `ease-out` curve `cubic-bezier(0.23,1,0.32,1)`, press 140ms, UI 150-220ms, transform/opacity only; `hover:` is wrapped in `@media (hover: hover)` globally (`future.hoverOnlyWhenSupported`); reduced motion respected.
+> - **Shell:** sidebar expanded (labels) at >= lg with a remembered collapse toggle; active item is a quiet wash, not a filled blue pill; mobile active tab = top rule.
+
+
 # Design System: Mass Laundry POS
 
 ## 1. Overview

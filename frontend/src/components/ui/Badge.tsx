@@ -11,7 +11,7 @@ const BADGE_STYLES: Record<BadgeVariant, string> = {
   danger:   'bg-danger-light  text-danger-dark',
   info:     'bg-brand-100 text-brand-700',
   accent:   'bg-accent-100 text-accent-700',
-  amount:   'bg-amount-light text-amount font-mono font-medium',
+  amount:   'bg-surface-overlay text-ink font-semibold tabular-nums',
 };
 
 const SIZES: Record<BadgeSize, string> = {
@@ -35,7 +35,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full font-semibold tracking-wide',
+        'inline-flex items-center gap-1 rounded-md font-semibold',
         BADGE_STYLES[variant],
         SIZES[size],
         className,

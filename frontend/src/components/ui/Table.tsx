@@ -27,7 +27,7 @@ interface THeadProps {
 
 export function THead({ children, className }: THeadProps) {
   return (
-    <thead className={cn('border-b border-border', className)}>
+    <thead className={cn('border-b border-border-strong', className)}>
       {children}
     </thead>
   );
@@ -61,7 +61,7 @@ export function Tr({ children, className, noHover = false }: TrProps) {
     <tr
       className={cn(
         'border-b border-border last:border-0',
-        !noHover && 'hover:bg-surface-sunken transition-colors duration-[150ms] ease-out',
+        !noHover && '[@media(hover:hover)]:hover:bg-surface-sunken transition-colors duration-fast ease-out',
         className,
       )}
     >
@@ -84,7 +84,7 @@ export function Th({ children, className, numeric = false }: ThProps) {
     <th
       scope="col"
       className={cn(
-        'py-2 px-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wide',
+        'py-3 px-3 text-left text-sm font-medium text-ink-muted',
         numeric && 'text-right tabular-nums',
         className,
       )}
@@ -99,7 +99,7 @@ export function Th({ children, className, numeric = false }: ThProps) {
 interface TdProps {
   children?: React.ReactNode;
   className?: string;
-  /** Align right with monospace numerals for numeric columns */
+  /** Align right with tabular numerals for numeric columns */
   numeric?: boolean;
 }
 
@@ -107,8 +107,8 @@ export function Td({ children, className, numeric = false }: TdProps) {
   return (
     <td
       className={cn(
-        'py-2.5 px-3 text-sm text-ink',
-        numeric && 'text-right tabular-nums font-mono',
+        'py-3.5 px-3 text-base text-ink',
+        numeric && 'text-right tabular-nums font-mono font-semibold',
         className,
       )}
     >

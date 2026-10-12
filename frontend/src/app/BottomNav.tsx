@@ -25,7 +25,7 @@ export function BottomNav({ employee }: BottomNavProps) {
       aria-label="Navigasi mobile"
       className={cn(
         'md:hidden fixed bottom-0 left-0 right-0 z-sticky',
-        'gradient-chrome border-t border-surface-inverse-overlay',
+        'bg-surface-inverse border-t border-surface-inverse-overlay',
         'safe-bottom',
       )}
       style={{ paddingBottom: 'var(--safe-bottom)' }}
@@ -42,14 +42,14 @@ export function BottomNav({ employee }: BottomNavProps) {
               key={item.key}
               to={item.path}
               aria-current={isActive ? 'page' : undefined}
-              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-w-0 touch-manipulation"
+              className="relative flex flex-1 flex-col items-center justify-center gap-1 py-2 min-w-0 touch-manipulation focus-visible:outline-white"
             >
               {/* Active background pill */}
               <AnimatePresence>
                 {isActive && (
                   <motion.span
                     layoutId="bottom-nav-pill"
-                    className="absolute inset-x-2 top-1.5 h-8 rounded-lg gradient-brand shadow-glow-sm"
+                    className="absolute inset-x-0 top-0 mx-auto h-0.5 w-10 rounded-full bg-white"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -62,14 +62,14 @@ export function BottomNav({ employee }: BottomNavProps) {
                 size={20}
                 aria-hidden="true"
                 className={cn(
-                  'relative shrink-0 transition-colors duration-[120ms]',
-                  isActive ? 'text-white' : 'text-on-dark-faint',
+                  'relative shrink-0 transition-colors duration-fast',
+                  isActive ? 'text-white' : 'text-on-dark-muted',
                 )}
               />
               <span
                 className={cn(
-                  'relative text-[10px] font-semibold leading-none transition-colors duration-[120ms]',
-                  isActive ? 'text-white' : 'text-on-dark-faint',
+                  'relative text-xs font-semibold leading-none transition-colors duration-fast',
+                  isActive ? 'text-white' : 'text-on-dark-muted',
                 )}
               >
                 {item.label}

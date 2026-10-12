@@ -5,7 +5,7 @@ import { settingsApi } from '../../services/api';
 import { parseFooterNotes } from '../../services/receipt/footerNotes';
 import { PrinterSettings } from './PrinterSettings';
 import {
-  Card, PageHeader, Tabs, Button, Input, Textarea, EmptyState,
+  Card, PageHeader, Tabs, Button, Input, Textarea, EmptyState, SkeletonCard,
 } from '../../components/ui';
 
 interface LegacySettings {
@@ -86,7 +86,7 @@ export const LaundrySettingsPanel: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-ink-faint">Memuat pengaturan...</div>;
+    return <div aria-label="Memuat pengaturan" className="grid gap-4 lg:grid-cols-2"><SkeletonCard lines={4} /><SkeletonCard lines={4} /></div>;
   }
 
   if (!settings) {
@@ -97,17 +97,23 @@ export const LaundrySettingsPanel: React.FC = () => {
     );
   }
 
+  const saveBar = (
+    <div className="flex justify-end pt-5 mt-5 border-t border-border">
+      <Button onClick={saveSettings} loading={saving} icon={<Save size={15} />}>Simpan pengaturan</Button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      <PageHeader kicker="Pengaturan" title="Pengaturan Laundry" description="Kelola info bisnis, struk, dan printer." />
+      <PageHeader title="Pengaturan" description="Info usaha, catatan bon, dan printer." />
 
       <Tabs
         id="settings"
         value={activeTab}
         onChange={(v) => setActiveTab(v as 'business' | 'receipt' | 'printer')}
         tabs={[
-          { value: 'business', label: 'Info Bisnis' },
-          { value: 'receipt', label: 'Pengaturan Struk' },
+          { value: 'business', label: 'Info usaha' },
+          { value: 'receipt', label: 'Catatan bon' },
           { value: 'printer', label: 'Printer' },
         ]}
       />
@@ -115,74 +121,70 @@ export const LaundrySettingsPanel: React.FC = () => {
       <div id="settings-tab-panel" role="tabpanel" aria-live="polite">
         {activeTab === 'business' && (
           <Card>
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Input
-                  label="Nama Bisnis"
-                  value={settings.business_name}
-                  onChange={(e) => handleInputChange('business_name', e.target.value)}
-                  placeholder="Mass Laundry"
-                />
-                <Input
-                  label="Nomor Telepon"
-                  value={settings.business_phone}
-                  onChange={(e) => handleInputChange('business_phone', e.target.value)}
-                  placeholder="(021) 1234-5678"
-                />
-              </div>
-              <Textarea
-                label="Alamat Bisnis"
-                value={settings.business_address}
-                onChange={(e) => handleInputChange('business_address', e.target.value)}
-                rows={3}
-                placeholder="Jl. Bersih No. 123, Kota Laundry"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <Input
+                label="Nama usaha"
+                value={settings.business_name}
+                onChange={(e) => handleInputChange('business_name', e.target.value)}
+                placeholder="Mass Laundry"
               />
               <Input
-                label="Email Bisnis"
+                label="Nomor telepon"
+                value={settings.business_phone}
+                onChange={(e) => handleInputChange('business_phone', e.target.value)}
+                placeholder="(021) 1234-5678"
+              />
+              <div className="md:col-span-2">
+                <Textarea
+                  label="Alamat"
+                  value={settings.business_address}
+                  onChange={(e) => handleInputChange('business_address', e.target.value)}
+                  rows={3}
+                  placeholder="Jl. Bersih No. 123, Kota Laundry"
+                />
+              </div>
+              <Input
+                label="Email"
                 type="email"
                 value={settings.business_email}
                 onChange={(e) => handleInputChange('business_email', e.target.value)}
                 placeholder="info@masslaundry.com"
               />
               <Input
-                label="URL Logo (Opsional)"
+                label="URL logo (opsional)"
                 type="url"
                 value={settings.logo_url || ''}
                 onChange={(e) => handleInputChange('logo_url', e.target.value)}
                 placeholder="https://example.com/logo.png"
-                hint="Masukkan URL gambar logo untuk ditampilkan di struk"
+                hint="Alamat gambar logo yang tampil di bon"
               />
             </div>
-            <div className="flex justify-end pt-6 mt-6 border-t border-border">
-              <Button onClick={saveSettings} loading={saving} icon={<Save size={15} />}>Simpan Pengaturan</Button>
-            </div>
+            {saveBar}
           </Card>
         )}
 
         {activeTab === 'receipt' && (
           <Card>
-            <div className="space-y-5">
+            <div className="grid gap-x-6 gap-y-4 md:grid-cols-2">
               <Textarea
-                label="Catatan Kaki Struk"
+                label="Catatan kaki bon"
                 value={settings.footer_notes}
                 onChange={(e) => handleInputChange('footer_notes', e.target.value)}
-                rows={4}
+                rows={5}
                 placeholder="Terima kasih atas kepercayaan Anda • Jam operasional: 07:00-21:00 • Komplain maks 1x24 jam"
-                hint="Catatan ini akan muncul di bagian bawah setiap struk. Gunakan • untuk memisahkan informasi."
+                hint="Tampil di bagian bawah setiap bon. Pisahkan butir dengan •"
               />
 
-              <div className="rounded-xl bg-surface-sunken border border-border p-4">
-                <h3 className="font-semibold text-ink mb-3">Pratinjau Catatan Kaki</h3>
-                <div className="text-sm text-ink-muted text-center border-t border-border pt-3">
+              <div className="md:border-l md:border-border md:pl-6">
+                <h3 className="text-sm font-medium text-ink-muted mb-2">Pratinjau</h3>
+                <ul className="list-disc pl-4 space-y-1 text-sm text-ink-muted">
                   {parseFooterNotes(settings.footer_notes).map((note, index) => (
-                    <p key={index} className="mb-1">{note}</p>
+                    <li key={index}>{note}</li>
                   ))}
-                </div>
+                </ul>
               </div>
             </div>
-            <div className="flex justify-end pt-6 mt-6 border-t border-border">
-              <Button onClick={saveSettings} loading={saving} icon={<Save size={15} />}>Simpan Pengaturan</Button>
-            </div>
+            {saveBar}
           </Card>
         )}
 

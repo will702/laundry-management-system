@@ -43,7 +43,7 @@ export function RadioGroup({
               // Card shell
               'flex items-center gap-3 min-h-touch px-4 py-3',
               'rounded-lg border cursor-pointer',
-              'transition-colors duration-[150ms] ease-out',
+              'transition-colors duration-fast ease-out',
               // Selected vs unselected
               isSelected
                 ? 'border-brand-500 bg-brand-50/50 ring-1 ring-brand-500'
@@ -66,7 +66,7 @@ export function RadioGroup({
               aria-hidden="true"
               className={cn(
                 'shrink-0 flex h-4 w-4 items-center justify-center rounded-full border-2',
-                'transition-colors duration-[150ms] ease-out',
+                'transition-colors duration-fast ease-out',
                 isSelected
                   ? 'border-brand-500'
                   : 'border-border-strong',

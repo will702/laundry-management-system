@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
 import { Search, UserPlus, X, Check } from 'lucide-react';
 import type { Client } from '@mass-laundry/shared-types';
 import { clientsApi } from '../../services/api';
-import { Button, Input } from '../../components/ui';
-import { staggerContainer, listItem } from '../../lib/motion';
+import { Button, Input, EmptyState } from '../../components/ui';
 
 export interface ClientSelectorProps {
   selectedClient: Client | null;
@@ -62,9 +60,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, 
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="flex-1">
+      <div className="flex gap-3">
+        <div className="min-w-0 flex-1">
           <Input
+            className="h-12"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -74,18 +73,19 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, 
           />
         </div>
         <Button
-          variant={showAddForm ? 'secondary' : 'primary'}
+          variant="secondary"
+          size="lg"
           onClick={() => setShowAddForm(!showAddForm)}
           icon={showAddForm ? <X size={16} /> : <UserPlus size={16} />}
           className="shrink-0"
         >
-          {showAddForm ? 'Batal' : 'Tambah Baru'}
+          {showAddForm ? 'Batal' : 'Tambah pelanggan'}
         </Button>
       </div>
 
       {showAddForm && (
-        <div className="rounded-xl bg-surface-sunken border border-border p-4">
-          <h3 className="font-semibold text-ink mb-3">Tambah Pelanggan Baru</h3>
+        <div className="rounded-xl border border-border p-4">
+          <h3 className="mb-3 font-semibold text-ink">Pelanggan baru</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               type="text"
@@ -102,9 +102,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, 
               onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
             />
           </div>
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-3 mt-3">
             <Button onClick={addClient} disabled={!newClient.name || !newClient.phone} icon={<Check size={15} />}>
-              Tambah Pelanggan
+              Simpan pelanggan
             </Button>
             <Button variant="ghost" onClick={() => setShowAddForm(false)}>Batal</Button>
           </div>
@@ -112,36 +112,35 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, 
       )}
 
       {selectedClient && (
-        <div className="ring-gradient rounded-xl p-3.5">
+        <div className="rounded-xl border border-brand-600 bg-brand-50 p-4">
           <div className="flex justify-between items-center gap-3">
             <div className="min-w-0">
-              <span className="font-semibold text-ink">{selectedClient.name}</span>
-              <span className="text-ink-muted ml-2">{selectedClient.phone}</span>
+              <span className="flex items-center gap-2 font-semibold text-ink"><Check size={16} className="text-brand-700" />{selectedClient.name}</span>
+              <span className="stamp block text-sm text-ink-muted">{selectedClient.phone}</span>
             </div>
-            <Button variant="outline" size="sm" onClick={() => onClientSelect(null)}>Ubah</Button>
+            <Button variant="secondary" size="lg" onClick={() => onClientSelect(null)}>Ubah</Button>
           </div>
         </div>
       )}
 
       {!selectedClient && clients.length > 0 && (
-        <motion.div
-          className="space-y-2 max-h-64 overflow-y-auto pr-1"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="ledger max-h-[28rem] overflow-y-auto" aria-label="Daftar pelanggan">
           {clients.map((client) => (
-            <motion.button
+            <button
+              type="button"
               key={client.id}
-              variants={listItem}
               onClick={() => onClientSelect(client)}
-              className="w-full text-left p-3 border border-border rounded-xl bg-surface hover:bg-surface-overlay hover:border-border-strong active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer transition-[background,border-color,transform] duration-[150ms] ease-out"
+              aria-pressed={false}
+              className="ledger-row flex min-h-14 w-full items-center justify-between gap-4 px-2 py-2 text-left text-ink active:bg-surface-overlay"
             >
-              <div className="font-semibold text-ink">{client.name}</div>
-              <div className="text-sm text-ink-muted">{client.phone}</div>
-            </motion.button>
+              <span className="min-w-0 truncate text-base font-semibold">{client.name}</span>
+              <span className="stamp shrink-0 text-ink-muted">{client.phone}</span>
+            </button>
           ))}
-        </motion.div>
+        </div>
+      )}
+      {!selectedClient && clients.length === 0 && (
+        <EmptyState title="Belum ada pelanggan yang cocok" description="Coba nama atau nomor telepon lain, atau tambah pelanggan untuk mulai membuat bon." />
       )}
     </div>
   );

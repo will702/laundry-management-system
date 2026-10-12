@@ -6,8 +6,8 @@ interface Props { employee: Employee }
 
 export function ClientsPage({ employee }: Props) {
   return (
-    <div className="page-container">
-      <ClientManagement employee={employee} />
+    <div className="bg-surface-sunken min-h-full">
+      <div className="page-container py-6"><ClientManagement employee={employee} /></div>
     </div>
   );
 }
